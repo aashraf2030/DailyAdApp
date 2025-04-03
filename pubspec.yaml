@@ -1,0 +1,54 @@
+name: ads_app
+description: "This app is used to publish ads"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+#  sdk: ^3.6.2
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_svg: ^2.0.17
+  google_fonts: ^6.2.1
+  font_awesome_flutter: ^10.8.0
+  dio: ^5.8.0+1
+  flutter_bloc: ^9.0.0
+  shared_preferences: ^2.5.2
+  flutter_gradient_app_bar: ^0.3.1
+  image_picker: ^1.1.2
+  webview_flutter: ^4.10.0
+  flutter_native_splash: ^2.4.4 #
+  flutter_launcher_icons: ^0.14.3
+  cupertino_icons: ^1.0.8
+  change_app_package_name: ^1.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/imgs/
+
+flutter_native_splash:
+  android: true
+  ios: true
+  web: false
+
+  image: assets/logo.jpg
+  color: "#eaeaff"
+
+  android_12:
+    image: assets/logo.jpg
+    color: "#ededff"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/WhatsApp Image 2025-04-01 at 02.41.07_d05c80c6 (1).jpg"
+  min_sdk_android: 21

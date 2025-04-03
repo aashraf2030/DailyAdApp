@@ -1,0 +1,2 @@
+C:/Users/TaqieAllah/Desktop/ads_app_flutter-master_2/ads_app_flutter-master/android/app/.cxx/RelWithDebInfo/5t94k1h1/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/TaqieAllah/Desktop/ads_app_flutter-master_2/ads_app_flutter-master/android/app/.cxx/RelWithDebInfo/5t94k1h1/x86_64/CMakeFiles/rebuild_cache.dir
