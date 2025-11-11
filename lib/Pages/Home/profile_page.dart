@@ -565,13 +565,17 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
 
-  // تحويل التاريخ والوقت إلى تاريخ فقط
+  // تحويل التاريخ والوقت إلى تاريخ فقط بتنسيق عربي
   String _formatDate(String dateTime) {
     try {
+      // تحويل التاريخ من String إلى DateTime
       final date = DateTime.parse(dateTime);
-      return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      
+      // تنسيق التاريخ بالعربي: يوم/شهر/سنة
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
     } catch (e) {
-      return dateTime; // في حالة فشل التحويل، نعرض النص كما هو
+      // في حالة فشل التحويل، نعرض النص كما هو
+      return dateTime;
     }
   }
 

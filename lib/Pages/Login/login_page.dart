@@ -442,6 +442,17 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         Navigator.pushReplacementNamed(context, "/verify");
       }
     } else {
+      // Check if account is unverified
+      if (cubit.state is AuthError) {
+        final errorState = cubit.state as AuthError;
+        
+        if (errorState.error == "Unverified") {
+          // حساب غير مؤكد - توجيه لصفحة التحقق
+          Navigator.pushReplacementNamed(context, "/verify");
+          return;
+        }
+      }
+      
       // Get error message from cubit state
       String errorMessage = "اسم المستخدم أو كلمة المرور غير صحيحة\nبرجاء المحاولة مرة أخرى";
       

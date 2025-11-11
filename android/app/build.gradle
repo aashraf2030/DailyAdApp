@@ -13,7 +13,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.aladvertelement.daily5"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35  // Required for 16KB page size support
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -31,10 +31,15 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdkVersion = flutter.minSdkVersion  // دعم Android 5.0 وما فوق (يغطي 99%+ من الأجهزة)
-        targetSdk = 34  // آخر إصدار مستقر
+        targetSdk = 35  // Required for 16KB page size support
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled true  // لدعم التطبيقات الكبيرة
+        
+        // Support for 16KB page size (required by Google Play)
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64'
+        }
     }
 
     signingConfigs {

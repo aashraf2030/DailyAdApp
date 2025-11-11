@@ -50,6 +50,14 @@ class AuthCubit extends Cubit<AuthState>{
         emit(AuthDone());
         res = true;
       }
+    else if (x.status == "Unverified")
+      {
+        // حساب غير مؤكد - حفظ البيانات وتوجيه للتحقق
+        prefs.setString("id", x.id ?? "");
+        prefs.setString("session", x.session ?? "");
+        emit(AuthError("Unverified"));
+        res = false;
+      }
     else if (x.status == "Invalid Auth")
       {
         emit(AuthInvalid());
