@@ -125,11 +125,11 @@ class ChangePassPage extends StatelessWidget{
           OutlinedButton(onPressed: () {
             Navigator.of(context).pop();
           },
-            child: Text("محاولة مرة اخرى",
-              style: GoogleFonts.cairo(color: Colors.white),),
             style: OutlinedButton.styleFrom(
               backgroundColor: Colors.green[500],
             ),
+            child: Text("محاولة مرة اخرى",
+              style: GoogleFonts.cairo(color: Colors.white),),
           )
         ],
 

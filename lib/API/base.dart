@@ -1,4 +1,6 @@
 class BackendAPI{
+  // Production: https://adsapp-abu-sultan.com/
+  // Local: http://localhost:1234/
   static const base = "https://adsapp-abu-sultan.com/";
 
   //Auth APIs
@@ -7,6 +9,7 @@ class BackendAPI{
   static const is_loggedin = "$base${auth}is_logged_in";
   static const logout = "$base${auth}logout";
   static const register = "$base${auth}register";
+  static const delete_user = "$base${auth}delete";
   static const verify = "$base${auth}verify";
   static const verify_check = "$base${auth}is_verified";
   static const send_code = "$base${auth}send_code";
@@ -30,13 +33,13 @@ class BackendAPI{
 
   //Authority APIs
   static const authority = "authority/";
-  static const default_req = "$base${authority}default_req";
-  static const renew_req = "$base${authority}renew_req";
-  static const money_req = "$base${authority}money_req";
-  static const my_req = "$base${authority}my_req";
-  static const handle_req = "$base${authority}handle_req";
-  static const delete_req = "$base${authority}delete_req";
+  static const defaultReq = "$base${authority}default_req";
+  static const renewReq = "$base${authority}renew_req";
+  static const moneyReq = "$base${authority}money_req";
+  static const myReq = "$base${authority}my_req";
+  static const handleReq = "$base${authority}handle_req";
+  static const deleteReq = "$base${authority}delete_req";
   static const leaderboard = "$base${authority}leaderboard";
-  static const point_exchange = "$base${authority}points_exchange";
+  static const pointExchange = "$base${authority}points_exchange";
 
 }

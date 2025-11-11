@@ -1,7 +1,6 @@
+import 'package:ads_app/Models/category_manager.dart';
 import 'package:ads_app/Models/category_model.dart';
-import 'package:flutter/cupertino.dart';
 
-@immutable
 abstract class UserRequest {}
 
 class DefaultRequest extends UserRequest{
@@ -11,7 +10,7 @@ class DefaultRequest extends UserRequest{
   late String path;
   late String image;
   late int target;
-  late String tier;
+  late String type;
   late Category category;
   
   DefaultRequest.fromJson(Map<String, dynamic> json)
@@ -22,8 +21,8 @@ class DefaultRequest extends UserRequest{
     path = json["path"];
     image = json["image"];
     target = json["target"];
-    tier = json["tier"];
-    category = categories[json["category"]];
+    type = json["type"] == "Fixed" ? "ثابت" : "متغيير";
+    category = CategoryManager.getCategoryById(json["category"]);
   }
 }
 
@@ -51,7 +50,7 @@ class RenewRequest extends UserRequest{
     views = json["views"];
     target = json["target"];
     tier = json["tier"];
-    category = categories[json["category"]];
+    category = CategoryManager.getCategoryById(json["category"]);
     creation = json["creation"];
     lastUpdate = json["lastUpdate"];
   }

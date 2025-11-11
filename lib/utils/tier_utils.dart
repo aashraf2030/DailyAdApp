@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class TierConverts
 {
-  static Color TierColor (String tier)
+  static Color tierColor (String tier)
   {
     switch (tier)
     {
@@ -28,7 +28,7 @@ class TierConverts
     }
   }
 
-  static int TierId(String tier)
+  static int tierId(String tier)
   {
     switch (tier)
     {

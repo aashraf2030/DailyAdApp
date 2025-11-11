@@ -1,7 +1,6 @@
 import 'package:ads_app/Bloc/Ad/ad_cubit.dart';
 import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
 import 'package:ads_app/Models/ad_models.dart';
-import 'package:ads_app/Models/category_model.dart';
 import 'package:ads_app/Widgets/ad_loading_card.dart';
 import 'package:ads_app/Widgets/ad_watch_card.dart';
 import 'package:flutter/material.dart';
@@ -9,16 +8,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class CategoryArea extends StatefulWidget {
-  const CategoryArea({super.key, required this.category});
-
-  final Category category;
+class AllAdsArea extends StatefulWidget {
+  const AllAdsArea({super.key});
 
   @override
-  CategoryAreaState createState() => CategoryAreaState();
+  AllAdsAreaState createState() => AllAdsAreaState();
 }
 
-class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderStateMixin {
+class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMixin {
   List<AdData> ads = [];
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -37,7 +34,10 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
     );
     
     _animationController.forward();
-    BlocProvider.of<AdCubit>(context).fetchAds(widget.category.id);
+    // جلب جميع الإعلانات Dynamic العامة
+    // category: 0 = General Dynamic Ads (not recommendations)
+    // full: true = Get up to 500 ads
+    BlocProvider.of<AdCubit>(context).fetchAds(0, full: true);
   }
 
   @override
@@ -50,7 +50,7 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
     if (state is AdLoadingState) {
       return GridView.builder(
         itemBuilder: buildLoadingCards,
-        itemCount: 4,
+        itemCount: 6,
         scrollDirection: Axis.vertical,
         padding: EdgeInsets.all(12),
         shrinkWrap: true,
@@ -72,7 +72,7 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
       return GridView.builder(
         cacheExtent: 1000,
         itemBuilder: buildCards,
-        itemCount: ads.length > 4 ? 4 : ads.length,
+        itemCount: ads.length,
         scrollDirection: Axis.vertical,
         padding: EdgeInsets.all(12),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -155,16 +155,16 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
       opacity: _fadeAnimation,
       child: Container(
         width: MediaQuery.sizeOf(context).width,
-        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.06),
-              blurRadius: 20,
+              blurRadius: 12,
               spreadRadius: 0,
-              offset: Offset(0, 4),
+              offset: Offset(0, 2),
             ),
           ],
         ),
@@ -172,7 +172,6 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
           children: [
             _buildHeader(),
             BlocBuilder<AdCubit, AdState>(builder: buildByBloc),
-            if (widget.category.id != 0 && ads.isNotEmpty) _buildViewAllButton(),
           ],
         ),
       ),
@@ -181,7 +180,7 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -203,9 +202,9 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
           Row(
             textDirection: TextDirection.rtl,
             children: [
-              // أيقونة الفئة
+              // أيقونة
               Container(
-                padding: EdgeInsets.all(10),
+                padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -215,41 +214,41 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xFF2596FA).withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
+                      color: Color(0xFF2596FA).withOpacity(0.25),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
                 child: Icon(
-                  widget.category.icon,
+                  FontAwesomeIcons.rectangleAd,
                   color: Colors.white,
-                  size: 24,
+                  size: 18,
                 ),
               ),
               
-              SizedBox(width: 12),
+              SizedBox(width: 10),
               
-              // اسم الفئة
+              // العنوان
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.category.name,
+                    "جميع الإعلانات",
                     style: GoogleFonts.cairo(
-                      fontSize: 18,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF2C3E50),
                     ),
                   ),
                   if (ads.isNotEmpty)
                     Text(
-                      "${ads.length} إعلان",
+                      "${ads.length} إعلان متاح",
                       style: GoogleFonts.cairo(
-                        fontSize: 12,
+                        fontSize: 10,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -259,17 +258,17 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
           ),
           
           // Badge
-          if (ads.length > 4)
+          if (ads.isNotEmpty)
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: Color(0xFF2596FA).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 "جديد",
                 style: GoogleFonts.cairo(
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF2596FA),
                 ),
@@ -279,57 +278,5 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
       ),
     );
   }
-
-  Widget _buildViewAllButton() {
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.all(12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            Navigator.pushNamed(context, "/show_cat", arguments: widget.category);
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF2596FA).withOpacity(0.08),
-                  Color(0xFF364A62).withOpacity(0.08),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Color(0xFF2596FA).withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "عرض الكل",
-                  style: GoogleFonts.cairo(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2596FA),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_back_ios,
-                  size: 14,
-                  color: Color(0xFF2596FA),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
+

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:ads_app/Models/ad_models.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gradient_app_bar/flutter_gradient_app_bar.dart';
+import 'package:ads_app/Widgets/gradient_app_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:webview_flutter/webview_flutter.dart';

@@ -1,4 +1,5 @@
 import 'package:ads_app/API/base.dart';
+import 'package:ads_app/network/interceptors.dart';
 import 'package:dio/dio.dart';
 
 class AuthorityWeb{
@@ -13,7 +14,7 @@ class AuthorityWeb{
       receiveDataWhenStatusError: true,
     );
 
-    dio = Dio(options);
+    dio = Dio(options)..interceptors.addAll([LoggerInterceptor()]);
   }
 
   Future<List<dynamic>> getDefaultReq(String session, String id, String? tier) async
@@ -33,12 +34,16 @@ class AuthorityWeb{
 
     try
     {
-      final res = await dio.get(BackendAPI.default_req, data: fd);
+      final res = await dio.post(BackendAPI.defaultReq, data: fd);
 
-      return res.data;
+      // التأكد من أن الـ response عبارة عن array
+      if (res.data is List) {
+        return res.data;
+      } else {
+        return [];
+      }
     }
-      on Exception catch (e)
-    {
+      on Exception{
       return [];
     }
   }
@@ -60,12 +65,16 @@ class AuthorityWeb{
 
     try
     {
-      final res = await dio.get(BackendAPI.renew_req, data: fd);
+      final res = await dio.post(BackendAPI.renewReq, data: fd);
 
-      return res.data;
+      // التأكد من أن الـ response عبارة عن array
+      if (res.data is List) {
+        return res.data;
+      } else {
+        return [];
+      }
     }
-    on Exception catch (e)
-    {
+    on Exception{
       return [];
     }
   }
@@ -74,13 +83,17 @@ class AuthorityWeb{
   {
     try
     {
-      final res = await dio.get(BackendAPI.money_req, data: {"session": session,
+      final res = await dio.post(BackendAPI.moneyReq, data: {"session": session,
         "id": id});
 
-      return res.data;
+      // التأكد من أن الـ response عبارة عن array
+      if (res.data is List) {
+        return res.data;
+      } else {
+        return [];
+      }
     }
-    on Exception catch (e)
-    {
+    on Exception {
       return [];
     }
   }
@@ -89,13 +102,35 @@ class AuthorityWeb{
   {
     try
     {
-      final res = await dio.get(BackendAPI.my_req, data: {"session": session,
-        "id": id});
+      // Try POST first (for updated backend)
+      try {
+        final res = await dio.post(BackendAPI.myReq, data: {"session": session, "id": id});
+        if (res.data is List) {
+          return res.data;
+        }
+      } catch (e) {
+        print("POST failed, trying GET with query parameters...");
+      }
+      
+      // Fallback to GET with query parameters (for old backend)
+      final res = await dio.get(
+        BackendAPI.myReq,
+        queryParameters: {"session": session, "id": id},
+        options: Options(
+          headers: {"Content-Type": "application/json"},
+        ),
+      );
 
-      return res.data;
+      // التأكد من أن الـ response عبارة عن array
+      if (res.data is List) {
+        return res.data;
+      } else {
+        // لو الـ response مش array (مثلاً error message)، نرجع empty array
+        return [];
+      }
     }
-    on Exception catch (e)
-    {
+    on Exception catch (e) {
+      print("Error getting my requests: $e");
       return [];
     }
   }
@@ -105,12 +140,12 @@ class AuthorityWeb{
   {
     try
     {
-      final res = await dio.put(BackendAPI.handle_req, data: {"session": session,
+      // Changed to POST for better CORS compatibility
+      final res = await dio.post(BackendAPI.handleReq, data: {"session": session,
         "id": id, "reqID": req, "state": state});
       return res.data;
     }
-    on Exception catch (e)
-    {
+    on Exception{
       return [];
     }
   }
@@ -119,13 +154,12 @@ class AuthorityWeb{
   {
     try
     {
-      final res = await dio.delete(BackendAPI.delete_req, data: {"session": session,
+      final res = await dio.delete(BackendAPI.deleteReq, data: {"session": session,
         "id": id, "reqID": req});
 
       return res.data;
     }
-    on Exception catch (e)
-    {
+    on Exception {
       return [];
     }
   }
@@ -134,12 +168,11 @@ class AuthorityWeb{
   {
     try
     {
-      final res = await dio.put(BackendAPI.point_exchange, data: {"session": session,
+      final res = await dio.put(BackendAPI.pointExchange, data: {"session": session,
         "id": id});
       return res.data;
     }
-    on Exception catch (e)
-    {
+    on Exception{
       return [];
     }
   }
@@ -148,13 +181,18 @@ class AuthorityWeb{
   async
   {
     try{
-      final response = await dio.get(BackendAPI.leaderboard, data: {
+      final response = await dio.post(BackendAPI.leaderboard, data: {
         "session": session, "id":user
       });
 
-      return response.data;
+      // التأكد من أن الـ response عبارة عن array
+      if (response.data is List) {
+        return response.data;
+      } else {
+        return [];
+      }
     }
-    on Exception catch (e){
+    on Exception{
 
       return [];
     }

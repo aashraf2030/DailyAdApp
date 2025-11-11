@@ -17,12 +17,12 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = '17'
     }
 
     defaultConfig {
@@ -30,10 +30,11 @@ android {
         applicationId = "com.aladvertelement.daily5"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdkVersion = flutter.minSdkVersion  // دعم Android 5.0 وما فوق (يغطي 99%+ من الأجهزة)
+        targetSdk = 34  // آخر إصدار مستقر
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled true  // لدعم التطبيقات الكبيرة
     }
 
     signingConfigs {
@@ -47,11 +48,20 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            // استخدام توقيع Debug مؤقتاً (للاختبار فقط)
+            // للتوزيع الرسمي، يجب إنشاء keystore جديد
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // دعم MultiDex للتطبيقات الكبيرة
+    implementation 'androidx.multidex:multidex:2.0.1'
 }

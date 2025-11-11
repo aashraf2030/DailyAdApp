@@ -1,200 +1,736 @@
-
+import 'package:ads_app/Bloc/Auth/auth_cubit.dart';
 import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
-import 'package:ads_app/Models/category_model.dart';
+import 'package:ads_app/Models/category_manager.dart';
 import 'package:ads_app/Widgets/image_picker_button.dart';
 import 'package:ads_app/Widgets/input_text_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gradient_app_bar/flutter_gradient_app_bar.dart';
+import 'package:ads_app/Widgets/gradient_app_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CreateAdPage extends StatefulWidget {
-
   CreateAdPage({super.key});
 
   InputTextForm name = InputTextForm("اسم الاعلان", FontAwesomeIcons.rectangleAd);
+  InputTextForm target = InputTextForm("عدد المشاهدات المطلوبة", FontAwesomeIcons.streetView);
   InputTextForm keys = InputTextForm("كلمات مفتاحية", FontAwesomeIcons.key);
   InputTextForm link = InputTextForm("رابط الاعلان", FontAwesomeIcons.link);
-  int category = -1;
-  int tier = -1;
+  int category = 11; // متنوع (Other) كقيمة افتراضية
+  int type = 0; // Dynamic للمستخدمين العاديين
 
   ImagePickerButton picker = ImagePickerButton("اختار الصورة", FontAwesomeIcons.image);
 
   @override
-  CreateAdPageState createState () => CreateAdPageState();
+  CreateAdPageState createState() => CreateAdPageState();
 }
 
-class CreateAdPageState extends State<CreateAdPage>{
-
+class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderStateMixin {
   bool isSending = false;
+  bool isAdmin = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+
+    _animationController.forward();
+
+    BlocProvider.of<AuthCubit>(context).isAdmin().then((x) {
+      setState(() {
+        isAdmin = x;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: GradientAppBar(
         automaticallyImplyLeading: false,
-        title: Center(child: Text("إنشاء إعلان جديد",
-          style: GoogleFonts.cairo(color: Colors.white, fontWeight: FontWeight.bold),)),
-        gradient: LinearGradient(colors: [Color.fromRGBO(37, 150, 250, 1),
-          Color.fromRGBO(54, 74, 98, 0.85)], transform: GradientRotation(0.5)),
+        title: Text(
+          "إنشاء إعلان جديد",
+          style: GoogleFonts.cairo(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+        ),
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF2596FA),
+            Color(0xFF364A62),
+          ],
+          transform: GradientRotation(0.5),
+        ),
         actions: [
-          IconButton(onPressed: (){Navigator.pop(context);}, icon: Icon(Icons.arrow_forward_outlined))
+          IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_forward_outlined, color: Colors.white),
+          )
         ],
       ),
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-      body: ListView(
-        padding: EdgeInsets.all(10),
+      backgroundColor: Color(0xFFF8F9FA),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: ListView(
+            padding: EdgeInsets.all(16),
+            children: buildMenu(context),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> buildMenu(BuildContext context) {
+    List<Widget> res = [
+      // Header Section
+      _buildHeader(),
+      
+      SizedBox(height: 24),
+
+      // معلومات الإعلان الأساسية
+      _buildSectionTitle("معلومات الإعلان", FontAwesomeIcons.rectangleAd),
+      SizedBox(height: 12),
+      _buildCard([
+        widget.name,
+        SizedBox(height: 16),
+        widget.link,
+      ]),
+
+      SizedBox(height: 24),
+
+      // صورة الإعلان
+      _buildSectionTitle("صورة الإعلان", FontAwesomeIcons.image),
+      SizedBox(height: 12),
+      _buildCard([widget.picker]),
+
+      SizedBox(height: 24),
+
+      // التفاصيل
+      _buildSectionTitle("التفاصيل", FontAwesomeIcons.circleInfo),
+      SizedBox(height: 12),
+      _buildCard([
+        widget.target,
+      ]),
+
+      SizedBox(height: 24),
+
+      // فئة الإعلان
+      _buildSectionTitle("فئة الإعلان", FontAwesomeIcons.layerGroup),
+      SizedBox(height: 12),
+      _buildCard([
+        _buildCategoryDropdown(),
+      ]),
+    ];
+
+    // عرض اختيار نوع الإعلان للأدمن فقط
+    if (isAdmin) {
+      res.addAll([
+        SizedBox(height: 24),
+        _buildSectionTitle("نوع الإعلان", FontAwesomeIcons.arrowsUpToLine),
+        SizedBox(height: 12),
+        _buildCard([
+          _buildTypeDropdown(),
+        ]),
+      ]);
+    }
+
+    res.addAll([
+      SizedBox(height: 24),
+
+      // كلمات مفتاحية
+      _buildSectionTitle("تحسين الظهور", FontAwesomeIcons.hashtag),
+      SizedBox(height: 12),
+      _buildCard([widget.keys]),
+
+      SizedBox(height: 32),
+
+      // Submit Button
+      buildSubmitButton(),
+      
+      SizedBox(height: 24),
+    ]);
+
+    return res;
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF2596FA),
+            Color(0xFF364A62),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF2596FA).withOpacity(0.3),
+            blurRadius: 15,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
         children: [
-          widget.name,
-          Divider(),
-          widget.link,
-          Divider(),
-          widget.picker,
-          Divider(),
-          DropdownButtonFormField(
-            items: buildCategories(), onChanged: (x) {widget.category = x?? -1;},
-            hint: Text("اختار نوع الاعلان", style: GoogleFonts.cairo(),),
-            isExpanded: true,
-            alignment: AlignmentDirectional.centerEnd,
-            style: GoogleFonts.cairo(color: Colors.blueAccent),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              prefixIcon: Icon(Icons.category_outlined),
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              FontAwesomeIcons.bullhorn,
+              color: Colors.white,
+              size: 32,
             ),
           ),
-          Divider(),
-          DropdownButtonFormField(items: [
-            DropdownMenuItem(value: 0,child: Center(child: Text("Trial", textAlign: TextAlign.center,)),),
-            DropdownMenuItem(value: 1,child: Center(child: Text("Starter", textAlign: TextAlign.center,)),),
-            DropdownMenuItem(value: 2,child: Center(child: Text("Plus", textAlign: TextAlign.center,)),),
-            DropdownMenuItem(value: 3,child: Center(child: Text("Pro", textAlign: TextAlign.center,)),),
-            DropdownMenuItem(value: 4,child: Center(child: Text("Premium", textAlign: TextAlign.center,)),),
-            DropdownMenuItem(value: 5,child: Center(child: Text("Enterprise", textAlign: TextAlign.center,)),),
-          ], onChanged: (x) {widget.tier = x?? -1;},
-            hint: Text("اختار فئة الاعلان", style: GoogleFonts.cairo(),),
-            isExpanded: true,
-            alignment: AlignmentDirectional.centerEnd,
-            style: GoogleFonts.cairo(color: Colors.blueAccent),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              prefixIcon: Icon(FontAwesomeIcons.arrowsUpToLine),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "أنشئ إعلانك الآن",
+                  style: GoogleFonts.cairo(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "املأ البيانات التالية لإنشاء إعلان احترافي",
+                  style: GoogleFonts.cairo(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
           ),
-          Divider(),
-          widget.keys,
-          Divider(),
-          buildSubmitButton()
-
-
         ],
       ),
     );
   }
 
-  List<DropdownMenuItem> buildCategories()
-  {
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Color(0xFF2596FA).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: Color(0xFF2596FA),
+            size: 20,
+          ),
+        ),
+        SizedBox(width: 12),
+        Text(
+          title,
+          style: GoogleFonts.cairo(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCard(List<Widget> children) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _buildCategoryDropdown() {
+    return DropdownButtonFormField(
+      items: buildCategories(),
+      onChanged: (x) {
+        widget.category = x ?? -1;
+      },
+      hint: Text(
+        "اختر فئة الإعلان",
+        style: GoogleFonts.cairo(color: Colors.grey.shade600),
+      ),
+      isExpanded: true,
+      icon: Icon(Icons.keyboard_arrow_down, color: Color(0xFF2596FA)),
+      style: GoogleFonts.cairo(color: Color(0xFF2C3E50), fontSize: 15),
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Color(0xFF2596FA), width: 2),
+        ),
+        prefixIcon: Icon(Icons.category_outlined, color: Color(0xFF2596FA)),
+        filled: true,
+        fillColor: Colors.grey.shade50,
+      ),
+    );
+  }
+
+  Widget _buildTypeDropdown() {
+    return DropdownButtonFormField(
+      items: [
+        DropdownMenuItem(
+          value: 0,
+          child: Row(
+            children: [
+              Icon(FontAwesomeIcons.shuffle, size: 16, color: Color(0xFF2596FA)),
+              SizedBox(width: 12),
+              Text("متغيير", style: GoogleFonts.cairo()),
+            ],
+          ),
+        ),
+        DropdownMenuItem(
+          value: 1,
+          child: Row(
+            children: [
+              Icon(FontAwesomeIcons.thumbtack, size: 16, color: Color(0xFF2596FA)),
+              SizedBox(width: 12),
+              Text("ثابت", style: GoogleFonts.cairo()),
+            ],
+          ),
+        ),
+      ],
+      onChanged: (x) {
+        widget.type = x ?? 0;
+      },
+      value: 0,
+      isExpanded: true,
+      icon: Icon(Icons.keyboard_arrow_down, color: Color(0xFF2596FA)),
+      style: GoogleFonts.cairo(color: Color(0xFF2C3E50), fontSize: 15),
+      decoration: InputDecoration(
+        labelText: "نوع الإعلان",
+        labelStyle: GoogleFonts.cairo(color: Colors.grey.shade600),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Color(0xFF2596FA), width: 2),
+        ),
+        prefixIcon: Icon(FontAwesomeIcons.arrowsUpToLine, color: Color(0xFF2596FA)),
+        filled: true,
+        fillColor: Colors.grey.shade50,
+      ),
+    );
+  }
+
+  List<DropdownMenuItem> buildCategories() {
     List<DropdownMenuItem> res = [];
 
-    for (var cat in categories)
-      {
-        if (cat.id == 0) {
-          continue;
-        }
-
-        res.add(DropdownMenuItem(value: cat.id,
-          child: Center(child: Text(cat.name, textAlign: TextAlign.center,)),),);
+    for (var cat in CategoryManager.getAllCategories()) {
+      if (cat.id == 0) {
+        continue;
       }
+
+      res.add(
+        DropdownMenuItem(
+          value: cat.id,
+          child: Row(
+            children: [
+              Icon(cat.icon, size: 18, color: Color(0xFF2596FA)),
+              SizedBox(width: 12),
+              Text(cat.name, style: GoogleFonts.cairo()),
+            ],
+          ),
+        ),
+      );
+    }
 
     return res;
-
   }
 
-  Widget buildSubmitButton ()
-  {
-    if (!isSending)
-    {
-      return OutlinedButton(onPressed: () { submit(context); },
-          style: OutlinedButton.styleFrom(
-            backgroundColor: Colors.blueAccent[200],
+  Widget buildSubmitButton() {
+    if (!isSending) {
+      return Container(
+        width: double.infinity,
+        height: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF2596FA),
+              Color(0xFF364A62),
+            ],
           ),
-          child: Text("إضافة الإعلان", style: GoogleFonts.cairo(color: Colors.white, fontWeight: FontWeight.bold),));
-    }
-    else
-      {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(width: 30, height: 30,
-                child: CircularProgressIndicator(color:  Colors.blueAccent,)),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0xFF2596FA).withOpacity(0.4),
+              blurRadius: 15,
+              offset: Offset(0, 8),
+            ),
           ],
-        );
-      }
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              submit(context);
+            },
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(FontAwesomeIcons.circleCheck, color: Colors.white, size: 20),
+                  SizedBox(width: 12),
+                  Text(
+                    "إضافة الإعلان",
+                    style: GoogleFonts.cairo(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        height: 56,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Color(0xFF2596FA),
+                  strokeWidth: 3,
+                ),
+              ),
+              SizedBox(width: 16),
+              Text(
+                "جارٍ الإنشاء...",
+                style: GoogleFonts.cairo(
+                  color: Color(0xFF2596FA),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
-  void submit (context) async
-  {
+  void submit(BuildContext context) async {
     setState(() {
       isSending = true;
     });
 
-    if (widget.name.out.isEmpty || !widget.picker.imageIsSelected || widget.link.out.isEmpty
-        || widget.tier == -1 || widget.category == -1 || widget.keys.out.isEmpty)
-    {
-      showErrorMessage(context,"بيانات الاعلان غير مكتملة");
+    if (widget.name.out.isEmpty ||
+        !widget.picker.imageIsSelected ||
+        widget.link.out.isEmpty ||
+        widget.keys.out.isEmpty ||
+        widget.target.out.isEmpty) {
+      showErrorMessage(context, "بيانات الإعلان غير مكتملة", "برجاء ملء جميع الحقول المطلوبة");
       setState(() {
         isSending = false;
       });
-    }
-    else if (!Uri.parse(widget.link.out).isAbsolute)
-      {
-        showErrorMessage(context,"رابط الإعلان غير صالح");
+    } else if (!Uri.parse(widget.link.out).isAbsolute) {
+      showErrorMessage(context, "رابط الإعلان غير صالح", "برجاء إدخال رابط صحيح يبدأ بـ https://");
+      setState(() {
+        isSending = false;
+      });
+    } else {
+      int target = 0;
+
+      try {
+        target = int.parse(widget.target.out);
+      } on Exception {
+        showErrorMessage(context, "عدد المشاهدات غير صالح", "برجاء إدخال رقم صحيح");
         setState(() {
           isSending = false;
         });
+        return;
       }
-    else
-    {
+
+      if (target < 50) {
+        showErrorMessage(context, "عدد المشاهدات قليل جداً", "أقل عدد مشاهدات مسموح به هو 50 مشاهدة");
+        setState(() {
+          isSending = false;
+        });
+        return;
+      }
+
       final cubit = BlocProvider.of<OperationalCubit>(context);
 
-      final res= await cubit.createNewAd(widget.name.out, widget.picker.out!.path,
-          widget.picker.out!.name, widget.link.out, widget.tier,
-          widget.category, widget.keys.out);
+      final res = await cubit.createNewAd(
+        widget.name.out,
+        widget.picker.out!.path,
+        widget.picker.out!.name,
+        widget.link.out,
+        widget.type == 1 ? "Fixed" : "Dynamic",
+        target,
+        widget.category,
+        widget.keys.out,
+      );
 
-      if (res)
-      {
-        Navigator.pop(context);
-      }
-      else
-      {
-        showErrorMessage(context, "لم يتم رفع الملف");
-
+      if (res) {
+        showSuccessMessage(context);
+      } else {
+        showErrorMessage(context, "فشل رفع الإعلان", "حدث خطأ أثناء رفع الإعلان، حاول مرة أخرى");
         setState(() {
           isSending = false;
         });
-
       }
     }
   }
 
-  void showErrorMessage(context,String error)
-  {
-    showDialog(context: context, builder: (context){
-      return AlertDialog(
-        title: Text("خطأ", style: GoogleFonts.cairo(color: Colors.red),),
-        content: Text(error, style: GoogleFonts.cairo(color: Colors.red),),
-        actions: [
-          OutlinedButton(onPressed: (){ Navigator.of(context).pop();},
-            style: OutlinedButton.styleFrom(
-              backgroundColor: Colors.green[500],
+  void showSuccessMessage(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.green.shade50],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
-            child: Text("محاولة مرة اخرى", style: GoogleFonts.cairo(color: Colors.white),),
-          )
-        ],
-      );
-    });
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    FontAwesomeIcons.circleCheck,
+                    color: Colors.green.shade600,
+                    size: 40,
+                  ),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  "تم بنجاح!",
+                  style: GoogleFonts.cairo(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green.shade700,
+                  ),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  "تم إنشاء إعلانك بنجاح\nسيتم مراجعته قريباً",
+                  style: GoogleFonts.cairo(
+                    fontSize: 15,
+                    color: Colors.grey.shade700,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 32),
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      colors: [Colors.green.shade400, Colors.green.shade600],
+                    ),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                      child: Center(
+                        child: Text(
+                          "رائع!",
+                          style: GoogleFonts.cairo(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void showErrorMessage(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.red.shade50],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    FontAwesomeIcons.triangleExclamation,
+                    color: Colors.red.shade600,
+                    size: 40,
+                  ),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  title,
+                  style: GoogleFonts.cairo(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red.shade700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  message,
+                  style: GoogleFonts.cairo(
+                    fontSize: 15,
+                    color: Colors.grey.shade700,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                  textDirection: TextDirection.rtl,
+                ),
+                SizedBox(height: 32),
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF2596FA), Color(0xFF364A62)],
+                    ),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Center(
+                        child: Text(
+                          "محاولة مرة أخرى",
+                          style: GoogleFonts.cairo(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
-
-

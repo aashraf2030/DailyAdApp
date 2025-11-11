@@ -11,9 +11,26 @@ class AuthCubit extends Cubit<AuthState>{
 
   late final AuthRepo repo;
   final SharedPreferences prefs;
+  
+  // Cache للبروفايل
+  UserProfile? _cachedProfile;
+  DateTime? _lastFetchTime;
+  static const Duration _cacheDuration = Duration(minutes: 5); // مدة الـ cache
 
   AuthCubit(super.initialState, this.prefs){
     repo = AuthRepo();
+  }
+
+  void enterGuestMode()
+  {
+    prefs.setBool("guest", true);
+    prefs.remove("id");
+    prefs.remove("session");
+  }
+
+  void exitGuestMode()
+  {
+    prefs.clear();
   }
 
   Future<bool> login(String user, String pass) async
@@ -45,30 +62,65 @@ class AuthCubit extends Cubit<AuthState>{
     return res;
   }
 
-  Future<UserProfile> getProfile() async{
+  Future<UserProfile> getProfile({bool forceRefresh = false}) async{
     final id = prefs.getString("id");
     final session = prefs.getString("session");
+
+    if (isGuestMode())
+    {
+      emit(AuthDone());
+      return UserProfile.guest();
+    }
+    
+    // استخدام الـ cache إذا كان موجود وحديث ومش محتاجين refresh
+    if (!forceRefresh && 
+        _cachedProfile != null && 
+        _lastFetchTime != null && 
+        DateTime.now().difference(_lastFetchTime!) < _cacheDuration) {
+      emit(AuthDone());
+      return _cachedProfile!;
+    }
 
     if (id != null && session != null)
     {
       try {
         final response = await repo.profile(id, session);
+        
+        // حفظ في الـ cache
+        _cachedProfile = response;
+        _lastFetchTime = DateTime.now();
+        
         emit(AuthDone());
         return response;
       }
-      on Exception catch (e)
-    {
-      emit(AuthError("لم نستطع استحضار الملف الشخصي"));
-      return UserProfile();
-    }
-
+      on Exception{
+        // إذا فشل الطلب واحنا عندنا cache قديم، نرجعه
+        if (_cachedProfile != null) {
+          emit(AuthDone());
+          return _cachedProfile!;
+        }
+        
+        emit(AuthError("لم نستطع استحضار الملف الشخصي"));
+        return UserProfile();
+      }
     }
     emit(AuthError("جلسة غير صحيحة"));
     return UserProfile();
   }
+  
+  // دالة لمسح الـ cache
+  void clearProfileCache() {
+    _cachedProfile = null;
+    _lastFetchTime = null;
+  }
 
   Future<bool> isLoggedIn () async
   {
+    if (prefs.getBool("guest")?? false)
+      {
+        return true;
+      }
+
     final id = prefs.getString("id");
     final session = prefs.getString("session");
 
@@ -81,12 +133,18 @@ class AuthCubit extends Cubit<AuthState>{
 
         if (response.status == "Valid")
         {
+          emit(AuthDone());
           res = true;
         }
 
       }
 
     return res;
+  }
+
+  bool isGuestMode()
+  {
+    return prefs.getBool("guest")?? false;
   }
 
   Future<bool> isAdmin () async
@@ -112,6 +170,13 @@ class AuthCubit extends Cubit<AuthState>{
 
   Future<bool> logout () async
   {
+    if (isGuestMode())
+      {
+        exitGuestMode();
+        clearProfileCache(); // مسح الـ cache
+        return true;
+      }
+
     final id = prefs.getString("id");
     final session = prefs.getString("session");
 
@@ -123,6 +188,34 @@ class AuthCubit extends Cubit<AuthState>{
       final response = await repo.logout(id, session);
 
       if (response.status == "Valid")
+      {
+        clearProfileCache(); // مسح الـ cache
+        res = true;
+      }
+    }
+
+    return res;
+  }
+
+  Future<bool> delete () async
+  {
+    if (isGuestMode())
+      {
+        exitGuestMode();
+        return true;
+      }
+
+    final id = prefs.getString("id");
+    final session = prefs.getString("session");
+
+    bool res = false;
+
+    if (id != null && session != null)
+    {
+
+      final response = await repo.delete(id, session);
+
+      if (response.status == "Success")
       {
         res = true;
       }
@@ -199,6 +292,11 @@ class AuthCubit extends Cubit<AuthState>{
   }
 
   Future<bool> verifyCheck() async {
+
+    if (isGuestMode()) {
+      return true;
+    }
+
     final id = prefs.getString("id");
     final session = prefs.getString("session");
 

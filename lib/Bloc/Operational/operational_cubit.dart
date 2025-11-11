@@ -2,6 +2,7 @@ import 'package:ads_app/Repos/ad_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 part 'operational_state.dart';
 
@@ -16,27 +17,43 @@ class OperationalCubit extends Cubit<OperationalState>{
     repo = AdsRepo();
   }
 
+  bool isGuest()
+  {
+    return prefs.getBool("guest") ?? false;
+  }
+
   Future<bool> createNewAd(String name, String image, String imName,
-      String path, int tier, int category,String keywords) async
+      String path, String type, int targetViews, int category,String keywords) async
   {
     final String id = prefs.getString("id")?? "";
     final String session = prefs.getString("session")?? "";
 
-    final response = await repo.createAd(session, id, name, image, imName, path,
-        tier, category, keywords);
+    try {
+      // Read image as bytes using XFile (works on all platforms including web)
+      final imageFile = XFile(image);
+      final bytes = await imageFile.readAsBytes();
+      
+      final response = await repo.createAdWithBytes(
+        session, id, name, bytes, imName, path, type, targetViews, category, keywords
+      );
 
-    emit(DoneOperational());
+      emit(DoneOperational());
 
-    return response == "Success";
+      return response == "Success";
+    } catch (e) {
+      print("Error creating ad: $e");
+      emit(DoneOperational());
+      return false;
+    }
   }
 
   Future<bool> editAd(String ad, String name, String? image, String imName,
-      String path, int category,String keywords)
+      String path, String type, int targetViews, int category,String keywords)
   async {
     final String id = prefs.getString("id")?? "";
     final String session = prefs.getString("session")?? "";
 
-    final response = await repo.editAd(session, id, ad, name, image, imName, path
+    final response = await repo.editAd(session, id, ad, name, type, targetViews, image, imName, path
         , category, keywords);
 
     emit(DoneOperational());
@@ -65,7 +82,7 @@ class OperationalCubit extends Cubit<OperationalState>{
 
       final response = await repo.renew(session, id, ad, tier);
 
-      print("Response : ${response}");
+      print("Response : $response");
 
       emit(DoneOperational());
 

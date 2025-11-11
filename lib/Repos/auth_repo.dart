@@ -20,6 +20,12 @@ class AuthRepo{
     return AuthResult.fromJson(res);
   }
 
+  Future<AuthResult> delete(String id, String session) async{
+    final res = await web.delete(id, session);
+
+    return AuthResult.fromJson(res);
+  }
+
 
   Future<UserProfile> profile(String id, String session) async{
     final res = await web.getProfile(session, id);

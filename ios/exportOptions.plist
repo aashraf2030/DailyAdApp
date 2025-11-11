@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- طريقة التوزيع -->
+    <key>method</key>
+    <string>app-store</string>
+    
+    <!-- Bundle ID -->
+    <key>teamID</key>
+    <string>YOUR_TEAM_ID</string>
+    
+    <!-- Upload symbols للـ crash reports -->
+    <key>uploadSymbols</key>
+    <true/>
+    
+    <!-- Upload bitcode (مش مطلوب من iOS 14+) -->
+    <key>uploadBitcode</key>
+    <false/>
+    
+    <!-- Automatic signing (إذا تستخدم Xcode automatic signing) -->
+    <key>signingStyle</key>
+    <string>manual</string>
+    
+    <!-- Provisioning profiles لكل bundle ID -->
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.aladvertelement.daily5</key>
+        <string>YOUR_PROVISIONING_PROFILE_NAME</string>
+    </dict>
+    
+    <!-- Signing certificate -->
+    <key>signingCertificate</key>
+    <string>Apple Distribution</string>
+    
+    <!-- Compile bitcode -->
+    <key>compileBitcode</key>
+    <false/>
+</dict>
+</plist>
+

@@ -8,132 +8,565 @@ import 'package:ads_app/Widgets/login_textbox.dart';
 
 
 
-class LoginPage extends StatelessWidget{
+class LoginPage extends StatefulWidget {
   LoginPage({super.key});
 
-  final user = LoginTextbox(padding: 10.0, icon: FontAwesomeIcons.user, hint: "اسم المستخدم....");
-  final pass = LoginTextbox(padding: 10.0, icon: FontAwesomeIcons.lock, hint: "كلمة المرور....", isPassword: true,);
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
 
+class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  final user = LoginTextbox(padding: 10.0, icon: FontAwesomeIcons.user, hint: "اسم المستخدم....");
+  final pass = LoginTextbox(padding: 10.0, icon: FontAwesomeIcons.lock, hint: "كلمة المرور....", isPassword: true);
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+    
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         backgroundColor: Color.fromRGBO(233, 249, 255, 1),
-        body: LoginBG(child: Center(
-          child: Padding(padding: EdgeInsets.all(50),
-            child: Stack(
-              children: [
-                  Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Text("تسجيل الدخول", style: GoogleFonts.cairo(textStyle: TextStyle(color: Colors.white,
-                        fontSize: 36))),
-
-                    user,
-                    pass,
-
-                    Padding(
-                        padding: EdgeInsets.all(20),
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          child: OutlinedButton(
-                            onPressed: () {
-                              tryLogin(context);
-                            },
-                            style: OutlinedButton.styleFrom(
-                                foregroundColor: Color.fromRGBO(70, 80, 150, 1),
-                                backgroundColor: Color.fromRGBO(58, 63, 138, 1)
-                            ),
-                            child: Text("تسجيل الدخول",
-                              style: GoogleFonts.cairo(
-                                color: Colors.white,
-                                fontSize: 16
-                              ),
-                            ),
-                          ),
-                        )
+        body: LoginBG(child: SafeArea(
+          child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height - 
+                          MediaQuery.of(context).padding.top - 
+                          MediaQuery.of(context).padding.bottom,
+              ),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          SizedBox(height: 10),
+                          
+                          // Logo & Welcome Section
+                          _buildHeader(),
+                          
+                          SizedBox(height: 20),
+                          
+                          // Login Card
+                          _buildLoginCard(context),
+                          
+                          SizedBox(height: 15),
+                          
+                          // Guest Login Button
+                          _buildGuestButton(context),
+                          
+                          SizedBox(height: 10),
+                          
+                          // Forgot Password
+                          _buildForgotPassword(context),
+                          
+                          SizedBox(height: 15),
+                          
+                          // Register Button
+                          _buildRegisterButton(context),
+                          
+                          SizedBox(height: 10),
+                        ],
+                      ),
                     ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ))
+    );
+  }
 
-                    Padding(padding: EdgeInsets.all(20),
-                      child: TextButton(onPressed: () {
-                        Navigator.pushReplacementNamed(context, "/pass_reset_request");
-                      }, child: Text("هل نسيت كلمة المرور",
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        // Logo Container with gradient and shadow
+        Container(
+          width: 70,
+          height: 70,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                Color.fromRGBO(37, 150, 250, 1),
+                Color.fromRGBO(54, 74, 98, 1),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color.fromRGBO(37, 150, 250, 0.4),
+                blurRadius: 15,
+                spreadRadius: 3,
+              ),
+            ],
+          ),
+          child: Icon(
+            FontAwesomeIcons.rectangleAd,
+            size: 35,
+            color: Colors.white,
+          ),
+        ),
+        
+        SizedBox(height: 16),
+        
+        // Welcome Text
+        Text(
+          "مرحباً بك",
+          style: GoogleFonts.cairo(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                color: Colors.black26,
+                blurRadius: 10,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+        ),
+        
+        SizedBox(height: 6),
+        
+        Text(
+          "سجل الدخول للمتابعة",
+          style: GoogleFonts.cairo(
+            fontSize: 14,
+            color: Colors.white.withOpacity(0.9),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginCard(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          children: [
+            // Title
+            Text(
+              "تسجيل الدخول",
+              style: GoogleFonts.cairo(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color.fromRGBO(54, 74, 98, 1),
+              ),
+            ),
+            
+            SizedBox(height: 20),
+            
+            // Username Field
+            user,
+            
+            SizedBox(height: 10),
+            
+            // Password Field
+            pass,
+            
+            SizedBox(height: 20),
+            
+            // Login Button
+            Container(
+              width: double.infinity,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(25),
+                gradient: LinearGradient(
+                  colors: [
+                    Color.fromRGBO(37, 150, 250, 1),
+                    Color.fromRGBO(54, 74, 98, 1),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color.fromRGBO(37, 150, 250, 0.3),
+                    blurRadius: 10,
+                    spreadRadius: 0,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(25),
+                  onTap: () => tryLogin(context),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(FontAwesomeIcons.rightToBracket, color: Colors.white, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          "تسجيل الدخول",
                           style: GoogleFonts.cairo(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                            decorationColor: Colors.white
-                          )
+                          ),
                         ),
-                      ),
-                    )
-                  ],
-                ),
-
-                Positioned(bottom: 50, left: 20, right: 20,child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacementNamed("/register");
-                      },
-                      style: OutlinedButton.styleFrom(
-                          foregroundColor: Color.fromRGBO(80, 80, 80, 1),
-                          backgroundColor: Color.fromRGBO(73, 69, 69, 1)
-                      ),
-                      child: Text("أنشئ حساب جديد",
-                        style: GoogleFonts.cairo(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
+                      ],
                     ),
-                  )
-                )
-              ]),
+                  ),
+                ),
+              ),
             ),
-          )
-        )
+          ],
+        ),
+      ),
     );
   }
 
-  void tryLogin(context) async
+  Widget _buildGuestButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 46,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        color: Colors.white.withOpacity(0.9),
+        border: Border.all(
+          color: Color.fromRGBO(37, 150, 250, 1),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            spreadRadius: 0,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(25),
+          onTap: () => enterGuest(context),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FontAwesomeIcons.userSecret, 
+                  color: Color.fromRGBO(37, 150, 250, 1), 
+                  size: 18
+                ),
+                SizedBox(width: 8),
+                Text(
+                  "دخول كزائر",
+                  style: GoogleFonts.cairo(
+                    color: Color.fromRGBO(37, 150, 250, 1),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForgotPassword(BuildContext context) {
+    return TextButton(
+      onPressed: () {
+        Navigator.pushReplacementNamed(context, "/pass_reset_request");
+      },
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            FontAwesomeIcons.question,
+            size: 14,
+            color: Colors.white,
+          ),
+          SizedBox(width: 6),
+          Text(
+            "هل نسيت كلمة المرور؟",
+            style: GoogleFonts.cairo(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              decoration: TextDecoration.underline,
+              decorationColor: Colors.white,
+              decorationThickness: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegisterButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 46,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        color: Color.fromRGBO(54, 74, 98, 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(25),
+          onTap: () {
+            Navigator.of(context).pushReplacementNamed("/register");
+          },
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FontAwesomeIcons.userPlus, color: Colors.white, size: 18),
+                SizedBox(width: 8),
+                Text(
+                  "أنشئ حساب جديد",
+                  style: GoogleFonts.cairo(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void enterGuest(context)
   {
     final cubit = BlocProvider.of<AuthCubit>(context);
 
+    cubit.enterGuestMode();
+    Navigator.pushReplacementNamed(context, "/home");
+  }
+
+  void tryLogin(context) async {
+    final cubit = BlocProvider.of<AuthCubit>(context);
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Container(
+          padding: EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Color.fromRGBO(37, 150, 250, 1),
+            ),
+          ),
+        ),
+      ),
+    );
+
     final loginResult = await cubit.login(user.data, pass.data);
 
-    if (loginResult)
-      {
-        final isVerified = await cubit.verifyCheck();
+    // Close loading
+    Navigator.of(context).pop();
 
-        if (isVerified) {
-          Navigator.pushReplacementNamed(context, "/home");
-        }else{
+    if (loginResult) {
+      final isVerified = await cubit.verifyCheck();
 
-          Navigator.pushReplacementNamed(context, "/verify");
+      if (isVerified) {
+        Navigator.pushReplacementNamed(context, "/home");
+      } else {
+        Navigator.pushReplacementNamed(context, "/verify");
+      }
+    } else {
+      // Get error message from cubit state
+      String errorMessage = "اسم المستخدم أو كلمة المرور غير صحيحة\nبرجاء المحاولة مرة أخرى";
+      
+      if (cubit.state is AuthError) {
+        final errorState = cubit.state as AuthError;
+        
+        // Translate backend error messages to Arabic
+        if (errorState.error == "Account has been deleted") {
+          errorMessage = "هذا الحساب تم حذفه\nبرجاء التواصل مع الإدارة";
+        } else if (errorState.error.isNotEmpty) {
+          errorMessage = errorState.error;
         }
       }
-    else
-      {
-        showDialog(context: context, builder: (_) {
-          return AlertDialog(
-            title: Text("خطأ في تسجيل الدخول"),
-            icon: FaIcon(FontAwesomeIcons.bug),
-            iconColor: Colors.red,
-            actions: [
-              OutlinedButton(onPressed: (){ Navigator.of(context).pop();},
-                child: Text("محاولة مرة اخرى", style: GoogleFonts.cairo(color: Colors.white),),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.green[500],
+      
+      // Show modern error dialog
+      showDialog(
+        context: context,
+        builder: (_) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            child: Container(
+              padding: EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(25),
+                gradient: LinearGradient(
+                  colors: [Colors.white, Colors.grey.shade50],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-              )
-            ],
-
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Error Icon with animation
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.red.shade50,
+                    ),
+                    child: Icon(
+                      FontAwesomeIcons.circleXmark,
+                      size: 45,
+                      color: Colors.red.shade400,
+                    ),
+                  ),
+                  
+                  SizedBox(height: 20),
+                  
+                  // Error Title
+                  Text(
+                    "خطأ في تسجيل الدخول",
+                    style: GoogleFonts.cairo(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red.shade700,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  
+                  SizedBox(height: 12),
+                  
+                  // Error Message (Dynamic)
+                  Text(
+                    errorMessage,
+                    style: GoogleFonts.cairo(
+                      fontSize: 15,
+                      color: Colors.grey.shade700,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                    textDirection: TextDirection.rtl,
+                  ),
+                  
+                  SizedBox(height: 30),
+                  
+                  // Try Again Button
+                  Container(
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      gradient: LinearGradient(
+                        colors: [
+                          Color.fromRGBO(37, 150, 250, 1),
+                          Color.fromRGBO(54, 74, 98, 1),
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromRGBO(37, 150, 250, 0.3),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(15),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Center(
+                          child: Text(
+                            "محاولة مرة أخرى",
+                            style: GoogleFonts.cairo(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
-        });
-      }
+        },
+      );
+    }
   }
 }

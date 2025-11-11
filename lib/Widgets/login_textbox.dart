@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+
 class LoginTextbox extends StatefulWidget{
   LoginTextbox({super.key, required this.padding, required this.icon, required this.hint, this.isPassword = false});
   final double padding;
@@ -16,69 +17,124 @@ class LoginTextbox extends StatefulWidget{
 }
 
 class TextboxState extends State<LoginTextbox> {
+  bool _isFocused = false;
+  bool _isPasswordVisible = false;
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() {
+        _isFocused = _focusNode.hasFocus;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(widget.padding),
-      child: Stack(
-        children: [
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: 40,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Color.fromRGBO(102, 134, 180, 1),
-                width: 3,
-                strokeAlign: BorderSide.strokeAlignOutside
-              ),
-              borderRadius: BorderRadius.circular(50),
-              color: Colors.white
+      padding: EdgeInsets.symmetric(vertical: widget.padding * 0.6),
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _isFocused 
+              ? Color.fromRGBO(37, 150, 250, 1)
+              : Colors.grey.shade300,
+            width: _isFocused ? 2 : 1.5,
+          ),
+          boxShadow: _isFocused ? [
+            BoxShadow(
+              color: Color.fromRGBO(37, 150, 250, 0.2),
+              blurRadius: 8,
+              spreadRadius: 0,
+              offset: Offset(0, 3),
             ),
-
-            child: Stack(
-                children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Container(
-                  width: 60,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Color.fromRGBO(177, 178, 181, 0.4),
-                    borderRadius: BorderRadius.only(topRight: Radius.circular(50),
-                        bottomRight: Radius.circular(50))
-                  ),
+          ] : [],
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          child: Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              // Icon
+              Container(
+                padding: EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: _isFocused 
+                    ? Color.fromRGBO(37, 150, 250, 0.1)
+                    : Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
+                child: FaIcon(
+                  widget.icon,
+                  size: 18,
+                  color: _isFocused 
+                    ? Color.fromRGBO(37, 150, 250, 1)
+                    : Color.fromRGBO(102, 134, 180, 1),
                 ),
               ),
-
-            Positioned(
-                  top: 5,
-                  right: 20,
-                  child: FaIcon(widget.icon,
-                    size: 30,
-                    color: Color.fromRGBO(77, 98, 160, 0.86),
-                  )),
-
-                  Positioned(
-                      left: 15,
-                      right: 70,
-                      child: TextField(
-                        textDirection: TextDirection.rtl,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        obscureText: widget.isPassword,
-                        decoration: InputDecoration(
-                          hintText: widget.hint,
-                          border: InputBorder.none,
-                          hintTextDirection: TextDirection.rtl,
-                          hintStyle: GoogleFonts.cairo(textStyle: TextStyle(color: Color.fromRGBO(10, 10, 10, 0.3)))
-                        ),
-                        onChanged: (str) {widget.data = str;},
-                      ))
-            ]),
+              
+              SizedBox(width: 12),
+              
+              // Text Field
+              Expanded(
+                child: TextField(
+                  focusNode: _focusNode,
+                  textDirection: TextDirection.rtl,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  obscureText: widget.isPassword && !_isPasswordVisible,
+                  style: GoogleFonts.cairo(
+                    fontSize: 15,
+                    color: Colors.black87,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: widget.hint,
+                    border: InputBorder.none,
+                    hintTextDirection: TextDirection.rtl,
+                    hintStyle: GoogleFonts.cairo(
+                      color: Colors.grey.shade400,
+                      fontSize: 14,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onChanged: (str) {
+                    widget.data = str;
+                  },
+                ),
+              ),
+              
+              // Password visibility toggle
+              if (widget.isPassword)
+                IconButton(
+                  padding: EdgeInsets.all(8),
+                  constraints: BoxConstraints(),
+                  icon: FaIcon(
+                    _isPasswordVisible 
+                      ? FontAwesomeIcons.eye 
+                      : FontAwesomeIcons.eyeSlash,
+                    size: 16,
+                    color: Colors.grey.shade600,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

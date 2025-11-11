@@ -6,111 +6,564 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../Widgets/login_background.dart';
 import 'package:ads_app/Widgets/login_textbox.dart';
 
-
-class PassResetRequestPage extends StatelessWidget{
+class PassResetRequestPage extends StatefulWidget {
   PassResetRequestPage({super.key});
 
-  final email = LoginTextbox(padding: 20.0, icon: FontAwesomeIcons.at, hint: "البريد الالكتورني...");
+  @override
+  State<PassResetRequestPage> createState() => _PassResetRequestPageState();
+}
 
+class _PassResetRequestPageState extends State<PassResetRequestPage> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  final email = LoginTextbox(padding: 10.0, icon: FontAwesomeIcons.at, hint: "البريد الإلكتروني...");
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+    
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         backgroundColor: Color.fromRGBO(233, 249, 255, 1),
-        body: LoginBG(child: Center(
-          child: Padding(padding: EdgeInsets.all(50),
-            child: Stack(
-                children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text("تغيير كلمة المرور", style: GoogleFonts.cairo(textStyle: TextStyle(color: Colors.white,
-                          fontSize: 30))),
-
-                      email,
-
-                      Padding(
-                          padding: EdgeInsets.all(20),
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: OutlinedButton(
-                              onPressed: () {
-                                changePassRequest(context);
-                              },
-                              style: OutlinedButton.styleFrom(
-                                  foregroundColor: Color.fromRGBO(70, 80, 150, 1),
-                                  backgroundColor: Color.fromRGBO(58, 63, 138, 1)
-                              ),
-                              child: Text("طلب تغيير",
-                                style: GoogleFonts.cairo(
-                                    color: Colors.white,
-                                    fontSize: 16
-                                ),
-                              ),
-                            ),
-                          )
-                      ),
-                    ],
-                  ),
-
-                  Positioned(bottom: 50, left: 20, right: 20,child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacementNamed("/login");
-                      },
-                      style: OutlinedButton.styleFrom(
-                          foregroundColor: Color.fromRGBO(80, 80, 80, 1),
-                          backgroundColor: Color.fromRGBO(73, 69, 69, 1)
-                      ),
-                      child: Text("العودة",
-                        style: GoogleFonts.cairo(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold
-                        ),
+        body: LoginBG(child: SafeArea(
+          child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height - 
+                          MediaQuery.of(context).padding.top - 
+                          MediaQuery.of(context).padding.bottom,
+              ),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          SizedBox(height: 40),
+                          
+                          // Header
+                          _buildHeader(),
+                          
+                          SizedBox(height: 30),
+                          
+                          // Reset Card
+                          _buildResetCard(context),
+                          
+                          SizedBox(height: 30),
+                          
+                          // Back Button
+                          _buildBackButton(context),
+                          
+                          SizedBox(height: 20),
+                        ],
                       ),
                     ),
-                  )
-                  )
-                ]),
+                  ),
+                ),
+              ),
+            ),
           ),
-        )
-        )
+        ))
     );
   }
 
-  void changePassRequest(context) async
-  {
-    final cubit = BlocProvider.of<AuthCubit>(context);
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                Color.fromRGBO(37, 150, 250, 1),
+                Color.fromRGBO(54, 74, 98, 1),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color.fromRGBO(37, 150, 250, 0.4),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Icon(
+            FontAwesomeIcons.key,
+            size: 40,
+            color: Colors.white,
+          ),
+        ),
+        
+        SizedBox(height: 20),
+        
+        Text(
+          "نسيت كلمة المرور؟",
+          style: GoogleFonts.cairo(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                color: Colors.black26,
+                blurRadius: 10,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+        ),
+        
+        SizedBox(height: 10),
+        
+        Text(
+          "لا تقلق، سنرسل لك رمز التحقق",
+          style: GoogleFonts.cairo(
+            fontSize: 15,
+            color: Colors.white.withOpacity(0.9),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
 
+  Widget _buildResetCard(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(30),
+        child: Column(
+          children: [
+            Icon(
+              FontAwesomeIcons.envelope,
+              size: 60,
+              color: Color.fromRGBO(37, 150, 250, 1),
+            ),
+            
+            SizedBox(height: 20),
+            
+            Text(
+              "أدخل بريدك الإلكتروني",
+              style: GoogleFonts.cairo(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color.fromRGBO(54, 74, 98, 1),
+              ),
+            ),
+            
+            SizedBox(height: 10),
+            
+            Text(
+              "سنرسل لك رمز التحقق على بريدك",
+              style: GoogleFonts.cairo(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
+            ),
+            
+            SizedBox(height: 30),
+            
+            email,
+            
+            SizedBox(height: 30),
+            
+            Container(
+              width: double.infinity,
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(25),
+                gradient: LinearGradient(
+                  colors: [
+                    Color.fromRGBO(37, 150, 250, 1),
+                    Color.fromRGBO(54, 74, 98, 1),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color.fromRGBO(37, 150, 250, 0.3),
+                    blurRadius: 10,
+                    spreadRadius: 0,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(25),
+                  onTap: () => changePassRequest(context),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 18),
+                        SizedBox(width: 10),
+                        Text(
+                          "إرسال الرمز",
+                          style: GoogleFonts.cairo(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackButton(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 50,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        color: Color.fromRGBO(54, 74, 98, 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(25),
+          onTap: () {
+            Navigator.of(context).pushReplacementNamed("/login");
+          },
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 18),
+                SizedBox(width: 10),
+                Text(
+                  "العودة للدخول",
+                  style: GoogleFonts.cairo(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void changePassRequest(context) async {
+    if (email.data.isEmpty) {
+      _showErrorDialog(context, "برجاء إدخال البريد الإلكتروني");
+      return;
+    }
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Container(
+          padding: EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Color.fromRGBO(37, 150, 250, 1),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final cubit = BlocProvider.of<AuthCubit>(context);
     final res = await cubit.resetPass(email.data);
 
-    print(res);
+    // Close loading
+    Navigator.of(context).pop();
 
-    if (res)
-    {
-      Navigator.pushReplacementNamed(context, "/pass_reset");
-    }
-    else
-    {
-      showDialog(context: context, builder: (_) {
-        return AlertDialog(
-          title: Text("هذا المستخدم غير موجود"),
-          icon: FaIcon(FontAwesomeIcons.bug),
-          iconColor: Colors.red,
-          actions: [
-            OutlinedButton(onPressed: (){ Navigator.of(context).pop();},
-              child: Text("محاولة مرة اخرى", style: GoogleFonts.cairo(color: Colors.white),),
-              style: OutlinedButton.styleFrom(
-                backgroundColor: Colors.green[500],
+    if (res) {
+      // Show success dialog
+      showDialog(
+        context: context,
+        builder: (_) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            child: Container(
+              padding: EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(25),
+                gradient: LinearGradient(
+                  colors: [Colors.white, Colors.green.shade50],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
-            )
-          ],
-
-        );
-      });
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.green.shade50,
+                    ),
+                    child: Icon(
+                      FontAwesomeIcons.envelopeCircleCheck,
+                      size: 45,
+                      color: Colors.green.shade400,
+                    ),
+                  ),
+                  
+                  SizedBox(height: 20),
+                  
+                  Text(
+                    "تم إرسال الرمز!",
+                    style: GoogleFonts.cairo(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade700,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  
+                  SizedBox(height: 12),
+                  
+                  Text(
+                    "تحقق من بريدك الإلكتروني\nوأدخل الرمز المرسل",
+                    style: GoogleFonts.cairo(
+                      fontSize: 15,
+                      color: Colors.grey.shade700,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                    textDirection: TextDirection.rtl,
+                  ),
+                  
+                  SizedBox(height: 30),
+                  
+                  Container(
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.green.shade400,
+                          Colors.green.shade600,
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.shade300,
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(15),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          Navigator.pushReplacementNamed(context, "/pass_reset");
+                        },
+                        child: Center(
+                          child: Text(
+                            "إدخال الرمز",
+                            style: GoogleFonts.cairo(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      _showErrorDialog(context, "هذا البريد الإلكتروني غير مسجل");
     }
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(30),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(25),
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.grey.shade50],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red.shade50,
+                  ),
+                  child: Icon(
+                    FontAwesomeIcons.triangleExclamation,
+                    size: 45,
+                    color: Colors.red.shade400,
+                  ),
+                ),
+                
+                SizedBox(height: 20),
+                
+                Text(
+                  "خطأ",
+                  style: GoogleFonts.cairo(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red.shade700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                SizedBox(height: 12),
+                
+                Text(
+                  message,
+                  style: GoogleFonts.cairo(
+                    fontSize: 15,
+                    color: Colors.grey.shade700,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                  textDirection: TextDirection.rtl,
+                ),
+                
+                SizedBox(height: 30),
+                
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromRGBO(37, 150, 250, 1),
+                        Color.fromRGBO(54, 74, 98, 1),
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromRGBO(37, 150, 250, 0.3),
+                        blurRadius: 10,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(15),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Center(
+                        child: Text(
+                          "حسناً",
+                          style: GoogleFonts.cairo(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

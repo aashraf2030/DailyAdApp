@@ -14,7 +14,7 @@ class AuthResult{
 
   @override
   String toString() {
-    return "{Status : ${status}, id : ${id}, session : ${session}}";
+    return "{Status : $status, id : $id, session : $session}";
   }
 }
 
@@ -27,6 +27,15 @@ class UserProfile{
   String join = "Invalid";
   int points = 0;
   UserProfile();
+  UserProfile.guest()
+  {
+    name = "زائر";
+    username = "زائر";
+    email = "زائر";
+    phone = "لا يوجد رقم هاتف";
+    join = "لا يوجد تاريخ";
+    points = 0;
+  }
   UserProfile.fromJson(Map<String, dynamic> json)
   {
     name = json["name"];

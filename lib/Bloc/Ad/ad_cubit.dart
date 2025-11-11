@@ -5,57 +5,58 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Models/ad_models.dart';
 
-
 part 'ad_state.dart';
 
-
-class AdCubit extends Cubit<AdState>
-{
-  AdCubit(super.initialState, this.prefs)
-  {
+class AdCubit extends Cubit<AdState> {
+  AdCubit(super.initialState, this.prefs) {
     repo = AdsRepo();
   }
 
   final SharedPreferences prefs;
   late final AdsRepo repo;
 
-  Future<List<AdData>> getUserAds() async
-  {
+  bool isGuest() {
+    return prefs.getBool("guest") ?? false;
+  }
+
+  Future<List<AdData>> getUserAds() async {
+    if (isGuest()) {
+      if (!isClosed) {
+        emit(AdDoneState([]));
+      }
+      return [];
+    }
+
     emit(AdLoadingState());
 
-    final id = prefs.getString("id")?? "";
-    final session = prefs.getString("session")?? "";
+    final id = prefs.getString("id") ?? "";
+    final session = prefs.getString("session") ?? "";
 
-    try
-    {
+    try {
       final response = await repo.getUserAds(session, id);
-
-      emit(AdDoneState(response));
+      if (!isClosed) {
+        emit(AdDoneState(response));
+      }
       return response;
-    }
-    on Exception catch (e)
-    {
+    } on Exception{
       emit(AdErrorState());
       return [];
     }
   }
 
-  Future<List<AdData>> fetchAds(int category, {bool? full}) async
-  {
+  Future<List<AdData>> fetchAds(int category, {bool? full}) async {
     emit(AdLoadingState());
 
-    final id = prefs.getString("id")?? "";
-    final session = prefs.getString("session")?? "";
+    final id = prefs.getString("id") ?? "";
+    final session = prefs.getString("session") ?? "";
 
-    try
-    {
+    try {
       final response = await repo.fetchCatAds(session, id, category, full);
-
-      emit(AdDoneState(response));
+      if (!isClosed) {
+        emit(AdDoneState(response));
+      }
       return response;
-    }
-    on Exception catch (e)
-    {
+    } on Exception{
       emit(AdErrorState());
       return [];
     }

@@ -11,21 +11,33 @@ class AdsRepo {
   }
 
   Future<String> createAd (String session, String id, String name,
-      String image, String imName, String path, int tier,
+      String image, String imName, String path, String type, int targetViews,
       int category,String keywords) async
   {
-    final response = await web.createAd(session, id, name, image, imName, path, tier,
+    final response = await web.createAd(session, id, name, image, imName, path,
+        type, targetViews,
+        category, keywords);
+
+    return response.toString();
+  }
+  
+  Future<String> createAdWithBytes (String session, String id, String name,
+      List<int> imageBytes, String imName, String path, String type, int targetViews,
+      int category,String keywords) async
+  {
+    final response = await web.createAdWithBytes(session, id, name, imageBytes, imName, path,
+        type, targetViews,
         category, keywords);
 
     return response.toString();
   }
 
   Future<String> editAd (String session, String id, String ad, String name,
-      String? image, String imName, String path,
+      String type, int targetViews, String? image, String imName, String path,
       int category,String keywords) async
   {
     final response = await web.editAd(session, id, ad, name, image, imName, path,
-        category, keywords);
+        type, targetViews, category, keywords);
 
     return response.toString();
   }
