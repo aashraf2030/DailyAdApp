@@ -1,12 +1,11 @@
 import 'package:ads_app/Models/auth_models.dart';
 import 'package:ads_app/Web/auth_web.dart';
+import 'package:ads_app/core/constants/app_constants.dart';
 
-class AuthRepo{
-  late final AuthServices web;
+class AuthRepo {
+  final AuthServices web;
 
-  AuthRepo() {
-    web = AuthServices();
-  }
+  AuthRepo(this.web);
 
   Future<AuthResult> login(String user, String pass) async{
     final res = await web.tryLogin(user, pass);
@@ -52,6 +51,17 @@ class AuthRepo{
     }
 
     return AuthResult.fromJson(res);
+  }
+  
+  // Get raw response for isAdmin to access isAdmin field
+  Future<Map<String, dynamic>> isAdminRaw(String id, String session) async {
+    final res = await web.isAdmin(id, session);
+    
+    if (res is Map) {
+      return res as Map<String, dynamic>;
+    }
+    
+    return {"status": "Error", "isAdmin": false};
   }
 
   Future<AuthResult> isLoggedIn(String id, String session) async {

@@ -8,12 +8,10 @@ import '../../Models/ad_models.dart';
 part 'ad_state.dart';
 
 class AdCubit extends Cubit<AdState> {
-  AdCubit(super.initialState, this.prefs) {
-    repo = AdsRepo();
-  }
-
   final SharedPreferences prefs;
-  late final AdsRepo repo;
+  final AdsRepo repo;
+
+  AdCubit(super.initialState, this.prefs, this.repo);
 
   bool isGuest() {
     return prefs.getBool("guest") ?? false;
@@ -44,20 +42,29 @@ class AdCubit extends Cubit<AdState> {
     }
   }
 
-  Future<List<AdData>> fetchAds(int category, {bool? full}) async {
+  Future<List<AdData>> fetchAds(int category, {bool? full, String? adType}) async {
     emit(AdLoadingState());
 
+    // Get id and session - can be empty for guests
+    // AuthInterceptor will handle adding token to header if session exists
     final id = prefs.getString("id") ?? "";
     final session = prefs.getString("session") ?? "";
 
     try {
-      final response = await repo.fetchCatAds(session, id, category, full);
+      // This endpoint supports optional authentication (guests can view ads)
+      // If user is guest, id and session will be empty strings
+      // Laravel's OptionalJwtMiddleware will handle this correctly
+      // adType: 'Dynamic' to fetch only Dynamic ads, null to fetch all types
+      final response = await repo.fetchCatAds(session, id, category, full, adType: adType);
       if (!isClosed) {
         emit(AdDoneState(response));
       }
       return response;
-    } on Exception{
-      emit(AdErrorState());
+    } on Exception catch (e) {
+      print("Error fetching ads: $e");
+      if (!isClosed) {
+        emit(AdErrorState());
+      }
       return [];
     }
   }

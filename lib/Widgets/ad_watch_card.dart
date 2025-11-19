@@ -211,9 +211,104 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
 
   Future<void> show(context) async {
     final cubit = BlocProvider.of<OperationalCubit>(context);
+    
+    // فحص 1: إذا كان المستخدم في وضع الزائر - منع الضغط على الإعلانات
+    if (cubit.isGuest()) {
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(
+                "تنبيه",
+                style: GoogleFonts.cairo(
+                  color: Color(0xFF2596FA),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Text(
+                "يجب تسجيل الدخول لمشاهدة الإعلانات",
+                style: GoogleFonts.cairo(
+                  color: Color(0xFF2C3E50),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              backgroundColor: Colors.white,
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    "حسناً",
+                    style: GoogleFonts.cairo(
+                      color: Color(0xFF2596FA),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      }
+      return;
+    }
+    
+    // فحص 2: إذا كان الإعلان خاص بالمستخدم - منع المشاهدة
+    if (cubit.isMyAd(widget.ad.userid)) {
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(
+                "تنبيه",
+                style: GoogleFonts.cairo(
+                  color: Color(0xFF2596FA),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Text(
+                "لا يمكنك مشاهدة إعلانك الخاص بك",
+                style: GoogleFonts.cairo(
+                  color: Color(0xFF2C3E50),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              backgroundColor: Colors.white,
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    "حسناً",
+                    style: GoogleFonts.cairo(
+                      color: Color(0xFF2596FA),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      }
+      return;
+    }
+    
+    // إذا كل شيء تمام، نفتح الإعلان
     final url = widget.ad.path;
     
-    // فتح الرابط أولاً (في التطبيق أو المتصفح)
     try {
       final Uri uri = Uri.parse(url);
       
@@ -226,41 +321,52 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
         // بعد فتح الرابط، نسجل المشاهدة
         final res = await cubit.watchAd(widget.ad.id);
 
-        if (cubit.isGuest()) {
-          setState(() {
-            views++;
-          });
-          return;
-        }
-
         if (!res) {
+          // معالجة الأخطاء من Laravel
           if (context.mounted) {
             showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text(
-                      "خطأ",
-                      style: GoogleFonts.cairo(color: Colors.red),
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text(
+                    "تنبيه",
+                    style: GoogleFonts.cairo(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
                     ),
-                    content: Text(
-                      "خطأ في ارسال النقاط",
-                      style: GoogleFonts.cairo(color: Colors.blueAccent),
+                  ),
+                  content: Text(
+                    "لا يمكنك مشاهدة هذا الإعلان. قد تكون شاهدته من قبل أو هناك مشكلة في الحساب.",
+                    style: GoogleFonts.cairo(
+                      color: Color(0xFF2C3E50),
+                      fontSize: 14,
                     ),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                    backgroundColor: Colors.grey.shade200,
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text("حاول مرة اخرى"))
-                    ],
-                  );
-                });
+                    textAlign: TextAlign.center,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  backgroundColor: Colors.white,
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        "حسناً",
+                        style: GoogleFonts.cairo(
+                          color: Color(0xFF2596FA),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
           }
         } else {
+          // نجحت المشاهدة - تحديث العداد
           setState(() {
             views++;
           });

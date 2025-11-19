@@ -1,184 +1,242 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:ads_app/API/base.dart';
-import 'package:ads_app/network/interceptors.dart';
+import 'package:ads_app/core/constants/app_constants.dart';
+import 'package:ads_app/core/exceptions/app_exceptions.dart';
 import 'package:dio/dio.dart';
 import 'package:crypto/crypto.dart';
 
 class AuthServices {
-  late Dio dio;
+  final Dio dio;
 
-  AuthServices() {
-    final options = BaseOptions(
-        connectTimeout: Duration(seconds: 30),
-        receiveDataWhenStatusError: true,
-        receiveTimeout: Duration(minutes: 1));
+  AuthServices(this.dio);
 
-    dio = Dio(options)..interceptors.addAll([LoggerInterceptor()]);
+  /// Hashes password using SHA-256
+  String _hashPassword(String password) {
+    return base64.encode(sha256.convert(utf8.encode(password)).bytes);
+  }
+
+  /// Handles Dio exceptions and converts them to meaningful responses
+  Map<String, dynamic> _handleError(Object error, StackTrace stackTrace) {
+    if (error is DioException) {
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          return {"status": AppConstants.statusError, "message": AppConstants.errorTimeout};
+        
+        case DioExceptionType.connectionError:
+          return {"status": AppConstants.statusError, "message": AppConstants.errorNetwork};
+        
+        case DioExceptionType.badResponse:
+          final statusCode = error.response?.statusCode;
+          if (statusCode != null && statusCode >= 500) {
+            return {"status": AppConstants.statusError, "message": AppConstants.errorServer};
+          }
+          return {"status": AppConstants.statusError, "message": "خطأ في الاستجابة: $statusCode"};
+        
+        default:
+          return {"status": AppConstants.statusError, "message": AppConstants.errorGeneric};
+      }
+    }
+    return {"status": AppConstants.statusError, "message": AppConstants.errorGeneric};
   }
 
   Future<dynamic> tryLogin(String user, String pass) async {
-    final hash = base64.encode((sha256.convert(utf8.encode(pass))).bytes);
-
     try {
-      final res =
-          await dio.post(BackendAPI.login, data: {"user": user, "pass": hash});
+      final hash = _hashPassword(pass);
+      final res = await dio.post(
+        BackendAPI.login,
+        data: {"user": user, "pass": hash},
+        options: Options(
+          validateStatus: (status) {
+            // Accept 200 (success), 201 (created), and 403 (Unverified users)
+            // This allows us to read the response body even for 403 status
+            return status != null && ((status >= 200 && status < 300) || status == 403);
+          },
+        ),
+      );
       return res.data;
-    } on Exception catch (e) {
-      print(e);
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> getProfile(String session, String id) async {
     try {
-      final res = await dio
-          .post(BackendAPI.profile, data: {"session": session, "id": id});
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.profile,
+        data: {"id": id},
+      );
       return res.data;
-    } on Exception catch (e) {
-      print(e);
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
-  Future<dynamic> tryRegister(String name, String user, String pass,
-      String email, String? phone) async {
-    final hash = base64.encode((sha256.convert(utf8.encode(pass))).bytes);
-
-    Object userdata;
-
-    if (phone == null) {
-      userdata = {"user": user, "pass": hash, "name": name, "email": email};
-    } else {
-      userdata = {
+  Future<dynamic> tryRegister(
+    String name,
+    String user,
+    String pass,
+    String email,
+    String? phone,
+  ) async {
+    try {
+      final hash = _hashPassword(pass);
+      
+      final Map<String, dynamic> userdata = {
         "user": user,
         "pass": hash,
         "name": name,
         "email": email,
-        "phone": phone
       };
-    }
+      
+      if (phone != null) {
+        userdata["phone"] = phone;
+      }
 
-    try {
       final res = await dio.post(BackendAPI.register, data: userdata);
       return res.data;
-    } on Exception {
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> isAdmin(String id, String session) async {
     try {
-      final res = await dio
-          .post(BackendAPI.is_admin, data: {"id": id, "session": session});
-
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.is_admin,
+        data: {"id": id},
+      );
       return res.data;
-    } on Exception catch (e) {
-      print("Error : ${e.toString()}");
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> isLoggedIn(String id, String session) async {
     try {
-      final res = await dio
-          .post(BackendAPI.is_loggedin, data: {"id": id, "session": session});
-
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.is_loggedin,
+        data: {"id": id},
+      );
       return res.data;
-    } on Exception catch (e) {
-      print("Error : ${e.toString()}");
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> logout(String id, String session) async {
     try {
-      final res = await dio
-          .post(BackendAPI.logout, data: {"id": id, "session": session});
-
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.logout,
+        data: {"id": id},
+      );
       return res.data;
-    } on Exception catch (e) {
-      print("Error : ${e.toString()}");
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> delete(String id, String session) async {
     try {
-      final res = await dio
-          .delete(BackendAPI.delete_user, data: {"id": id, "session": session});
-
+      // Token is automatically added by AuthInterceptor
+      // Use POST instead of DELETE because Laravel doesn't support body in DELETE
+      final res = await dio.post(
+        BackendAPI.delete_user,
+        data: {"id": id},
+      );
       return res.data;
-    } on Exception catch (e) {
-      print("Error : ${e.toString()}");
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> tryVerify(String id, String session, String code) async {
     try {
-      final res = await dio.post(BackendAPI.verify,
-          data: {"id": id, "session": session, "code": code});
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.verify,
+        data: {"code": code},
+      );
       return res.data;
-    } on Exception {
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> sendCode(String id, String session, bool passReset) async {
-    final idName = passReset ? "email" : "id";
     try {
-      final res = await dio.post(BackendAPI.send_code,
-          data: {"${idName}": id, "session": session});
+      // Token is automatically added by AuthInterceptor
+      // For password reset, send email in body; otherwise, user is authenticated via token
+      final idName = passReset ? "email" : "id";
+      final res = await dio.post(
+        BackendAPI.send_code,
+        data: {idName: id},
+      );
       return res.data;
-    } on Exception {
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> tryVerifyCheck(String id, String session) async {
     try {
-      final res = await dio
-          .post(BackendAPI.verify_check, data: {"id": id, "session": session});
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.verify_check,
+      );
       return res.data;
-    } on Exception catch (e) {
-      print("Error : ${e.toString()}");
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> changePass(String id, String session, String pass) async {
-    final hash = base64.encode(sha256.convert(utf8.encode(pass)).bytes);
-
     try {
-      final res = await dio.post(BackendAPI.change_pass,
-          data: {"email": id, "session": session, "pass": hash});
+      final hash = _hashPassword(pass);
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.change_pass,
+        data: {"email": id, "pass": hash},
+      );
       return res.data;
-    } on Exception catch (e) {
-      print("Error : ${e.toString()}");
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> resetPass(String email) async {
     try {
-      final res = await dio.post(BackendAPI.pass_reset, data: {"email": email});
+      final res = await dio.post(
+        BackendAPI.pass_reset,
+        data: {"email": email},
+      );
       return res.data;
-    } on Exception catch (e) {
-      print("Error : ${e.toString()}");
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> validateResetPass(
-      String email, String session, String code) async {
+    String email,
+    String session,
+    String code,
+  ) async {
     try {
-      final res = await dio.post(BackendAPI.validate_reset,
-          data: {"email": email, "session": session, "code": code});
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.validate_reset,
+        data: {"email": email, "code": code},
+      );
       return res.data;
-    } on Exception catch (e) {
-      print("Error : ${e.toString()}");
-      return <String, dynamic>{"status": "Error"};
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 }

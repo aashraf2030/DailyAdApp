@@ -20,8 +20,8 @@ import 'package:ads_app/Pages/Login/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../Bloc/chat/chat_cubit.dart';
-import '../Pages/chat/chat_assistant_page.dart';
-import 'package:dio/dio.dart';
+import '../Pages/chat/chat_page.dart';
+import '../core/di/service_locator.dart';
 import '../Bloc/Home/home_cubit.dart';
 
 class RouteGenerator {
@@ -60,6 +60,7 @@ class RouteGenerator {
                                 BlocProvider.value(value: auth),
                                 BlocProvider.value(value: operational),
                                 BlocProvider.value(value: authority),
+                                BlocProvider(create: (_) => sl<ChatCubit>()),
                               ],
                               child: HomePage(),
                             );
@@ -187,14 +188,11 @@ class RouteGenerator {
           child: CategoryPage(category: cat),
         ));
 
-      case "/assistant":
+      case "/chat":
         return animateThis(
           BlocProvider(
-            create: (_) => ChatCubit(
-              Dio(),
-              baseUrl: "https://adsapp-abu-sultan.com/ai",
-            ),
-            child: const ChatAssistantPage(),
+            create: (_) => sl<ChatCubit>(),
+            child: const ChatPage(),
           ),
         );
 
@@ -224,7 +222,6 @@ class RouteGenerator {
         });
   }
 
-  // صفحة تطلب تسجيل الدخول
   static Widget _buildLoginRequiredPage(BuildContext context) {
     return Scaffold(
       body: Container(
@@ -375,7 +372,10 @@ class ErrorRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("خطأ"),
+        title: Text(
+          "خطأ",
+          textDirection: TextDirection.rtl,
+        ),
       ),
       body: Center(
         child: Column(

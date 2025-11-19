@@ -297,13 +297,13 @@ class MoneyRequestPageState extends State<MoneyRequestPage> with TickerProviderS
     );
   }
 
-  // تحويل التاريخ والوقت إلى تاريخ فقط
+
   String _formatDate(String dateTime) {
     try {
       final date = DateTime.parse(dateTime);
       return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     } catch (e) {
-      return dateTime; // في حالة فشل التحويل، نعرض النص كما هو
+      return dateTime;
     }
   }
 
@@ -334,10 +334,10 @@ class MoneyRequestPageState extends State<MoneyRequestPage> with TickerProviderS
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with user info and avatar
+
               Row(
                 children: [
-                  // Avatar
+
                   Container(
                     width: 60,
                     height: 60,
@@ -369,7 +369,7 @@ class MoneyRequestPageState extends State<MoneyRequestPage> with TickerProviderS
                   ),
                   SizedBox(width: 16),
                   
-                  // User name and phone
+
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,7 +410,7 @@ class MoneyRequestPageState extends State<MoneyRequestPage> with TickerProviderS
               
               SizedBox(height: 20),
               
-              // Divider
+
               Container(
                 height: 1,
                 decoration: BoxDecoration(
@@ -422,7 +422,7 @@ class MoneyRequestPageState extends State<MoneyRequestPage> with TickerProviderS
               
               SizedBox(height: 20),
               
-              // Money and views info
+
               Row(
                 children: [
                   Expanded(
@@ -502,7 +502,7 @@ class MoneyRequestPageState extends State<MoneyRequestPage> with TickerProviderS
               
               SizedBox(height: 16),
               
-              // Join date
+
               Row(
                 children: [
                   Icon(
@@ -524,7 +524,7 @@ class MoneyRequestPageState extends State<MoneyRequestPage> with TickerProviderS
               
               SizedBox(height: 16),
               
-              // Action button
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(

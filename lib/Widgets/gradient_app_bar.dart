@@ -29,7 +29,9 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: elevation ?? 4,
       leading: leading,
       bottom: bottom,
+      backgroundColor: Colors.transparent,
       flexibleSpace: Container(
+        constraints: const BoxConstraints.expand(),
         decoration: BoxDecoration(
           gradient: gradient ??
               const LinearGradient(

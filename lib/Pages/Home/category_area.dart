@@ -37,7 +37,7 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
     );
     
     _animationController.forward();
-    BlocProvider.of<AdCubit>(context).fetchAds(widget.category.id);
+    BlocProvider.of<AdCubit>(context).fetchAds(widget.category.id, full: true);
   }
 
   @override

@@ -9,17 +9,14 @@ part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState>{
 
-  late final AuthRepo repo;
+  final AuthRepo repo;
   final SharedPreferences prefs;
   
-  // Cache للبروفايل
   UserProfile? _cachedProfile;
   DateTime? _lastFetchTime;
-  static const Duration _cacheDuration = Duration(minutes: 5); // مدة الـ cache
+  static const Duration _cacheDuration = Duration(minutes: 5);
 
-  AuthCubit(super.initialState, this.prefs){
-    repo = AuthRepo();
-  }
+  AuthCubit(super.initialState, this.prefs, this.repo);
 
   void enterGuestMode()
   {
@@ -47,14 +44,17 @@ class AuthCubit extends Cubit<AuthState>{
       {
         prefs.setString("id", x.id ?? "");
         prefs.setString("session", x.session ?? "");
+        prefs.remove("guest");  // إزالة وضع الزائر عند تسجيل الدخول ✅
+        clearProfileCache();  // مسح الـ cache القديم
         emit(AuthDone());
         res = true;
       }
     else if (x.status == "Unverified")
       {
-        // حساب غير مؤكد - حفظ البيانات وتوجيه للتحقق
         prefs.setString("id", x.id ?? "");
         prefs.setString("session", x.session ?? "");
+        prefs.remove("guest");  // إزالة وضع الزائر ✅
+        clearProfileCache();
         emit(AuthError("Unverified"));
         res = false;
       }
@@ -71,20 +71,30 @@ class AuthCubit extends Cubit<AuthState>{
   }
 
   Future<UserProfile> getProfile({bool forceRefresh = false}) async{
+    print("🔍 AuthCubit.getProfile: Starting...");
     final id = prefs.getString("id");
     final session = prefs.getString("session");
+    print("   ID: ${id != null ? 'exists' : 'null'}");
+    print("   Session: ${session != null ? 'exists' : 'null'}");
+
+    // Fix: إذا كان المستخدم عنده ID و Session، امسح الـ guest flag
+    if (id != null && session != null && prefs.getBool("guest") == true) {
+      print("⚠️ AuthCubit: Fixing guest mode flag for logged-in user");
+      prefs.remove("guest");
+    }
 
     if (isGuestMode())
     {
+      print("⚠️ AuthCubit: User is in Guest Mode");
       emit(AuthDone());
       return UserProfile.guest();
     }
     
-    // استخدام الـ cache إذا كان موجود وحديث ومش محتاجين refresh
     if (!forceRefresh && 
         _cachedProfile != null && 
         _lastFetchTime != null && 
         DateTime.now().difference(_lastFetchTime!) < _cacheDuration) {
+      print("✅ AuthCubit: Returning cached profile (age: ${DateTime.now().difference(_lastFetchTime!).inSeconds}s)");
       emit(AuthDone());
       return _cachedProfile!;
     }
@@ -92,18 +102,20 @@ class AuthCubit extends Cubit<AuthState>{
     if (id != null && session != null)
     {
       try {
+        print("📡 AuthCubit: Fetching profile from backend...");
         final response = await repo.profile(id, session);
         
-        // حفظ في الـ cache
         _cachedProfile = response;
         _lastFetchTime = DateTime.now();
         
+        print("✅ AuthCubit: Profile fetched successfully: ${response.name}");
         emit(AuthDone());
         return response;
       }
-      on Exception{
-        // إذا فشل الطلب واحنا عندنا cache قديم، نرجعه
+      on Exception catch (e) {
+        print("❌ AuthCubit: Exception while fetching profile: $e");
         if (_cachedProfile != null) {
+          print("   Returning old cached profile");
           emit(AuthDone());
           return _cachedProfile!;
         }
@@ -112,11 +124,11 @@ class AuthCubit extends Cubit<AuthState>{
         return UserProfile();
       }
     }
+    print("❌ AuthCubit: Invalid session");
     emit(AuthError("جلسة غير صحيحة"));
     return UserProfile();
   }
   
-  // دالة لمسح الـ cache
   void clearProfileCache() {
     _cachedProfile = null;
     _lastFetchTime = null;
@@ -164,13 +176,41 @@ class AuthCubit extends Cubit<AuthState>{
 
     if (id != null && session != null)
     {
-
-      final response = await repo.isAdmin(id, session);
-
-      if (response.status == "Valid")
-      {
-        res = true;
+      try {
+        // Get raw response to access isAdmin field directly
+        final rawResponse = await repo.isAdminRaw(id, session);
+        
+        // Backend returns: {status: 'Valid'/'Invalid', isAdmin: true/false}
+        // Check the isAdmin field directly - this is the source of truth
+        if (rawResponse.containsKey("isAdmin")) {
+          final isAdminValue = rawResponse["isAdmin"];
+          // Handle both boolean and int (0/1) from backend
+          if (isAdminValue is bool) {
+            res = isAdminValue;
+          } else if (isAdminValue is int) {
+            res = isAdminValue == 1;
+          } else if (isAdminValue is String) {
+            res = isAdminValue.toLowerCase() == "true" || isAdminValue == "1";
+          } else {
+            // Fallback: check status
+            res = rawResponse["status"] == "Valid";
+          }
+        } else {
+          // Fallback: if no isAdmin field, check status
+          res = rawResponse["status"] == "Valid";
+        }
+        
+        // Save admin status to SharedPreferences for quick access
+        prefs.setBool("isAdmin", res);
+      } catch (e) {
+        // On error, assume not admin
+        prefs.setBool("isAdmin", false);
+        res = false;
       }
+    } else {
+      // No session, definitely not admin
+      prefs.setBool("isAdmin", false);
+      res = false;
     }
 
     return res;
@@ -181,7 +221,7 @@ class AuthCubit extends Cubit<AuthState>{
     if (isGuestMode())
       {
         exitGuestMode();
-        clearProfileCache(); // مسح الـ cache
+        clearProfileCache();
         return true;
       }
 
@@ -197,7 +237,7 @@ class AuthCubit extends Cubit<AuthState>{
 
       if (response.status == "Valid")
       {
-        clearProfileCache(); // مسح الـ cache
+        clearProfileCache();
         res = true;
       }
     }
@@ -238,6 +278,13 @@ class AuthCubit extends Cubit<AuthState>{
     final x = await repo.register(name, user, pass, email, phone);
 
     if (x.status == "Success") {
+      // حفظ الـ session و id في SharedPreferences ✅
+      if (x.id != null && x.session != null) {
+        prefs.setString("id", x.id!);
+        prefs.setString("session", x.session!);
+        prefs.remove("guest");  // إزالة وضع الزائر
+        clearProfileCache();
+      }
       emit(AuthDone());
       return true;
     }

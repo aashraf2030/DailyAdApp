@@ -24,7 +24,7 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
   late TextEditingController _keysController;
   late TextEditingController _linkController;
   
-  int _selectedCategory = 11; // متنوع (Other) كقيمة افتراضية
+  int _selectedCategory = 11;
   int _selectedType = 0;
   bool _changeImage = false;
   XFile? _newImage;
@@ -40,15 +40,13 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
   void initState() {
     super.initState();
     
-    // Initialize controllers with existing data
     _nameController = TextEditingController(text: widget.ad.name);
     _targetController = TextEditingController(text: widget.ad.targetViews.toString());
     _keysController = TextEditingController(text: widget.ad.keywords);
     _linkController = TextEditingController(text: widget.ad.path);
-    _selectedCategory = 11; // نستخدم Other كفئة افتراضية
+    _selectedCategory = 11;
     _selectedType = widget.ad.isFixed ? 1 : 0;
     
-    // Animation
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -60,7 +58,6 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
     
     _animationController.forward();
     
-    // Check admin status
     BlocProvider.of<AuthCubit>(context).isAdmin().then((x) {
       if (mounted) {
         setState(() {
@@ -86,10 +83,8 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
       backgroundColor: Color(0xFFF5F7FA),
       body: CustomScrollView(
         slivers: [
-          // App Bar مع تأثير جميل
           _buildSliverAppBar(),
           
-          // محتوى الصفحة
           SliverToBoxAdapter(
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -98,17 +93,14 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // معلومات الإعلان الحالية
                     _buildCurrentAdInfo(),
                     
                     SizedBox(height: 24),
                     
-                    // نموذج التعديل
                     _buildEditForm(),
                     
                     SizedBox(height: 32),
                     
-                    // زر الحفظ
                     _buildSubmitButton(),
                     
                     SizedBox(height: 40),
@@ -127,6 +119,7 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
       expandedHeight: 120,
       floating: false,
       pinned: true,
+      backgroundColor: Colors.transparent,
       leading: IconButton(
         icon: Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
@@ -142,6 +135,7 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
           ),
         ),
         background: Container(
+          constraints: const BoxConstraints.expand(),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -354,7 +348,6 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
           
           SizedBox(height: 24),
           
-          // اسم الإعلان
           _buildTextField(
             controller: _nameController,
             label: "اسم الإعلان",
@@ -364,7 +357,6 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
           
           SizedBox(height: 20),
           
-          // رابط الإعلان
           _buildTextField(
             controller: _linkController,
             label: "رابط الإعلان",
@@ -375,12 +367,10 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
           
           SizedBox(height: 20),
           
-          // الصورة
           _buildImageSection(),
           
           SizedBox(height: 20),
           
-          // عدد المشاهدات
           _buildTextField(
             controller: _targetController,
             label: "عدد المشاهدات المطلوبة",
@@ -391,7 +381,6 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
           
           SizedBox(height: 20),
           
-          // نوع الإعلان (للأدمن فقط)
           if (_isAdmin) ...[
             _buildTypeDropdown(),
             SizedBox(height: 20),
@@ -399,7 +388,6 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
           
           SizedBox(height: 20),
           
-          // الكلمات المفتاحية
           _buildTextField(
             controller: _keysController,
             label: "الكلمات المفتاحية",
@@ -497,7 +485,6 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
           ),
           child: Column(
             children: [
-              // Current Image Preview
               if (!_changeImage)
                 ClipRRect(
                   borderRadius: BorderRadius.only(
@@ -520,7 +507,6 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
                   ),
                 ),
               
-              // New Image Display
               if (_changeImage && _newImage != null)
                 Container(
                   height: 200,
@@ -557,7 +543,6 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
                   ),
                 ),
               
-              // Buttons
               Padding(
                 padding: EdgeInsets.all(16),
                 child: Row(
@@ -827,7 +812,6 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
   }
 
   Future<void> _submit() async {
-    // Validation
     if (_nameController.text.isEmpty) {
       _showErrorDialog("اسم الإعلان مطلوب");
       return;
@@ -983,8 +967,8 @@ class EditAdPageState extends State<EditAdPage> with SingleTickerProviderStateMi
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Return to previous page
+                Navigator.pop(context);
+                Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,

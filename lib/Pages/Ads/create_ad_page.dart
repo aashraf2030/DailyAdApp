@@ -346,6 +346,16 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
             ],
           ),
         ),
+        DropdownMenuItem(
+          value: 2,
+          child: Row(
+            children: [
+              Icon(FontAwesomeIcons.crown, size: 16, color: Colors.amber),
+              SizedBox(width: 12),
+              Text("مميز", style: GoogleFonts.cairo()),
+            ],
+          ),
+        ),
       ],
       onChanged: (x) {
         widget.type = x ?? 0;
@@ -526,12 +536,19 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
 
       final cubit = BlocProvider.of<OperationalCubit>(context);
 
+      String adType = "Dynamic";
+      if (widget.type == 1) {
+        adType = "Fixed";
+      } else if (widget.type == 2) {
+        adType = "Premium";
+      }
+      
       final res = await cubit.createNewAd(
         widget.name.out,
         widget.picker.out!.path,
         widget.picker.out!.name,
         widget.link.out,
-        widget.type == 1 ? "Fixed" : "Dynamic",
+        adType,
         target,
         widget.category,
         widget.keys.out,

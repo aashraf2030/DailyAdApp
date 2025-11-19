@@ -1,7 +1,28 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// This interceptor is used to show request and response logs
+/// Auth Interceptor - Automatically adds JWT token to all requests
+class AuthInterceptor extends Interceptor {
+  final SharedPreferences prefs;
+
+  AuthInterceptor(this.prefs);
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    // Get session token from SharedPreferences
+    final session = prefs.getString("session") ?? "";
+    
+    // Add Authorization header if token exists and not empty
+    if (session.isNotEmpty) {
+      options.headers['Authorization'] = 'Bearer $session';
+    }
+    
+    // Always continue with the request
+    handler.next(options);
+  }
+}
+
 class LoggerInterceptor extends Interceptor {
   Logger logger = Logger(printer: PrettyPrinter(methodCount: 0));
 
@@ -9,13 +30,35 @@ class LoggerInterceptor extends Interceptor {
   void onError(final DioException err, final ErrorInterceptorHandler handler) {
     final options = err.requestOptions;
     final requestPath = '${options.baseUrl}${options.path}';
+    
+    // Log error details including response body for validation errors
+    String errorDetails = 'Error type: ${err.error} \n Error message: ${err.message}';
+    
+    if (err.response != null) {
+      errorDetails += '\n STATUSCODE: ${err.response?.statusCode}';
+      errorDetails += '\n STATUSMESSAGE: ${err.response?.statusMessage}';
+      errorDetails += '\n HEADERS: ${err.response?.headers}';
+      
+      // Log response data for debugging
+      if (err.response?.data != null) {
+        try {
+          final responseData = err.response!.data;
+          if (responseData is Map) {
+            errorDetails += '\n Data: $responseData';
+          } else {
+            errorDetails += '\n Data: ${responseData.toString()}';
+          }
+        } catch (e) {
+          errorDetails += '\n Data: (could not parse)';
+        }
+      }
+    }
+    
     logger
-      ..e('${options.method} request ==> $requestPath') //Error log
-      ..d(
-        'Error type: ${err.error} \n '
-        'Error message: ${err.message}',
-      ); //Debug log
-    handler.next(err); //Continue with the Error
+      ..e('${options.method} request ==> $requestPath')
+      ..d(errorDetails);
+    
+    handler.next(err);
   }
 
   @override
@@ -24,8 +67,8 @@ class LoggerInterceptor extends Interceptor {
     final RequestInterceptorHandler handler,
   ) {
     final requestPath = '${options.baseUrl}${options.path}';
-    logger.i('${options.method} request ==> $requestPath'); //Info log
-    handler.next(options); // continue with the Request
+    logger.i('${options.method} request ==> $requestPath');
+    handler.next(options);
   }
 
   @override
@@ -38,7 +81,7 @@ class LoggerInterceptor extends Interceptor {
       'STATUSMESSAGE: ${response.statusMessage} \n'
       'HEADERS: ${response.headers} \n'
       'Data: ${response.data}',
-    ); // Debug log
-    handler.next(response); // continue with the Response
+    );
+    handler.next(response);
   }
 }

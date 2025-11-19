@@ -13,6 +13,7 @@ class AdData {
   late final String lastUpdate;
   late final bool isPublished;
   late final String keywords;
+  late final String? userid; // User ID who owns this ad (null if not provided)
 
   AdData.fromJson(Map<String, dynamic> json)
   {
@@ -27,6 +28,7 @@ class AdData {
     isPublished = json["isPublished"];
     keywords = json["keywords"];
     isFixed = json["type"] == "Fixed";
+    userid = json["userid"]; // May be null for backward compatibility
   }
 
   AdData.InvalidAd()
@@ -40,5 +42,6 @@ class AdData {
     lastUpdate = "";
     isPublished = false;
     keywords = "";
+    userid = null;
   }
 }

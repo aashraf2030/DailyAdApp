@@ -397,12 +397,13 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                   SizedBox(height: 12),
                   
                   Text(
-                    "يمكنك الآن تسجيل الدخول",
+                    "تم إرسال رمز التحقق إلى بريدك الإلكتروني",
                     style: GoogleFonts.cairo(
                       fontSize: 15,
                       color: Colors.grey.shade700,
                     ),
                     textAlign: TextAlign.center,
+                    textDirection: TextDirection.rtl,
                   ),
                   
                   SizedBox(height: 30),
@@ -428,15 +429,15 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                     ),
                     child: Material(
                       color: Colors.transparent,
-                      child: InkWell(
+                      child:                       InkWell(
                         borderRadius: BorderRadius.circular(15),
                         onTap: () {
                           Navigator.of(context).pop();
-                          Navigator.pushReplacementNamed(context, "/login");
+                          Navigator.pushReplacementNamed(context, "/verify");
                         },
                         child: Center(
                           child: Text(
-                            "تسجيل الدخول",
+                            "التحقق من البريد الإلكتروني",
                             style: GoogleFonts.cairo(
                               color: Colors.white,
                               fontSize: 17,

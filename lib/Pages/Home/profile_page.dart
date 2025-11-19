@@ -27,7 +27,7 @@ class ProfilePageState extends State<HomeProfile> {
   void initState() {
     super.initState();
 
-    // فحص وضع الزائر
+
     final operationalCubit = BlocProvider.of<OperationalCubit>(context);
     isGuest = operationalCubit.isGuest();
 
@@ -35,6 +35,8 @@ class ProfilePageState extends State<HomeProfile> {
   }
   
   Future<void> _loadProfile({bool forceRefresh = false}) async {
+    print("🔍 ProfilePage: Loading profile... (forceRefresh: $forceRefresh)");
+    
     if (forceRefresh) {
       setState(() {
         isLoading = true;
@@ -43,15 +45,30 @@ class ProfilePageState extends State<HomeProfile> {
     
     try {
       final authCubit = BlocProvider.of<AuthCubit>(context);
+      final operationalCubit = BlocProvider.of<OperationalCubit>(context);
+      
+      print("🔍 ProfilePage: Calling authCubit.getProfile()");
+      
       final fetchedProfile = await authCubit.getProfile(forceRefresh: forceRefresh);
+      
+      print("✅ ProfilePage: Profile fetched successfully");
+      print("   Name: ${fetchedProfile.name}");
+      print("   Username: ${fetchedProfile.username}");
+      print("   Points: ${fetchedProfile.points}");
+      
+      // تحديث حالة الزائر بعد جلب البيانات
+      final isGuestMode = operationalCubit.isGuest();
+      print("   Is Guest: $isGuestMode");
       
       if (mounted) {
         setState(() {
           profile = fetchedProfile;
+          isGuest = isGuestMode;  // تحديث حالة الزائر
           isLoading = false;
         });
       }
     } catch (e) {
+      print("❌ ProfilePage: Error loading profile: $e");
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -73,7 +90,7 @@ class ProfilePageState extends State<HomeProfile> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // رسالة Pull to Refresh
+
           Center(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -98,7 +115,7 @@ class ProfilePageState extends State<HomeProfile> {
             ),
           ),
           
-          // Header احترافي مع صورة المستخدم
+
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
@@ -118,7 +135,7 @@ class ProfilePageState extends State<HomeProfile> {
           ),
           child: Column(
             children: [
-              // Avatar
+
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
@@ -162,12 +179,12 @@ class ProfilePageState extends State<HomeProfile> {
 
         const SizedBox(height: 24),
 
-        // بطاقة النقاط
+
         _buildPointsCard(),
 
         const SizedBox(height: 20),
 
-        // معلومات الحساب
+
         Text(
           'معلومات الحساب',
           style: GoogleFonts.cairo(
@@ -185,7 +202,7 @@ class ProfilePageState extends State<HomeProfile> {
 
         const SizedBox(height: 24),
 
-        // الأزرار الرئيسية
+
         Text(
           'الإجراءات',
           style: GoogleFonts.cairo(
@@ -221,7 +238,7 @@ class ProfilePageState extends State<HomeProfile> {
 
         const SizedBox(height: 24),
 
-        // أزرار الخطر (تظهر فقط للمستخدمين المسجلين)
+
         if (!isGuest) ...[
           _buildDangerButton(
             icon: FontAwesomeIcons.trash,
@@ -248,22 +265,22 @@ class ProfilePageState extends State<HomeProfile> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Skeleton للـ Header
+
         _buildSkeletonHeader(),
         
         const SizedBox(height: 24),
         
-        // Skeleton لبطاقة النقاط
+
         _buildSkeletonPointsCard(),
         
         const SizedBox(height: 20),
         
-        // عنوان قسم معلومات الحساب
+
         _buildSkeletonSectionTitle(),
         
         const SizedBox(height: 12),
         
-        // Skeleton Cards للمعلومات
+
         _buildSkeletonInfoCard(),
         const SizedBox(height: 12),
         _buildSkeletonInfoCard(),
@@ -272,12 +289,12 @@ class ProfilePageState extends State<HomeProfile> {
         
         const SizedBox(height: 24),
         
-        // عنوان قسم الإجراءات
+
         _buildSkeletonSectionTitle(),
         
         const SizedBox(height: 12),
         
-        // Skeleton للأزرار
+
         _buildSkeletonButton(),
         const SizedBox(height: 12),
         _buildSkeletonButton(),
@@ -285,7 +302,7 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
   
-  // Skeleton للـ Header
+
   Widget _buildSkeletonHeader() {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
@@ -305,7 +322,7 @@ class ProfilePageState extends State<HomeProfile> {
         ),
         child: Column(
           children: [
-            // Avatar Skeleton
+
             Container(
               width: 98,
               height: 98,
@@ -315,7 +332,7 @@ class ProfilePageState extends State<HomeProfile> {
               ),
             ),
             const SizedBox(height: 16),
-            // Name Skeleton
+
             Container(
               width: 150,
               height: 22,
@@ -325,7 +342,7 @@ class ProfilePageState extends State<HomeProfile> {
               ),
             ),
             const SizedBox(height: 8),
-            // Username Skeleton
+
             Container(
               width: 100,
               height: 14,
@@ -340,7 +357,7 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
   
-  // Skeleton لبطاقة النقاط
+
   Widget _buildSkeletonPointsCard() {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
@@ -407,7 +424,7 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
   
-  // Skeleton لعنوان القسم
+
   Widget _buildSkeletonSectionTitle() {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
@@ -423,7 +440,7 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
   
-  // Skeleton لبطاقة معلومات
+
   Widget _buildSkeletonInfoCard() {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
@@ -482,7 +499,7 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
   
-  // Skeleton للزر
+
   Widget _buildSkeletonButton() {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
@@ -505,7 +522,7 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
 
-  // بطاقة النقاط
+
   Widget _buildPointsCard() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -539,7 +556,7 @@ class ProfilePageState extends State<HomeProfile> {
               ),
               const SizedBox(height: 4),
               Text(
-                '${profile.points}',
+                _formatPoints(profile.points),
                 style: GoogleFonts.cairo(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
@@ -565,21 +582,30 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
 
-  // تحويل التاريخ والوقت إلى تاريخ فقط بتنسيق عربي
+
   String _formatDate(String dateTime) {
     try {
-      // تحويل التاريخ من String إلى DateTime
+
       final date = DateTime.parse(dateTime);
       
-      // تنسيق التاريخ بالعربي: يوم/شهر/سنة
+
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
     } catch (e) {
-      // في حالة فشل التحويل، نعرض النص كما هو
+
       return dateTime;
     }
   }
 
-  // بطاقة معلومة
+  String _formatPoints(double points) {
+    // If points is a whole number, show without decimals
+    // Otherwise show with 1 decimal place
+    if (points == points.truncateToDouble()) {
+      return points.toInt().toString();
+    } else {
+      return points.toStringAsFixed(1);
+    }
+  }
+
   Widget _buildInfoCard(IconData icon, String label, String value) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -643,7 +669,7 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
 
-  // زر إجراء
+
   Widget _buildActionButton({
     required IconData icon,
     required String text,
@@ -678,7 +704,7 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
 
-  // زر خطر
+
   Widget _buildDangerButton({
     required IconData icon,
     required String text,
@@ -734,7 +760,7 @@ class ProfilePageState extends State<HomeProfile> {
     }
   }
 
-  // رسالة للزائر لما يحاول يستخدم ميزة تحتاج تسجيل دخول
+
   void showGuestWarning(context, String feature) {
     showDialog(
       context: context,
@@ -906,15 +932,12 @@ class ProfilePageState extends State<HomeProfile> {
 
   void logout (context) async
   {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    AuthCubit(AuthInitial(), prefs).logout().then((x) {
+    BlocProvider.of<AuthCubit>(context).logout().then((x) {
       Navigator.pushReplacementNamed(context, "/login");
     } );
   }
 
   void deleteAccount(context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
     showDialog(
       context: context,
       builder: (context) {
@@ -988,7 +1011,7 @@ class ProfilePageState extends State<HomeProfile> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      delete(context, prefs);
+                      delete(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red.shade700,
@@ -1015,9 +1038,9 @@ class ProfilePageState extends State<HomeProfile> {
     );
   }
 
-  void delete(context, prefs)
+  void delete(context)
   {
-    AuthCubit(AuthInitial(), prefs).delete().then((x) {
+    BlocProvider.of<AuthCubit>(context).delete().then((x) {
       Navigator.pushReplacementNamed(context, "/login");
     } );
   }

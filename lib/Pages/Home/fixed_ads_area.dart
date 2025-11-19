@@ -29,7 +29,7 @@ class _FixedAdsAreaState extends State<FixedAdsArea> with SingleTickerProviderSt
       vsync: this,
     );
     
-    // بدء التحرك التلقائي للـ Slider
+
     if (widget.ads.isNotEmpty) {
       _startAutoPlay();
     }
@@ -69,7 +69,7 @@ class _FixedAdsAreaState extends State<FixedAdsArea> with SingleTickerProviderSt
       margin: EdgeInsets.symmetric(vertical: 8),
       child: Column(
         children: [
-          // Slider Container
+
           Container(
             height: 180,
             child: PageView.builder(
@@ -89,7 +89,7 @@ class _FixedAdsAreaState extends State<FixedAdsArea> with SingleTickerProviderSt
           
           SizedBox(height: 12),
           
-          // Custom Indicators
+
           _buildIndicators(),
         ],
       ),
@@ -123,12 +123,12 @@ class _FixedAdsAreaState extends State<FixedAdsArea> with SingleTickerProviderSt
           ),
           child: Stack(
             children: [
-              // Image with Gradient Overlay
+
               ClipRRect(
                 borderRadius: BorderRadius.circular(24),
                 child: Stack(
                   children: [
-                    // Main Image
+
                     Container(
                       width: double.infinity,
                       height: double.infinity,
@@ -162,7 +162,7 @@ class _FixedAdsAreaState extends State<FixedAdsArea> with SingleTickerProviderSt
                       ),
                     ),
                     
-                    // Gradient Overlay for better text visibility
+
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
@@ -184,7 +184,7 @@ class _FixedAdsAreaState extends State<FixedAdsArea> with SingleTickerProviderSt
                 ),
               ),
               
-              // Ad Title at Bottom
+
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -263,18 +263,18 @@ class _FixedAdsAreaState extends State<FixedAdsArea> with SingleTickerProviderSt
   Future<void> _action(BuildContext context, int i) async {
     final url = widget.ads[i].path;
 
-    // محاولة فتح الرابط (هيفتح التطبيق لو متوفر أو المتصفح)
+
     try {
       final Uri uri = Uri.parse(url);
 
-      // لو الرابط يقدر يتفتح
+
       if (await canLaunchUrl(uri)) {
         await launchUrl(
           uri,
-          mode: LaunchMode.externalApplication, // يفتح في تطبيق خارجي
+          mode: LaunchMode.externalApplication,
         );
       } else {
-        // لو فشل، نحاول نفتحه كأي رابط عادي
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -288,7 +288,7 @@ class _FixedAdsAreaState extends State<FixedAdsArea> with SingleTickerProviderSt
         }
       }
     } catch (e) {
-      // لو حصل خطأ في الرابط
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

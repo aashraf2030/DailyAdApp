@@ -6,9 +6,9 @@ import 'package:ads_app/Bloc/Authority/authority_cubit.dart';
 import 'package:ads_app/Bloc/Home/home_cubit.dart';
 import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
 import 'package:ads_app/Routing/router.dart';
+import 'package:ads_app/core/di/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class MyHttpOverrides extends HttpOverrides{
   @override
@@ -23,15 +23,16 @@ void main () async
   HttpOverrides.global = MyHttpOverrides();
 
   WidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize dependency injection
+  await initializeDependencies();
 
   runApp(MyApp(RouteGenerator(
-    AuthCubit(AuthInitial(), prefs),
-    HomeCubit(HomeInitialState(), prefs),
-    OperationalCubit(InitialOperational(), prefs),
-    AdCubit(AdInitialState(), prefs),
-    AuthorityCubit(AuthorityInitial(), prefs)
+    sl<AuthCubit>(),
+    sl<HomeCubit>(),
+    sl<OperationalCubit>(),
+    sl<AdCubit>(),
+    sl<AuthorityCubit>(),
   )));
 }
 

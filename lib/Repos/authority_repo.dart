@@ -3,13 +3,9 @@ import 'package:ads_app/Models/user_models.dart';
 import 'package:ads_app/Web/authority_web.dart';
 
 class AuthorityRepo {
+  final AuthorityWebServices web;
 
-  late final AuthorityWeb web;
-
-  AuthorityRepo()
-  {
-    web = AuthorityWeb();
-  }
+  AuthorityRepo(this.web);
 
   Future<List<UserRequest>> getDefaultReq(String session, String id, String? tier) async
   {

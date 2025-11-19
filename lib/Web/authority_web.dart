@@ -1,40 +1,58 @@
 import 'package:ads_app/API/base.dart';
-import 'package:ads_app/network/interceptors.dart';
+import 'package:ads_app/core/constants/app_constants.dart';
 import 'package:dio/dio.dart';
 
-class AuthorityWeb{
+class AuthorityWebServices {
+  final Dio dio;
 
-  late final Dio dio;
-  AuthorityWeb()
-  {
-    final options = BaseOptions(
-      receiveTimeout: Duration(seconds: 30),
-      sendTimeout: Duration(seconds: 30),
-      connectTimeout: Duration(minutes: 1),
-      receiveDataWhenStatusError: true,
-    );
+  AuthorityWebServices(this.dio);
 
-    dio = Dio(options)..interceptors.addAll([LoggerInterceptor()]);
+  /// Handles Dio exceptions and converts them to meaningful responses
+  Map<String, dynamic> _handleError(Object error, StackTrace stackTrace) {
+    if (error is DioException) {
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          return {"status": AppConstants.statusError, "message": AppConstants.errorTimeout};
+        
+        case DioExceptionType.connectionError:
+          return {"status": AppConstants.statusError, "message": AppConstants.errorNetwork};
+        
+        case DioExceptionType.badResponse:
+          final statusCode = error.response?.statusCode;
+          if (statusCode != null && statusCode >= 500) {
+            return {"status": AppConstants.statusError, "message": AppConstants.errorServer};
+          }
+          return {"status": AppConstants.statusError, "message": "خطأ في الاستجابة: $statusCode"};
+        
+        default:
+          return {"status": AppConstants.statusError, "message": AppConstants.errorGeneric};
+      }
+    }
+    return {"status": AppConstants.statusError, "message": AppConstants.errorGeneric};
   }
 
   Future<List<dynamic>> getDefaultReq(String session, String id, String? tier) async
   {
-    Object fd;
+    Map<String, dynamic> fd;
 
     if (tier != null)
       {
-        fd = {"session": session,
-          "id": id, "tier": tier};
+        fd = {"id": id, "tier": tier};
       }
     else
       {
-        fd = {"session": session,
-          "id": id};
+        fd = {"id": id};
       }
 
     try
     {
-      final res = await dio.post(BackendAPI.defaultReq, data: fd);
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.defaultReq, 
+        data: fd,
+      );
 
       // التأكد من أن الـ response عبارة عن array
       if (res.data is List) {
@@ -50,22 +68,24 @@ class AuthorityWeb{
 
   Future<List<dynamic>> getRenewRequest(String session, String id, String? tier) async
   {
-    Object fd;
+    Map<String, dynamic> fd;
 
     if (tier != null)
     {
-      fd = {"session": session,
-        "id": id, "tier": tier};
+      fd = {"id": id, "tier": tier};
     }
     else
     {
-      fd = {"session": session,
-        "id": id};
+      fd = {"id": id};
     }
 
     try
     {
-      final res = await dio.post(BackendAPI.renewReq, data: fd);
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.renewReq, 
+        data: fd,
+      );
 
       // التأكد من أن الـ response عبارة عن array
       if (res.data is List) {
@@ -83,8 +103,10 @@ class AuthorityWeb{
   {
     try
     {
-      final res = await dio.post(BackendAPI.moneyReq, data: {"session": session,
-        "id": id});
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.moneyReq,
+      );
 
       // التأكد من أن الـ response عبارة عن array
       if (res.data is List) {
@@ -93,7 +115,8 @@ class AuthorityWeb{
         return [];
       }
     }
-    on Exception {
+    catch (e, stackTrace) {
+      print("Error getting money requests: ${_handleError(e, stackTrace)}");
       return [];
     }
   }
@@ -102,35 +125,20 @@ class AuthorityWeb{
   {
     try
     {
-      // Try POST first (for updated backend)
-      try {
-        final res = await dio.post(BackendAPI.myReq, data: {"session": session, "id": id});
-        if (res.data is List) {
-          return res.data;
-        }
-      } catch (e) {
-        print("POST failed, trying GET with query parameters...");
-      }
-      
-      // Fallback to GET with query parameters (for old backend)
-      final res = await dio.get(
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
         BackendAPI.myReq,
-        queryParameters: {"session": session, "id": id},
-        options: Options(
-          headers: {"Content-Type": "application/json"},
-        ),
       );
-
+      
       // التأكد من أن الـ response عبارة عن array
       if (res.data is List) {
         return res.data;
       } else {
-        // لو الـ response مش array (مثلاً error message)، نرجع empty array
         return [];
       }
     }
-    on Exception catch (e) {
-      print("Error getting my requests: $e");
+    catch (e, stackTrace) {
+      print("Error getting my requests: ${_handleError(e, stackTrace)}");
       return [];
     }
   }
@@ -140,13 +148,15 @@ class AuthorityWeb{
   {
     try
     {
-      // Changed to POST for better CORS compatibility
-      final res = await dio.post(BackendAPI.handleReq, data: {"session": session,
-        "id": id, "reqID": req, "state": state});
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.handleReq, 
+        data: {"req": req, "state": state},
+      );
       return res.data;
     }
-    on Exception{
-      return [];
+    catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
@@ -154,13 +164,17 @@ class AuthorityWeb{
   {
     try
     {
-      final res = await dio.delete(BackendAPI.deleteReq, data: {"session": session,
-        "id": id, "reqID": req});
+      // Token is automatically added by AuthInterceptor
+      // Use POST instead of DELETE because Laravel doesn't support body in DELETE
+      final res = await dio.post(
+        BackendAPI.deleteReq, 
+        data: {"req": req},
+      );
 
       return res.data;
     }
-    on Exception {
-      return [];
+    catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
@@ -168,12 +182,14 @@ class AuthorityWeb{
   {
     try
     {
-      final res = await dio.put(BackendAPI.pointExchange, data: {"session": session,
-        "id": id});
+      // Token is automatically added by AuthInterceptor
+      final res = await dio.post(
+        BackendAPI.pointExchange,
+      );
       return res.data;
     }
-    on Exception{
-      return [];
+    catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
@@ -181,8 +197,10 @@ class AuthorityWeb{
   async
   {
     try{
+      // Token is automatically added by AuthInterceptor (if user is logged in)
+      // This endpoint supports optional authentication (guests can view leaderboard)
       final response = await dio.post(BackendAPI.leaderboard, data: {
-        "session": session, "id":user
+        "id": user
       });
 
       // التأكد من أن الـ response عبارة عن array

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:ads_app/Bloc/Ad/ad_cubit.dart';
 import 'package:ads_app/Bloc/Auth/auth_cubit.dart';
 import 'package:ads_app/Bloc/Authority/authority_cubit.dart';
@@ -18,10 +17,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ads_app/Widgets/gradient_app_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../chat/assistant_panel.dart';
+import '../chat/chat_page.dart';
+import '../chat/admin_chat_list_page.dart';
+import '../../core/di/service_locator.dart';
+import '../../Bloc/chat/chat_cubit.dart';
 import 'category_area.dart';
 import 'my_ads.dart';
 import 'all_ads_area.dart';
@@ -37,9 +39,6 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-  bool _showAssistant = false;
-
-  int get _assistantIndex => widget.isAdmin ? 7 : 4;
 
   @override
   void initState() {
@@ -71,58 +70,42 @@ class HomePageState extends State<HomePage> {
       backgroundColor: const Color.fromRGBO(250, 255, 255, 1),
       body: Stack(
         children: [
-          // المحتوى العادي
+
           BlocBuilder<HomeCubit, HomeState>(
             bloc: BlocProvider.of(context),
             builder: buildBody,
           ),
 
-          // خلفية بلور خفيفة و بانل المساعد الذكي (Overlay)
-          if (_showAssistant) ...[
-            // ضباب خفيف للخلفية
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => setState(() => _showAssistant = false),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                  child: Container(
-                    color: Colors.black.withOpacity(0.15),
-                  ),
-                ),
-              ),
-            ),
-            // البانل نفسه
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 70, // نخلي مساحة للـ BottomNavigationBar
-              top: 12,
-              child: SafeArea(
-                minimum: const EdgeInsets.fromLTRB(12, 12, 12, 82),
-                child: AssistantPanel.withCubit(),
-              ),
-            ),
-          ],
+
         ],
       ),
       bottomNavigationBar:
           BlocBuilder<HomeCubit, HomeState>(builder: buildNavbar),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _openWhatsApp,
-        backgroundColor: Color(0xFF25D366),
-        child: FaIcon(
-          FontAwesomeIcons.whatsapp,
-          color: Colors.white,
-          size: 30,
-        ),
-        tooltip: 'تواصل معنا على واتساب',
+      floatingActionButton: BlocBuilder<HomeCubit, HomeState>(
+        builder: (context, state) {
+          // إخفاء أيقونة الواتساب في صفحة الدردشة
+          if (state is HomeChatState) {
+            return const SizedBox.shrink();
+          }
+          // عرض أيقونة الواتساب في باقي الصفحات
+          return FloatingActionButton(
+            onPressed: _openWhatsApp,
+            backgroundColor: Color(0xFF25D366),
+            child: FaIcon(
+              FontAwesomeIcons.whatsapp,
+              color: Colors.white,
+              size: 30,
+            ),
+            tooltip: 'تواصل معنا على واتساب',
+          );
+        },
       ),
     );
   }
 
   Future<void> _openWhatsApp() async {
     final phoneNumber = '966570949696';
-    final whatsappUrl = Uri.parse('https://wa.me/$phoneNumber');
+    final whatsappUrl = Uri.parse('https://wa.me/$phoneNumber?text=${Uri.encodeComponent('مرحباً، أحتاج المساعدة')}');
     
     try {
       if (await canLaunchUrl(whatsappUrl)) {
@@ -159,55 +142,152 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget buildBody(context, state) {
-    switch (state.runtimeType) {
-      case HomeLoadingState:
-        return const Center(child: CircularProgressIndicator());
-
-      case HomeLandingState:
-        return BlocProvider.value(
-          value: BlocProvider.of<AdCubit>(context),
-          child: HomeLanding(type: 0, ads: state.ads),
-        );
-
-      case HomeSearchState:
-        return BlocProvider.value(
-          value: BlocProvider.of<AdCubit>(context),
-          child: HomeLanding(type: 1, ads: state.ads),
-        );
-
-      case HomeProfileState:
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: BlocProvider.of<AuthCubit>(context)),
-            BlocProvider.value(value: BlocProvider.of<OperationalCubit>(context)),
-          ],
-          child: HomeProfile(), // شيلنا const
-        );
-
-      case HomeAdsState:
-        return MyAds(); // شيلنا const
-
-      case HomeAdminState:
-        return BlocProvider.value(
-          value: BlocProvider.of<AuthorityCubit>(context),
-          child: AdminPanel(), // شيلنا const
-        );
-
-      case HomeAdRequestState:
-        return BlocProvider.value(
-          value: BlocProvider.of<AuthorityCubit>(context),
-          child: AdminAdRequestPage(), // شيلنا const
-        );
-
-      case HomeMoneyRequestState:
-        return BlocProvider.value(
-          value: BlocProvider.of<AuthorityCubit>(context),
-          child: MoneyRequestPage(), // شيلنا const
-        );
-
-      default:
-        return const Center(child: RefreshProgressIndicator());
+    if (state is HomeLoadingState) {
+      return const Center(child: CircularProgressIndicator());
     }
+
+    if (state is HomeLandingState) {
+      // جلب الإعلانات الثابتة فقط للعرض في الـ Slider
+      final fixedAds = BlocProvider.of<HomeCubit>(context).getFixedAds();
+      return BlocProvider.value(
+        value: BlocProvider.of<AdCubit>(context),
+        child: HomeLanding(type: 0, ads: state.ads, fixedAds: fixedAds),
+      );
+    }
+
+    if (state is HomeSearchState) {
+      // جلب الإعلانات الثابتة فقط للعرض في الـ Slider
+      final fixedAds = BlocProvider.of<HomeCubit>(context).getFixedAds();
+      return BlocProvider.value(
+        value: BlocProvider.of<AdCubit>(context),
+        child: HomeLanding(type: 1, ads: state.ads, fixedAds: fixedAds),
+      );
+    }
+
+    if (state is HomeProfileState) {
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: BlocProvider.of<AuthCubit>(context)),
+          BlocProvider.value(value: BlocProvider.of<OperationalCubit>(context)),
+        ],
+        child: HomeProfile(),
+      );
+    }
+
+    if (state is HomeAdsState) {
+      return MyAds();
+    }
+
+    if (state is HomeAdminState) {
+      return FutureBuilder<bool>(
+        future: BlocProvider.of<AuthCubit>(context).isAdmin(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          
+          // فحص لو المستخدم مسؤول
+          if (snapshot.hasData && snapshot.data == true) {
+            return BlocProvider.value(
+              value: BlocProvider.of<AuthorityCubit>(context),
+              child: AdminPanel(),
+            );
+          } else {
+            // المستخدم ليس مسؤول - عرض رسالة خطأ
+            return _buildAccessDeniedPage(context);
+          }
+        },
+      );
+    }
+
+    if (state is HomeAdRequestState) {
+      return FutureBuilder<bool>(
+        future: BlocProvider.of<AuthCubit>(context).isAdmin(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          
+          // فحص لو المستخدم مسؤول
+          if (snapshot.hasData && snapshot.data == true) {
+            return BlocProvider.value(
+              value: BlocProvider.of<AuthorityCubit>(context),
+              child: AdminAdRequestPage(),
+            );
+          } else {
+            // المستخدم ليس مسؤول - عرض رسالة خطأ
+            return _buildAccessDeniedPage(context);
+          }
+        },
+      );
+    }
+
+    if (state is HomeMoneyRequestState) {
+      return FutureBuilder<bool>(
+        future: BlocProvider.of<AuthCubit>(context).isAdmin(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          
+          // فحص لو المستخدم مسؤول
+          if (snapshot.hasData && snapshot.data == true) {
+            return BlocProvider.value(
+              value: BlocProvider.of<AuthorityCubit>(context),
+              child: MoneyRequestPage(),
+            );
+          } else {
+            // المستخدم ليس مسؤول - عرض رسالة خطأ
+            return _buildAccessDeniedPage(context);
+          }
+        },
+      );
+    }
+
+    if (state is HomeChatState) {
+      // للمسؤول: عرض قائمة المحادثات مباشرة
+      if (widget.isAdmin) {
+        return BlocProvider(
+          create: (_) => sl<ChatCubit>(),
+          child: const AdminChatListPage(),
+        );
+      }
+      
+      // للمستخدم العادي: عرض صفحة الدردشة مباشرة
+      // بدون أي تحقق - فقط فحص بسيط لتسجيل الدخول
+      return FutureBuilder<bool>(
+        future: BlocProvider.of<AuthCubit>(context).isLoggedIn(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          
+          // فحص لو المستخدم مسجل دخول
+          final isGuest = BlocProvider.of<OperationalCubit>(context).prefs.getBool("guest") ?? false;
+          
+          if (snapshot.hasData && snapshot.data == true && !isGuest) {
+            // المستخدم مسجل دخول - عرض ChatPage مباشرة
+            return BlocProvider(
+              create: (_) => sl<ChatCubit>(),
+              child: const ChatPage(),
+            );
+          } else {
+            // المستخدم غير مسجل دخول - عرض رسالة تسجيل الدخول
+            return _buildChatLoginRequiredPage(context);
+          }
+        },
+      );
+    }
+
+    return const Center(child: CircularProgressIndicator());
   }
 
   Widget buildNavbar(context, state) {
@@ -253,7 +333,7 @@ class HomePageState extends State<HomePage> {
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // أيقونة مع خلفية دائرية للمحدد
+
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
@@ -267,7 +347,7 @@ class HomePageState extends State<HomePage> {
                                       )
                                     : null,
                                 color: isSelected ? null : Colors.transparent,
-                                shape: BoxShape.circle, // دائري تماماً
+                                shape: BoxShape.circle,
                               ),
                               child: item.icon is FaIcon
                                   ? FaIcon(
@@ -284,7 +364,7 @@ class HomePageState extends State<HomePage> {
                             
                             const SizedBox(height: 2),
                             
-                            // نص الـ label
+
                             AnimatedDefaultTextStyle(
                               duration: const Duration(milliseconds: 300),
                               style: GoogleFonts.cairo(
@@ -331,9 +411,10 @@ class HomePageState extends State<HomePage> {
         BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.moneyBillTransfer), label: "المدفوعات"),
         BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.robot), label: "المساعد"),
+            icon: FaIcon(FontAwesomeIcons.comments), label: "الدردشة"),
       ];
     } else {
+      // المستخدم العادي: أيقونة مخصصة للدردشة (message icon)
       return const [
         BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.house), label: "الرئيسية"),
@@ -344,17 +425,12 @@ class HomePageState extends State<HomePage> {
         BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.circleUser), label: "الحساب"),
         BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.robot), label: "المساعد"),
+            icon: FaIcon(FontAwesomeIcons.message), label: "الدردشة"),
       ];
     }
   }
 
   void changeScreen(int i) {
-    // زر المساعد → أظهر/أخفي البانل من غير ما أغير التاب الحالي
-    if (i == _assistantIndex) {
-      setState(() => _showAssistant = !_showAssistant);
-      return;
-    }
     setState(() {
       widget._currentIndex = BlocProvider.of<HomeCubit>(context).changeRoute(i);
     });
@@ -362,10 +438,11 @@ class HomePageState extends State<HomePage> {
 }
 
 class HomeLanding extends StatefulWidget {
-  const HomeLanding({super.key, this.type, required this.ads});
+  const HomeLanding({super.key, this.type, required this.ads, this.fixedAds});
 
   final type;
-  final List<AdData> ads;
+  final List<AdData> ads;  // كل الإعلانات
+  final List<AdData>? fixedAds;  // الإعلانات الثابتة فقط
 
   @override
   State<HomeLanding> createState() => _HomeLandingState();
@@ -391,23 +468,23 @@ class _HomeLandingState extends State<HomeLanding> {
           ),
           child: Stack(
             children: [
-              // المحتوى الرئيسي مع padding من فوق عشان الـ slider
+
               Padding(
-                padding: EdgeInsets.only(top: 220), // مساحة للـ slider
+                padding: EdgeInsets.only(top: 220),
                 child: ListView(
                   children: [
-                    // Welcome Banner
+
                     _buildWelcomeBanner(context),
                     
                     SizedBox(height: 4),
                     
-                    // All Ads (بدون فئات)
+
                     allAdsBuilder(context),
                   ],
                 ),
               ),
               
-              // Fixed Ads Area - ثابت في الأعلى
+
               Positioned(
                 top: 0,
                 left: 0,
@@ -423,7 +500,7 @@ class _HomeLandingState extends State<HomeLanding> {
                       ),
                     ],
                   ),
-                  child: FixedAdsArea(ads: widget.ads),
+                  child: FixedAdsArea(ads: widget.fixedAds ?? []),
                 ),
               ),
             ],
@@ -443,15 +520,15 @@ class _HomeLandingState extends State<HomeLanding> {
           ),
           child: Stack(
             children: [
-              // المحتوى الرئيسي مع padding من فوق
+
               Padding(
-                padding: EdgeInsets.only(top: 220), // مساحة للـ slider
+                padding: EdgeInsets.only(top: 220),
                 child: Column(
                   children: [
-                    // Search Header مع شريط البحث
+
                     _buildSearchHeader(),
                     
-                    // Categories Grid
+
                     Expanded(
                       child: _buildCategoriesGrid(),
                     ),
@@ -459,7 +536,7 @@ class _HomeLandingState extends State<HomeLanding> {
                 ),
               ),
               
-              // Fixed Ads Area - ثابت في الأعلى
+
               Positioned(
                 top: 0,
                 left: 0,
@@ -475,7 +552,7 @@ class _HomeLandingState extends State<HomeLanding> {
                       ),
                     ],
                   ),
-                  child: FixedAdsArea(ads: widget.ads),
+                  child: FixedAdsArea(ads: widget.fixedAds ?? []),
                 ),
               ),
             ],
@@ -503,7 +580,7 @@ class _HomeLandingState extends State<HomeLanding> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // العنوان
+
           Padding(
             padding: EdgeInsets.only(bottom: 12, right: 4),
             child: Text(
@@ -517,7 +594,7 @@ class _HomeLandingState extends State<HomeLanding> {
             ),
           ),
           
-          // شريط البحث
+
           Container(
             height: 50,
             decoration: BoxDecoration(
@@ -696,26 +773,282 @@ class _HomeLandingState extends State<HomeLanding> {
   }
 
   Widget categoryAreasBuilder(context, int i) {
-    SharedPreferences prefs = BlocProvider.of<AdCubit>(context).prefs;
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => AdCubit(AdInitialState(), prefs)),
-        BlocProvider(
-            create: (_) => OperationalCubit(InitialOperational(), prefs)),
+        BlocProvider.value(value: BlocProvider.of<AdCubit>(context)),
+        BlocProvider.value(value: BlocProvider.of<OperationalCubit>(context)),
       ],
       child: CategoryArea(category: CategoryManager.getCategoryById(i)),
     );
   }
 
   Widget allAdsBuilder(BuildContext context) {
-    SharedPreferences prefs = BlocProvider.of<AdCubit>(context).prefs;
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => AdCubit(AdInitialState(), prefs)),
-        BlocProvider(
-            create: (_) => OperationalCubit(InitialOperational(), prefs)),
+        BlocProvider.value(value: BlocProvider.of<AdCubit>(context)),
+        BlocProvider.value(value: BlocProvider.of<OperationalCubit>(context)),
       ],
       child: AllAdsArea(),
     );
   }
+}
+
+Widget _buildAccessDeniedPage(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF2596FA), Color(0xFF364A62)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // أيقونة القفل
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.admin_panel_settings_outlined,
+                        size: 80,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 40),
+                  
+                  // العنوان
+                  Text(
+                    'غير مصرح بالوصول',
+                    style: GoogleFonts.cairo(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // الرسالة
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      'هذه الصفحة متاحة فقط للمسؤولين\nليس لديك صلاحيات للوصول إلى صفحة الإدارة',
+                      style: GoogleFonts.cairo(
+                        fontSize: 18,
+                        color: Colors.white,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                      textDirection: TextDirection.rtl,
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 40),
+                  
+                  // زر العودة
+                  ElevatedButton(
+                    onPressed: () {
+                      BlocProvider.of<HomeCubit>(context).changeRoute(0);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF2596FA),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 48,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      elevation: 8,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.arrow_back, size: 24),
+                        const SizedBox(width: 12),
+                        Text(
+                          'العودة للرئيسية',
+                          style: GoogleFonts.cairo(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+}
+
+Widget _buildChatLoginRequiredPage(BuildContext context) {
+  return Scaffold(
+    body: Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2596FA), Color(0xFF364A62)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // أيقونة القفل
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.lock_outline,
+                      size: 80,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 40),
+                
+                // العنوان
+                Text(
+                  'تسجيل الدخول مطلوب',
+                  style: GoogleFonts.cairo(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // الرسالة
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    'برجاء تسجيل الدخول أولاً\nحتى تتمكن من استخدام الدردشة',
+                    style: GoogleFonts.cairo(
+                      fontSize: 18,
+                      color: Colors.white,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                    textDirection: TextDirection.rtl,
+                  ),
+                ),
+                
+                const SizedBox(height: 40),
+                
+                // زر تسجيل الدخول
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF2596FA),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 48,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    elevation: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.login, size: 24),
+                      const SizedBox(width: 12),
+                      Text(
+                        'تسجيل الدخول',
+                        style: GoogleFonts.cairo(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                TextButton(
+                  onPressed: () {
+                    BlocProvider.of<HomeCubit>(context).changeRoute(0);
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: Text(
+                    'العودة للرئيسية',
+                    style: GoogleFonts.cairo(
+                      fontSize: 16,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

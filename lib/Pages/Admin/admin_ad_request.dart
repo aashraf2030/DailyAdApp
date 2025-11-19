@@ -357,11 +357,34 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                     Container(
                       height: 160,
                       width: double.infinity,
-                      child: FadeInImage.assetNetwork(
-                        placeholder: 'assets/imgs/LoadingImage.gif',
-                        image: req.image,
-                        fit: BoxFit.cover,
-                      ),
+                      child: req.image != null && req.image.isNotEmpty
+                          ? Image.network(
+                              req.image,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                          : null,
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
+                                );
+                              },
+                            )
+                          : Container(
+                              color: Colors.grey[300],
+                              child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
+                            ),
                     ),
                     // Category Icon Badge
                     Positioned(
@@ -568,11 +591,34 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                     Container(
                       height: 140,
                       width: double.infinity,
-                      child: FadeInImage.assetNetwork(
-                        placeholder: 'assets/imgs/LoadingImage.gif',
-                        image: req.image,
-                        fit: BoxFit.cover,
-                      ),
+                      child: req.image != null && req.image.isNotEmpty
+                          ? Image.network(
+                              req.image,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                          : null,
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
+                                );
+                              },
+                            )
+                          : Container(
+                              color: Colors.grey[300],
+                              child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
+                            ),
                     ),
                     // Category Icon Badge
                     Positioned(
@@ -676,7 +722,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
-                            value: req.views / req.target,
+                            value: req.target > 0 ? (req.views / req.target).clamp(0.0, 1.0) : 0.0,
                             backgroundColor: Colors.grey[300],
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
                             minHeight: 6,

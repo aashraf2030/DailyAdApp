@@ -1,90 +1,57 @@
 import 'dart:io';
-import 'package:ads_app/network/interceptors.dart';
+import 'package:ads_app/core/constants/app_constants.dart';
 import 'package:dio/dio.dart';
 import 'package:ads_app/API/base.dart';
 
-class AdWebService {
+class AdsWebServices {
+  final Dio dio;
 
-  late Dio dio;
+  AdsWebServices(this.dio);
 
-  AdWebService() {
-    final options = BaseOptions(
-        connectTimeout: Duration(seconds: 30),
-        receiveDataWhenStatusError: true,
-        receiveTimeout: Duration(minutes: 1));
-
-    dio = Dio(options)..interceptors.addAll([LoggerInterceptor()]);
+  /// Handles Dio exceptions and converts them to meaningful responses
+  Map<String, dynamic> _handleError(Object error, StackTrace stackTrace) {
+    if (error is DioException) {
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          return {"status": AppConstants.statusError, "message": AppConstants.errorTimeout};
+        
+        case DioExceptionType.connectionError:
+          return {"status": AppConstants.statusError, "message": AppConstants.errorNetwork};
+        
+        case DioExceptionType.badResponse:
+          final statusCode = error.response?.statusCode;
+          if (statusCode != null && statusCode >= 500) {
+            return {"status": AppConstants.statusError, "message": AppConstants.errorServer};
+          }
+          // Handle validation errors (422)
+          if (statusCode == 422 && error.response?.data != null) {
+            final errorData = error.response!.data;
+            String errorMessage = "خطأ في التحقق من البيانات";
+            if (errorData is Map && errorData.containsKey('errors')) {
+              final errors = errorData['errors'];
+              if (errors is Map && errors.isNotEmpty) {
+                final firstError = errors.values.first;
+                if (firstError is List && firstError.isNotEmpty) {
+                  errorMessage = firstError.first.toString();
+                }
+              }
+            } else if (errorData is Map && errorData.containsKey('message')) {
+              errorMessage = errorData['message'].toString();
+            }
+            return {"status": AppConstants.statusError, "message": errorMessage};
+          }
+          return {"status": AppConstants.statusError, "message": "خطأ في الاستجابة: $statusCode"};
+        
+        default:
+          return {"status": AppConstants.statusError, "message": AppConstants.errorGeneric};
+      }
+    }
+    return {"status": AppConstants.statusError, "message": AppConstants.errorGeneric};
   }
 
-  Future<dynamic> createAd (String session, String id, String name,
-      String image, String imName, String path, String type, int targetViews
-      , int category,String keywords) async
-  {
-    MultipartFile file;
-    
-    // Web platform: use fromBytes
-    // Mobile platform: use fromFile
-    try {
-      // Try to read file as bytes (works on all platforms)
-      final bytes = await _readFileAsBytes(image);
-      file = MultipartFile.fromBytes(bytes, filename: imName);
-    } catch (e) {
-      print("Error reading file: $e");
-      return "Error";
-    }
-    
-    FormData imageObj = FormData.fromMap({
-      "file": file,
-      "session": session, "id": id, "name": name, "targetViews": targetViews,
-      "path": path, "type": type, "category": category, "keywords": keywords
-    }); 
-
-    try
-    {
-      final response = await dio.put(BackendAPI.create_ad,
-          data: imageObj);
-
-      print("Response : ${response.toString()}");
-
-      return response;
-    }
-    on Exception catch (e)
-    {
-      print(e.toString());
-      return "Error";
-    }
-  }
-  
-  Future<dynamic> createAdWithBytes (String session, String id, String name,
-      List<int> imageBytes, String imName, String path, String type, int targetViews
-      , int category,String keywords) async
-  {
-    MultipartFile file = MultipartFile.fromBytes(imageBytes, filename: imName);
-    
-    FormData imageObj = FormData.fromMap({
-      "file": file,
-      "session": session, "id": id, "name": name, "targetViews": targetViews,
-      "path": path, "type": type, "category": category, "keywords": keywords
-    }); 
-
-    try
-    {
-      final response = await dio.put(BackendAPI.create_ad,
-          data: imageObj);
-
-      print("Response : ${response.toString()}");
-
-      return response;
-    }
-    on Exception catch (e)
-    {
-      print(e.toString());
-      return "Error";
-    }
-  }
-  
   Future<List<int>> _readFileAsBytes(String filePath) async {
-    // For mobile platforms, read file using dart:io
     try {
       final file = File(filePath);
       return await file.readAsBytes();
@@ -93,110 +60,249 @@ class AdWebService {
     }
   }
 
-  Future<dynamic> editAd(String session, String id, String ad, String name,
-      String? image, String imName, String path, String type, int targets
-      , int category,String keywords)
-  async {
+  Future<dynamic> createAd(
+    String session,
+    String id,
+    String name,
+    String image,
+    String imName,
+    String path,
+    String type,
+    int targetViews,
+    int category,
+    String keywords,
+  ) async {
+    try {
+      final bytes = await _readFileAsBytes(image);
+      final file = MultipartFile.fromBytes(bytes, filename: imName);
+      
+      final imageObj = FormData.fromMap({
+        "file": file,
+        "id": id,
+        "name": name,
+        "targetViews": targetViews,
+        "path": path,
+        "type": type,
+        "category": category,
+        "keywords": keywords,
+      });
 
-    FormData imageObj;
-
-    if (image != null)
-      {
-        MultipartFile file = await MultipartFile.fromFile(image, filename: imName);
-
-        imageObj = FormData.fromMap({
-          "file": file,
-          "session": session, "id": id, "name": name, "ad": ad,
-          "path": path, "category": category, "keywords": keywords,
-          "type": type, "targetViews": targets
-        });
+      // Changed to POST because Laravel doesn't support multipart/form-data with PUT
+      // Token is automatically added by AuthInterceptor
+      final response = await dio.post(
+        BackendAPI.create_ad,
+        data: imageObj,
+        options: Options(
+          validateStatus: (status) {
+            // Accept 200-299 and 422 (to read validation errors)
+            return status != null && (status >= 200 && status < 300) || status == 422;
+          },
+        ),
+      );
+      
+      // If validation error, throw DioException with response data
+      if (response.statusCode == 422) {
+        throw DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          type: DioExceptionType.badResponse,
+        );
       }
-    else
-      {
-        imageObj = FormData.fromMap({
-          "session": session, "id": id, "name": name, "ad": ad,
-          "path": path, "category": category, "keywords": keywords,
-          "type": type, "targetViews": targets
-        });
-      }
-
-    try
-    {
-      final response = await dio.put(BackendAPI.edit_ad,
-          data: imageObj);
-
+      
       return response;
-    }
-    on Exception catch (e)
-    {
-      print(e.toString());
-      return "Error";
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
-  Future<List<dynamic>> getUserAds (String session, String id) async
-  {
-    try
-    {
-      final response = await dio.post(BackendAPI.get_user_ad,
-          data: {"session": session, "id": id});
+  Future<dynamic> createAdWithBytes(
+    String session,
+    String id,
+    String name,
+    List<int> imageBytes,
+    String imName,
+    String path,
+    String type,
+    int targetViews,
+    int category,
+    String keywords,
+  ) async {
+    try {
+      final file = MultipartFile.fromBytes(imageBytes, filename: imName);
+      
+      final imageObj = FormData.fromMap({
+        "file": file,
+        "session": session, // Keep in body for backward compatibility
+        "id": id,
+        "name": name,
+        "targetViews": targetViews,
+        "path": path,
+        "type": type,
+        "category": category,
+        "keywords": keywords,
+      });
 
-      return response.data;
+      // Add Authorization header for multipart requests
+      // Changed to POST because Laravel doesn't support multipart/form-data with PUT
+      final response = await dio.post(
+        BackendAPI.create_ad,
+        data: imageObj,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $session',
+          },
+          validateStatus: (status) {
+            // Accept 200-299 and 422 (to read validation errors)
+            return status != null && (status >= 200 && status < 300) || status == 422;
+          },
+        ),
+      );
+      
+      // If validation error, throw DioException with response data
+      if (response.statusCode == 422) {
+        throw DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          type: DioExceptionType.badResponse,
+        );
+      }
+      
+      return response;
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
-    on Exception catch (e)
-    {
-      print(e.toString());
+  }
+
+  Future<dynamic> editAd(
+    String session,
+    String id,
+    String ad,
+    String name,
+    String? image,
+    String imName,
+    String path,
+    String type,
+    int targets,
+    int category,
+    String keywords,
+  ) async {
+    try {
+      final Map<String, dynamic> formData = {
+        "id": id,
+        "name": name,
+        "ad": ad,
+        "path": path,
+        "category": category,
+        "keywords": keywords,
+        "type": type,
+        "targetViews": targets,
+      };
+
+      if (image != null) {
+        final file = await MultipartFile.fromFile(image, filename: imName);
+        formData["file"] = file;
+      }
+
+      final imageObj = FormData.fromMap(formData);
+      // Changed to POST because Laravel doesn't support multipart/form-data with PUT
+      // Token is automatically added by AuthInterceptor
+      final response = await dio.post(
+        BackendAPI.edit_ad,
+        data: imageObj,
+        options: Options(
+          validateStatus: (status) {
+            // Accept 200-299 and 422 (to read validation errors)
+            return status != null && (status >= 200 && status < 300) || status == 422;
+          },
+        ),
+      );
+      
+      // If validation error, throw DioException with response data
+      if (response.statusCode == 422) {
+        throw DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          type: DioExceptionType.badResponse,
+        );
+      }
+      return response;
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
+    }
+  }
+
+  Future<List<dynamic>> getUserAds(String session, String id) async {
+    try {
+      // Token is automatically added by AuthInterceptor
+      final response = await dio.post(
+        BackendAPI.get_user_ad,
+        data: {"id": id},
+      );
+      return response.data;
+    } catch (e, stackTrace) {
       return [];
     }
   }
 
-  Future<List<dynamic>> fetchCategoryAds (String session, String id,
-      int category, bool? full) async
-  {
-    try
-    {
-      final response = await dio.post(BackendAPI.fetch_cat_ad,
-          data: {"session": session, "id": id, "category": category,
-            "full": full});
-
+  Future<List<dynamic>> fetchCategoryAds(
+    String session,
+    String id,
+    int category,
+    bool? full, {
+    String? adType,
+  }) async {
+    try {
+      // Token is automatically added by AuthInterceptor (if user is logged in)
+      // This endpoint supports optional authentication
+      final Map<String, dynamic> requestData = {
+        "id": id,
+        "category": category,
+        "full": full,
+      };
+      
+      // Add adType if provided (e.g., 'Dynamic' to fetch only Dynamic ads)
+      if (adType != null) {
+        requestData["adType"] = adType;
+      }
+      
+      final response = await dio.post(
+        BackendAPI.fetch_cat_ad,
+        data: requestData,
+      );
       return response.data;
-    }
-    on Exception catch (e)
-    {
-      print(e.toString());
+    } catch (e, stackTrace) {
       return [];
     }
   }
 
-  Future<dynamic> renew (String session, String id, String ad, String tier)
-  async {
-    try
-    {
-      final response = await dio.post(BackendAPI.renew_ad,
-          data: {"session": session, "id": id, "ad": ad, "tier": tier});
-
+  Future<dynamic> renew(
+    String session,
+    String id,
+    String ad,
+    String tier,
+  ) async {
+    try {
+      // Token is automatically added by AuthInterceptor
+      final response = await dio.post(
+        BackendAPI.renew_ad,
+        data: {"id": id, "ad": ad, "tier": tier},
+      );
       return response;
-    }
-    on Exception catch (e)
-    {
-      print(e.toString());
-      return "Error";
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 
   Future<dynamic> watchAd(String session, String id, String ad) async {
-
-    try
-    {
-      final response = await dio.post(BackendAPI.watch,
-          data: {"session": session, "id": id, "ad": ad});
-
+    try {
+      // Token is automatically added by AuthInterceptor
+      final response = await dio.post(
+        BackendAPI.watch,
+        data: {"id": id, "ad": ad},
+      );
       return response;
-    }
-    on Exception catch (e)
-    {
-      print(e.toString());
-      return "Error";
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
     }
   }
 }

@@ -9,12 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 part 'authority_state.dart';
 
 class AuthorityCubit extends Cubit<AuthorityState> {
-  AuthorityCubit(super.initialState, this.prefs) {
-    repo = AuthorityRepo();
-  }
-
   final SharedPreferences prefs;
-  late final AuthorityRepo repo;
+  final AuthorityRepo repo;
+
+  AuthorityCubit(super.initialState, this.prefs, this.repo);
 
   Future<List<UserRequest>> getUserRequests(String? tier) async {
     emit(AuthorityLoading());
@@ -24,11 +22,29 @@ class AuthorityCubit extends Cubit<AuthorityState> {
 
     try {
       List<UserRequest> res = [];
+      
+      // Get Create requests (default_req)
       final res1 = await repo.getDefaultReq(session, id, tier);
+      
+      // Get Renew requests (renew_req) - now filtered by backend
       final res2 = await repo.getRenewReq(session, id, tier);
 
-      res = [...res1, ...res2];
-
+      // Combine and remove duplicates based on reqid
+      final Map<String, UserRequest> uniqueRequests = {};
+      
+      for (var req in res1) {
+        if (req is DefaultRequest) {
+          uniqueRequests[req.id] = req;
+        }
+      }
+      
+      for (var req in res2) {
+        if (req is RenewRequest) {
+          uniqueRequests[req.id] = req;
+        }
+      }
+      
+      res = uniqueRequests.values.toList();
       res.shuffle();
 
       emit(AuthorityRequestDone(res));

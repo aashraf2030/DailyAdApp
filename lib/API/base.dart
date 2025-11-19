@@ -1,9 +1,16 @@
 class BackendAPI{
-  // Production: https://adsapp-abu-sultan.com/
-  // Local: http://localhost:1234/
-  static const base = "https://adsapp-abu-sultan.com/";
+  // Production URL (Active)
+  static const base = "https://hitech-wp.com/api/";
+  
+  // Local Development URL (Commented for now)
+  // static const base = "http://127.0.0.1:8000/api/";  // Android Emulator
+  
+  // Other local options:
+  // static const base = "http://127.0.0.1:8000/api/";  // Desktop/Web
+  // static const base = "http://192.168.1.X:8000/api/";  // Real Device (replace X with your IP)
+  // static const base = "http://localhost:8000/api/";  // iOS Simulator
+  // static const base = "https://adsapp-abu-sultan.com/api/";
 
-  //Auth APIs
   static const auth = "auth/";
   static const login = "$base${auth}login";
   static const is_loggedin = "$base${auth}is_logged_in";
@@ -19,7 +26,6 @@ class BackendAPI{
   static const is_admin = "$base${auth}is_admin";
   static const profile = "$base${auth}profile";
 
-  //Ad APIs
   static const ad = "ad/";
   static const create_ad = "$base${ad}create_ad";
   static const edit_ad = "$base${ad}edit_ad";
@@ -27,11 +33,9 @@ class BackendAPI{
   static const fetch_cat_ad = "$base${ad}fetch_cat";
   static const renew_ad = "$base${ad}renew";
 
-  //View APIs
   static const view = "view/";
   static const watch = "${base}${view}watch";
 
-  //Authority APIs
   static const authority = "authority/";
   static const defaultReq = "$base${authority}default_req";
   static const renewReq = "$base${authority}renew_req";
@@ -41,5 +45,12 @@ class BackendAPI{
   static const deleteReq = "$base${authority}delete_req";
   static const leaderboard = "$base${authority}leaderboard";
   static const pointExchange = "$base${authority}points_exchange";
+
+  static const chat = "chat/";
+  static const getConversation = "$base${chat}conversation";
+  static const getMessages = "$base${chat}messages";
+  static const sendMessage = "$base${chat}send";
+  static const adminConversations = "$base${chat}admin/conversations";
+  static const assignConversation = "$base${chat}admin/assign";
 
 }

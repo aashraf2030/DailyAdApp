@@ -102,6 +102,7 @@ class MyRequestPageState extends State<MyRequestPage> with TickerProviderStateMi
       expandedHeight: 140,
       floating: false,
       pinned: true,
+      backgroundColor: Colors.transparent,
       leading: IconButton(
         icon: Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
@@ -125,6 +126,7 @@ class MyRequestPageState extends State<MyRequestPage> with TickerProviderStateMi
           ),
         ),
         background: Container(
+          constraints: const BoxConstraints.expand(),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [

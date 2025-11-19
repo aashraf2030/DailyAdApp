@@ -10,16 +10,22 @@ part 'operational_state.dart';
 class OperationalCubit extends Cubit<OperationalState>{
 
   final SharedPreferences prefs;
-  late final AdsRepo repo;
+  final AdsRepo repo;
 
-  OperationalCubit(super.initialState, this.prefs)
-  {
-    repo = AdsRepo();
-  }
+  OperationalCubit(super.initialState, this.prefs, this.repo);
 
   bool isGuest()
   {
     return prefs.getBool("guest") ?? false;
+  }
+
+  /// Check if an ad belongs to the current user
+  bool isMyAd(String? adUserId) {
+    if (isGuest() || adUserId == null) {
+      return false;
+    }
+    final currentUserId = prefs.getString("id");
+    return currentUserId != null && currentUserId == adUserId;
   }
 
   Future<bool> createNewAd(String name, String image, String imName,
@@ -29,7 +35,6 @@ class OperationalCubit extends Cubit<OperationalState>{
     final String session = prefs.getString("session")?? "";
 
     try {
-      // Read image as bytes using XFile (works on all platforms including web)
       final imageFile = XFile(image);
       final bytes = await imageFile.readAsBytes();
       

@@ -34,10 +34,11 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
     );
     
     _animationController.forward();
-    // جلب جميع الإعلانات Dynamic العامة
-    // category: 0 = General Dynamic Ads (not recommendations)
-    // full: true = Get up to 500 ads
-    BlocProvider.of<AdCubit>(context).fetchAds(0, full: true);
+
+    // Fetch only Dynamic ads (category -1 means all categories)
+    // This works for both guests and logged-in users
+    // AuthInterceptor will automatically add token if user is logged in
+    BlocProvider.of<AdCubit>(context).fetchAds(-1, full: true, adType: 'Dynamic');
   }
 
   @override
@@ -47,7 +48,7 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
   }
 
   Widget buildByBloc(context, state) {
-    if (state is AdLoadingState) {
+    if (state is AdLoadingState || state is AdInitialState) {
       return GridView.builder(
         itemBuilder: buildLoadingCards,
         itemCount: 6,
@@ -84,8 +85,24 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
         shrinkWrap: true,
         physics: NeverScrollableScrollPhysics(),
       );
-    } else {
+    } else if (state is AdErrorState) {
       return _buildErrorState();
+    } else {
+      // Default: show loading
+      return GridView.builder(
+        itemBuilder: buildLoadingCards,
+        itemCount: 6,
+        scrollDirection: Axis.vertical,
+        padding: EdgeInsets.all(12),
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.75,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+        ),
+      );
     }
   }
 
@@ -202,7 +219,7 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
           Row(
             textDirection: TextDirection.rtl,
             children: [
-              // أيقونة
+
               Container(
                 padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -232,7 +249,7 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
               
               SizedBox(width: 10),
               
-              // العنوان
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -257,7 +274,7 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
             ],
           ),
           
-          // Badge
+
           if (ads.isNotEmpty)
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),

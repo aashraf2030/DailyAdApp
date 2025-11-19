@@ -26,3 +26,5 @@ class HomeAdminState extends HomeState {}
 class HomeMoneyRequestState extends HomeState {}
 
 class HomeAdRequestState extends HomeState {}
+
+class HomeChatState extends HomeState {}

@@ -199,11 +199,12 @@ class AdminPanelState extends State<AdminPanel> {
   }
 
   int _getTotalViews() {
-    return users.fold(0, (sum, user) => sum + user.views);
+    // Views not available in leaderboard data
+    return 0;
   }
 
   int _getTotalPoints() {
-    return users.fold(0, (sum, user) => sum + user.points);
+    return users.fold(0.0, (sum, user) => sum + user.points).round();
   }
 
   Widget createData(context, state) {
@@ -491,7 +492,7 @@ class AdminPanelState extends State<AdminPanel> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        user.name,
+                        user.username,
                         style: GoogleFonts.cairo(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -502,7 +503,7 @@ class AdminPanelState extends State<AdminPanel> {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        "@${user.username}",
+                        "المرتبة #${user.rank}",
                         style: GoogleFonts.cairo(
                           fontSize: 12,
                           color: Colors.grey.shade600,
@@ -556,38 +557,16 @@ class AdminPanelState extends State<AdminPanel> {
               child: Column(
                 children: [
                   _buildDetailRow(
-                    FontAwesomeIcons.envelope,
-                    "البريد الإلكتروني",
-                    user.email,
+                    FontAwesomeIcons.trophy,
+                    "المرتبة",
+                    "#${user.rank}",
                   ),
                   Divider(height: 16),
-                  _buildDetailRow(
-                    FontAwesomeIcons.phone,
-                    "رقم الهاتف",
-                    user.phone,
-                  ),
-                  Divider(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatColumn(
-                        FontAwesomeIcons.eye,
-                        user.views.toString(),
-                        "المشاهدات",
-                        Color(0xFF2596FA),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 40,
-                        color: Colors.grey.shade300,
-                      ),
-                      _buildStatColumn(
-                        FontAwesomeIcons.star,
-                        user.points.toString(),
-                        "النقاط",
-                        Colors.amber.shade700,
-                      ),
-                    ],
+                  _buildStatColumn(
+                    FontAwesomeIcons.star,
+                    user.points.toStringAsFixed(1),
+                    "النقاط",
+                    Colors.amber.shade700,
                   ),
                 ],
               ),
