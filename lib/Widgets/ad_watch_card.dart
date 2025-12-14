@@ -55,13 +55,13 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
+                color: Color(0xFF2596FA).withOpacity(0.08),
+                blurRadius: 20,
                 spreadRadius: 0,
-                offset: Offset(0, 4),
+                offset: Offset(0, 8),
               ),
             ],
           ),
@@ -72,28 +72,27 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
               Stack(
                 children: [
                   Container(
-                    height: 120,
+                    height: 140,
                     width: double.infinity,
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(16),
-                        topLeft: Radius.circular(16),
-                      ),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                     child: FadeInImage.assetNetwork(
                       placeholder: "assets/imgs/Loading.gif",
                       image: widget.ad.image,
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      height: 120,
+                      height: 140,
                       imageErrorBuilder: (context, error, stackTrace) {
                         return Container(
-                          color: Colors.grey.shade200,
-                          child: Icon(
-                            Icons.image_not_supported,
-                            size: 40,
-                            color: Colors.grey.shade400,
+                          color: Colors.grey.shade100,
+                          child: Center(
+                            child: Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 32,
+                              color: Colors.grey.shade300,
+                            ),
                           ),
                         );
                       },
@@ -104,102 +103,129 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(16),
-                          topLeft: Radius.circular(16),
-                        ),
+                        borderRadius: BorderRadius.circular(24),
                         gradient: LinearGradient(
                           colors: [
+                            Colors.black.withOpacity(0.6),
                             Colors.transparent,
-                            Colors.black.withOpacity(0.1),
+                            Colors.transparent,
                           ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
                         ),
                       ),
                     ),
                   ),
                   
-                  // Play Icon Badge
+                  // Play Icon Badge (Glassmorphism)
                   Positioned(
-                    top: 8,
-                    left: 8,
+                    top: 12,
+                    left: 12,
                     child: Container(
                       padding: EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
                       ),
                       child: Icon(
-                        Icons.play_circle_outline,
+                        Icons.play_arrow_rounded,
                         color: Colors.white,
                         size: 20,
                       ),
                     ),
                   ),
+
+                  // Views Badge
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.visibility_outlined,
+                            size: 12,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            "$views",
+                            style: GoogleFonts.cairo(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Title overlay on image
+                  Positioned(
+                    bottom: 12,
+                    right: 12,
+                    left: 12,
+                    child: Text(
+                      widget.ad.name,
+                      style: GoogleFonts.cairo(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 14,
+                        height: 1.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.5),
+                            offset: Offset(0, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                      textDirection: TextDirection.rtl,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               
-              // Content Section
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Title
-                      Text(
-                        widget.ad.name,
-                        style: GoogleFonts.cairo(
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2C3E50),
-                          fontSize: 13,
-                          height: 1.2,
-                        ),
-                        textDirection: TextDirection.rtl,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      
-                      SizedBox(height: 2),
-                      
-                      // Views Section
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              // Action Section
+              Padding(
+                padding: EdgeInsets.all(12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Watch Button
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 8),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xFF2596FA).withOpacity(0.1),
-                              Color(0xFF364A62).withOpacity(0.1),
-                            ],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                          borderRadius: BorderRadius.circular(6),
+                          color: Color(0xFF2596FA).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.visibility,
-                              size: 12,
+                        child: Center(
+                          child: Text(
+                            "مشاهدة الآن",
+                            style: GoogleFonts.cairo(
                               color: Color(0xFF2596FA),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
-                            SizedBox(width: 3),
-                            Text(
-                              "$views",
-                              style: GoogleFonts.cairo(
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF2596FA),
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],

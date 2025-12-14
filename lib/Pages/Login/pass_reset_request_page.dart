@@ -68,14 +68,12 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
                     child: SlideTransition(
                       position: _slideAnimation,
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(height: 40),
-                          
                           // Header
                           _buildHeader(),
                           
-                          SizedBox(height: 30),
+                          SizedBox(height: 40),
                           
                           // Reset Card
                           _buildResetCard(context),
@@ -84,8 +82,6 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
                           
                           // Back Button
                           _buildBackButton(context),
-                          
-                          SizedBox(height: 20),
                         ],
                       ),
                     ),
@@ -102,34 +98,37 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
     return Column(
       children: [
         Container(
-          width: 80,
-          height: 80,
+          width: 100,
+          height: 100,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
               colors: [
-                Color.fromRGBO(37, 150, 250, 1),
-                Color.fromRGBO(54, 74, 98, 1),
+                Color(0xFF2596FA),
+                Color(0xFF364A62),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: Color.fromRGBO(37, 150, 250, 0.4),
-                blurRadius: 20,
+                color: Color(0xFF2596FA).withOpacity(0.4),
+                blurRadius: 25,
                 spreadRadius: 5,
+                offset: Offset(0, 10),
               ),
             ],
           ),
-          child: Icon(
-            FontAwesomeIcons.key,
-            size: 40,
-            color: Colors.white,
+          child: Center(
+            child: Icon(
+              FontAwesomeIcons.key,
+              size: 45,
+              color: Colors.white,
+            ),
           ),
         ),
         
-        SizedBox(height: 20),
+        SizedBox(height: 25),
         
         Text(
           "نسيت كلمة المرور؟",
@@ -141,7 +140,7 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
               Shadow(
                 color: Colors.black26,
                 blurRadius: 10,
-                offset: Offset(0, 2),
+                offset: Offset(0, 4),
               ),
             ],
           ),
@@ -152,8 +151,9 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
         Text(
           "لا تقلق، سنرسل لك رمز التحقق",
           style: GoogleFonts.cairo(
-            fontSize: 15,
+            fontSize: 16,
             color: Colors.white.withOpacity(0.9),
+            height: 1.5,
           ),
           textAlign: TextAlign.center,
         ),
@@ -164,25 +164,36 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
   Widget _buildResetCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
+            blurRadius: 30,
             spreadRadius: 0,
-            offset: Offset(0, 8),
+            offset: Offset(0, 15),
           ),
         ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.5),
+          width: 1.5,
+        ),
       ),
       child: Padding(
         padding: EdgeInsets.all(30),
         child: Column(
           children: [
-            Icon(
-              FontAwesomeIcons.envelope,
-              size: 60,
-              color: Color.fromRGBO(37, 150, 250, 1),
+            Container(
+              padding: EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Color(0xFF2596FA).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                FontAwesomeIcons.envelopeOpenText,
+                size: 40,
+                color: Color(0xFF2596FA),
+              ),
             ),
             
             SizedBox(height: 20),
@@ -192,14 +203,14 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
               style: GoogleFonts.cairo(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color.fromRGBO(54, 74, 98, 1),
+                color: Color(0xFF364A62),
               ),
             ),
             
             SizedBox(height: 10),
             
             Text(
-              "سنرسل لك رمز التحقق على بريدك",
+              "سنرسل لك رمز التحقق المكون من 6 أرقام",
               style: GoogleFonts.cairo(
                 fontSize: 14,
                 color: Colors.grey.shade600,
@@ -216,42 +227,42 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
             
             Container(
               width: double.infinity,
-              height: 50,
+              height: 55,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(20),
                 gradient: LinearGradient(
                   colors: [
-                    Color.fromRGBO(37, 150, 250, 1),
-                    Color.fromRGBO(54, 74, 98, 1),
+                    Color(0xFF2596FA),
+                    Color(0xFF364A62),
                   ],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Color.fromRGBO(37, 150, 250, 0.3),
-                    blurRadius: 10,
+                    color: Color(0xFF2596FA).withOpacity(0.3),
+                    blurRadius: 15,
                     spreadRadius: 0,
-                    offset: Offset(0, 6),
+                    offset: Offset(0, 8),
                   ),
                 ],
               ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(20),
                   onTap: () => changePassRequest(context),
                   child: Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 18),
-                        SizedBox(width: 10),
+                        SizedBox(width: 12),
                         Text(
                           "إرسال الرمز",
                           style: GoogleFonts.cairo(
                             color: Colors.white,
-                            fontSize: 17,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -268,46 +279,32 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
   }
 
   Widget _buildBackButton(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 50,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        color: Color.fromRGBO(54, 74, 98, 0.8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 10,
-            spreadRadius: 0,
-            offset: Offset(0, 4),
-          ),
-        ],
+    return TextButton(
+      onPressed: () {
+        Navigator.of(context).pushReplacementNamed("/login");
+      },
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+        backgroundColor: Colors.white.withOpacity(0.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+          side: BorderSide(color: Colors.white.withOpacity(0.3)),
+        ),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(25),
-          onTap: () {
-            Navigator.of(context).pushReplacementNamed("/login");
-          },
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 18),
-                SizedBox(width: 10),
-                Text(
-                  "العودة للدخول",
-                  style: GoogleFonts.cairo(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 16),
+          SizedBox(width: 10),
+          Text(
+            "العودة لتسجيل الدخول",
+            style: GoogleFonts.cairo(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -324,15 +321,35 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
       barrierDismissible: false,
       builder: (_) => Center(
         child: Container(
-          padding: EdgeInsets.all(20),
+          padding: EdgeInsets.all(25),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 20,
+                offset: Offset(0, 10),
+              ),
+            ],
           ),
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Color.fromRGBO(37, 150, 250, 1),
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Color(0xFF2596FA),
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                "جاري الإرسال...",
+                style: GoogleFonts.cairo(
+                  color: Color(0xFF364A62),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -357,11 +374,7 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
               padding: EdgeInsets.all(30),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(25),
-                gradient: LinearGradient(
-                  colors: [Colors.white, Colors.green.shade50],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
+                color: Colors.white,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -375,7 +388,7 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
                     ),
                     child: Icon(
                       FontAwesomeIcons.envelopeCircleCheck,
-                      size: 45,
+                      size: 40,
                       color: Colors.green.shade400,
                     ),
                   ),
@@ -470,11 +483,7 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
             padding: EdgeInsets.all(30),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(25),
-              gradient: LinearGradient(
-                colors: [Colors.white, Colors.grey.shade50],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+              color: Colors.white,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -488,7 +497,7 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
                   ),
                   child: Icon(
                     FontAwesomeIcons.triangleExclamation,
-                    size: 45,
+                    size: 40,
                     color: Colors.red.shade400,
                   ),
                 ),
@@ -527,13 +536,13 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
                     borderRadius: BorderRadius.circular(15),
                     gradient: LinearGradient(
                       colors: [
-                        Color.fromRGBO(37, 150, 250, 1),
-                        Color.fromRGBO(54, 74, 98, 1),
+                        Color(0xFF2596FA),
+                        Color(0xFF364A62),
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Color.fromRGBO(37, 150, 250, 0.3),
+                        color: Color(0xFF2596FA).withOpacity(0.3),
                         blurRadius: 10,
                         offset: Offset(0, 5),
                       ),

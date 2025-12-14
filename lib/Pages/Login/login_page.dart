@@ -22,6 +22,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
   final user = LoginTextbox(padding: 10.0, icon: FontAwesomeIcons.user, hint: "اسم المستخدم....");
   final pass = LoginTextbox(padding: 10.0, icon: FontAwesomeIcons.lock, hint: "كلمة المرور....", isPassword: true);
+  bool _rememberMe = false;
 
   @override
   void initState() {
@@ -213,6 +214,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             // Password Field
             pass,
             
+            SizedBox(height: 12),
+            
+            // Remember Me Checkbox
+            _buildRememberMeCheckbox(),
+            
             SizedBox(height: 20),
             
             // Login Button
@@ -269,6 +275,61 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     );
   }
 
+  Widget _buildRememberMeCheckbox() {
+    return Row(
+      textDirection: TextDirection.rtl,
+      children: [
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _rememberMe = !_rememberMe;
+              });
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  "تذكرني",
+                  style: GoogleFonts.cairo(
+                    fontSize: 14,
+                    color: Color.fromRGBO(54, 74, 98, 1),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textDirection: TextDirection.rtl,
+                ),
+                SizedBox(width: 8),
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: _rememberMe
+                          ? Color.fromRGBO(37, 150, 250, 1)
+                          : Colors.grey.shade400,
+                      width: 2,
+                    ),
+                    color: _rememberMe
+                        ? Color.fromRGBO(37, 150, 250, 1)
+                        : Colors.transparent,
+                  ),
+                  child: _rememberMe
+                      ? Icon(
+                          Icons.check,
+                          size: 14,
+                          color: Colors.white,
+                        )
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildGuestButton(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -320,34 +381,50 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildForgotPassword(BuildContext context) {
-    return TextButton(
-      onPressed: () {
-        Navigator.pushReplacementNamed(context, "/pass_reset_request");
-      },
-      style: TextButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            FontAwesomeIcons.question,
-            size: 14,
-            color: Colors.white,
-          ),
-          SizedBox(width: 6),
-          Text(
-            "هل نسيت كلمة المرور؟",
-            style: GoogleFonts.cairo(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              decoration: TextDecoration.underline,
-              decorationColor: Colors.white,
-              decorationThickness: 1.5,
-            ),
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Color.fromRGBO(37, 150, 250, 0.1),
+            blurRadius: 10,
+            offset: Offset(0, 4),
           ),
         ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            Navigator.pushReplacementNamed(context, "/pass_reset_request");
+          },
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  FontAwesomeIcons.unlockKeyhole,
+                  size: 16,
+                  color: Color.fromRGBO(54, 74, 98, 1),
+                ),
+                SizedBox(width: 10),
+                Text(
+                  "هل نسيت كلمة المرور؟",
+                  style: GoogleFonts.cairo(
+                    color: Color.fromRGBO(54, 74, 98, 1),
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -428,7 +505,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       ),
     );
 
-    final loginResult = await cubit.login(user.data, pass.data);
+    final loginResult = await cubit.login(user.data, pass.data, rememberMe: _rememberMe);
 
     // Close loading
     Navigator.of(context).pop();

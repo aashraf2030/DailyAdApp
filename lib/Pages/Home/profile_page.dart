@@ -2,6 +2,8 @@ import 'package:ads_app/Bloc/Auth/auth_cubit.dart';
 import 'package:ads_app/Bloc/Authority/authority_cubit.dart';
 import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
 import 'package:ads_app/Models/auth_models.dart';
+import 'package:ads_app/Models/saved_account_model.dart';
+import 'package:ads_app/Widgets/account_switcher_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -22,6 +24,8 @@ class ProfilePageState extends State<HomeProfile> {
   UserProfile profile = UserProfile();
   bool isGuest = false;
   bool isLoading = true;
+  List<SavedAccount> savedAccounts = [];
+  SavedAccount? currentAccount;
 
   @override
   void initState() {
@@ -32,6 +36,7 @@ class ProfilePageState extends State<HomeProfile> {
     isGuest = operationalCubit.isGuest();
 
     _loadProfile();
+    _loadSavedAccounts();
   }
   
   Future<void> _loadProfile({bool forceRefresh = false}) async {
@@ -74,6 +79,112 @@ class ProfilePageState extends State<HomeProfile> {
           isLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _loadSavedAccounts() async {
+    try {
+      final authCubit = BlocProvider.of<AuthCubit>(context);
+      final accounts = await authCubit.getSavedAccounts();
+      final current = await authCubit.getCurrentAccount();
+      
+      if (mounted) {
+        setState(() {
+          savedAccounts = accounts;
+          currentAccount = current;
+        });
+      }
+    } catch (e) {
+      print('Error loading saved accounts: $e');
+    }
+  }
+
+  Future<void> _switchAccount(SavedAccount account) async {
+    try {
+      final authCubit = BlocProvider.of<AuthCubit>(context);
+      
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => Center(
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Color(0xFF2596FA),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final success = await authCubit.switchAccount(account);
+      
+      Navigator.of(context).pop(); // Close loading
+      
+      if (success) {
+        // Reload profile and accounts
+        await _loadProfile(forceRefresh: true);
+        await _loadSavedAccounts();
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم التبديل إلى حساب ${account.name} بنجاح',
+              style: GoogleFonts.cairo(),
+              textDirection: TextDirection.rtl,
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        // Show error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'فشل التبديل إلى الحساب. يرجى المحاولة مرة أخرى',
+              style: GoogleFonts.cairo(),
+              textDirection: TextDirection.rtl,
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.of(context).pop(); // Close loading if still open
+      print('Error switching account: $e');
+    }
+  }
+
+  Future<void> _deleteAccount(SavedAccount account) async {
+    try {
+      final authCubit = BlocProvider.of<AuthCubit>(context);
+      final success = await authCubit.removeSavedAccount(account);
+      
+      if (success) {
+        await _loadSavedAccounts();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم حذف الحساب بنجاح',
+              style: GoogleFonts.cairo(),
+              textDirection: TextDirection.rtl,
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error deleting account: $e');
     }
   }
 
@@ -202,6 +313,19 @@ class ProfilePageState extends State<HomeProfile> {
 
         const SizedBox(height: 24),
 
+        // Saved Accounts Section
+        if (!isGuest && savedAccounts.isNotEmpty) ...[
+          AccountSwitcherWidget(
+            accounts: savedAccounts,
+            currentAccount: currentAccount,
+            onAccountTap: _switchAccount,
+            onAccountDelete: _deleteAccount,
+            onAddAccount: () {
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+          ),
+          const SizedBox(height: 24),
+        ],
 
         Text(
           'الإجراءات',

@@ -1,5 +1,7 @@
 import 'package:ads_app/Models/auth_models.dart';
+import 'package:ads_app/Models/saved_account_model.dart';
 import 'package:ads_app/Repos/auth_repo.dart';
+import 'package:ads_app/Services/account_manager_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,12 +13,13 @@ class AuthCubit extends Cubit<AuthState>{
 
   final AuthRepo repo;
   final SharedPreferences prefs;
+  final AccountManagerService? accountManager;
   
   UserProfile? _cachedProfile;
   DateTime? _lastFetchTime;
   static const Duration _cacheDuration = Duration(minutes: 5);
 
-  AuthCubit(super.initialState, this.prefs, this.repo);
+  AuthCubit(super.initialState, this.prefs, this.repo, [this.accountManager]);
 
   void enterGuestMode()
   {
@@ -27,10 +30,14 @@ class AuthCubit extends Cubit<AuthState>{
 
   void exitGuestMode()
   {
-    prefs.clear();
+    // Only clear guest-related data, not saved accounts
+    prefs.remove("guest");
+    prefs.remove("id");
+    prefs.remove("session");
+    prefs.remove("isAdmin");
   }
 
-  Future<bool> login(String user, String pass) async
+  Future<bool> login(String user, String pass, {bool rememberMe = false}) async
   {
     bool res = false;
 
@@ -46,6 +53,38 @@ class AuthCubit extends Cubit<AuthState>{
         prefs.setString("session", x.session ?? "");
         prefs.remove("guest");  // إزالة وضع الزائر عند تسجيل الدخول ✅
         clearProfileCache();  // مسح الـ cache القديم
+        
+        // Save account if remember me is enabled
+        if (rememberMe && accountManager != null && x.id != null) {
+          // Use a delayed approach to avoid blocking login
+          // Get user name from profile after session is saved
+          Future.microtask(() async {
+            try {
+              String userName = user;
+              try {
+                // Wait a bit to ensure session is saved
+                await Future.delayed(Duration(milliseconds: 100));
+                final profile = await getProfile(forceRefresh: true);
+                if (profile.name.isNotEmpty && profile.name != "Invalid") {
+                  userName = profile.name;
+                }
+              } catch (e) {
+                // If profile fetch fails, use username
+                print('Could not fetch profile for account name, using username: $e');
+              }
+              
+              await accountManager!.saveAccount(
+                username: user,
+                password: pass,
+                name: userName,
+                userId: x.id!,
+              );
+            } catch (e) {
+              print('Error saving account: $e');
+            }
+          });
+        }
+        
         emit(AuthDone());
         res = true;
       }
@@ -104,6 +143,11 @@ class AuthCubit extends Cubit<AuthState>{
       try {
         print("📡 AuthCubit: Fetching profile from backend...");
         final response = await repo.profile(id, session);
+        
+        // Validate response
+        if (response.name.isEmpty || response.name == "Invalid") {
+          throw Exception("Invalid profile response");
+        }
         
         _cachedProfile = response;
         _lastFetchTime = DateTime.now();
@@ -237,6 +281,10 @@ class AuthCubit extends Cubit<AuthState>{
 
       if (response.status == "Valid")
       {
+        // Clear session and id from SharedPreferences
+        prefs.remove("id");
+        prefs.remove("session");
+        prefs.remove("isAdmin");
         clearProfileCache();
         res = true;
       }
@@ -265,6 +313,11 @@ class AuthCubit extends Cubit<AuthState>{
 
       if (response.status == "Success")
       {
+        // Clear session and id from SharedPreferences
+        prefs.remove("id");
+        prefs.remove("session");
+        prefs.remove("isAdmin");
+        clearProfileCache();
         res = true;
       }
     }
@@ -378,7 +431,7 @@ class AuthCubit extends Cubit<AuthState>{
     final id = prefs.getString("id");
     final session = prefs.getString("session");
 
-    final x = await repo.changePass(id?? "", session?? "", pass);
+    final x = await repo.changePass(session?? "", pass);
 
     if (x.status == "Success")
     {
@@ -405,6 +458,7 @@ class AuthCubit extends Cubit<AuthState>{
     {
       prefs.setString("id", x.id?? "");
       prefs.setString("session", x.session?? "");
+      prefs.remove("guest");  // Remove guest mode flag
       emit(AuthDone());
       return true;
     }
@@ -424,7 +478,7 @@ class AuthCubit extends Cubit<AuthState>{
     final id = prefs.getString("id");
     final session = prefs.getString("session");
 
-    final x = await repo.validateResetPass(id?? "", session?? "", code);
+    final x = await repo.validateResetPass(session?? "", code);
 
     if (x.status == "Success")
     {
@@ -439,6 +493,95 @@ class AuthCubit extends Cubit<AuthState>{
     else
     {
       emit(AuthError(x.status));
+      return false;
+    }
+  }
+
+  // ============================================
+  // Saved Accounts Management
+  // ============================================
+
+  /// Get all saved accounts
+  Future<List<SavedAccount>> getSavedAccounts() async {
+    if (accountManager == null) return [];
+    return await accountManager!.getSavedAccounts();
+  }
+
+  /// Get current account as SavedAccount
+  Future<SavedAccount?> getCurrentAccount() async {
+    final id = prefs.getString("id");
+    if (id == null) return null;
+    
+    final accounts = await getSavedAccounts();
+    try {
+      return accounts.firstWhere((acc) => acc.userId == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Switch to a saved account
+  Future<bool> switchAccount(SavedAccount account) async {
+    if (accountManager == null) return false;
+    
+    try {
+      // Get password from secure storage
+      final password = await accountManager!.getPassword(account.userId);
+      if (password == null) {
+        emit(AuthError("كلمة المرور غير موجودة"));
+        return false;
+      }
+
+      // Login with saved credentials (don't save again, already saved)
+      final success = await login(account.username, password, rememberMe: false);
+      
+      if (success) {
+        clearProfileCache();
+        emit(AuthDone());
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      print('Error switching account: $e');
+      emit(AuthError("فشل التبديل إلى الحساب"));
+      return false;
+    }
+  }
+
+  /// Remove a saved account
+  Future<bool> removeSavedAccount(SavedAccount account) async {
+    if (accountManager == null) return false;
+    
+    try {
+      final success = await accountManager!.removeAccount(account.userId);
+      if (success) {
+        emit(AuthDone());
+      }
+      return success;
+    } catch (e) {
+      print('Error removing account: $e');
+      return false;
+    }
+  }
+
+  /// Save current account for remember me
+  Future<bool> saveAccountForRememberMe(String username, String password) async {
+    if (accountManager == null) return false;
+    
+    final id = prefs.getString("id");
+    if (id == null) return false;
+    
+    try {
+      final profile = await getProfile(forceRefresh: true);
+      return await accountManager!.saveAccount(
+        username: username,
+        password: password,
+        name: profile.name.isNotEmpty ? profile.name : username,
+        userId: id,
+      );
+    } catch (e) {
+      print('Error saving account: $e');
       return false;
     }
   }

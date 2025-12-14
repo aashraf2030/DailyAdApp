@@ -4,11 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 
 class LoginTextbox extends StatefulWidget{
-  LoginTextbox({super.key, required this.padding, required this.icon, required this.hint, this.isPassword = false});
+  LoginTextbox({super.key, required this.padding, required this.icon, required this.hint, this.isPassword = false, this.initialValue});
   final double padding;
   final IconData icon;
   final String hint;
   final bool isPassword;
+  final String? initialValue;
 
   String data = "";
 
@@ -20,10 +21,13 @@ class TextboxState extends State<LoginTextbox> {
   bool _isFocused = false;
   bool _isPasswordVisible = false;
   final FocusNode _focusNode = FocusNode();
+  late TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controller = TextEditingController(text: widget.initialValue ?? "");
+    widget.data = widget.initialValue ?? ""; // Initialize data
     _focusNode.addListener(() {
       setState(() {
         _isFocused = _focusNode.hasFocus;
@@ -34,6 +38,7 @@ class TextboxState extends State<LoginTextbox> {
   @override
   void dispose() {
     _focusNode.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -89,6 +94,7 @@ class TextboxState extends State<LoginTextbox> {
               // Text Field
               Expanded(
                 child: TextField(
+                  controller: _controller,
                   focusNode: _focusNode,
                   textDirection: TextDirection.rtl,
                   enableSuggestions: false,

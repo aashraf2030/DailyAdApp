@@ -197,13 +197,13 @@ class AuthServices {
     }
   }
 
-  Future<dynamic> changePass(String id, String session, String pass) async {
+  Future<dynamic> changePass(String session, String pass) async {
     try {
       final hash = _hashPassword(pass);
       // Token is automatically added by AuthInterceptor
       final res = await dio.post(
         BackendAPI.change_pass,
-        data: {"email": id, "pass": hash},
+        data: {"pass": hash},
       );
       return res.data;
     } catch (e, stackTrace) {
@@ -224,7 +224,6 @@ class AuthServices {
   }
 
   Future<dynamic> validateResetPass(
-    String email,
     String session,
     String code,
   ) async {
@@ -232,7 +231,7 @@ class AuthServices {
       // Token is automatically added by AuthInterceptor
       final res = await dio.post(
         BackendAPI.validate_reset,
-        data: {"email": email, "code": code},
+        data: {"code": code},
       );
       return res.data;
     } catch (e, stackTrace) {

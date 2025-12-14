@@ -11,16 +11,20 @@ class AuthResult{
     // 1. Direct format: {"status": "...", "id": "...", "session": "..."}
     // 2. Nested format: {"status": "...", "data": {"id": "...", "session": "..."}}
     if (json.containsKey("id") && json.containsKey("session")) {
-      id = json["id"];
-      session = json["session"];
+      id = json["id"]?.toString();
+      session = json["session"]?.toString();
     } else if (json.containsKey("data") && json["data"] is Map) {
       final data = json["data"] as Map<String, dynamic>;
-      id = data["id"];
-      session = data["session"];
+      id = data["id"]?.toString();
+      session = data["session"]?.toString();
     } else {
       id = null;
       session = null;
     }
+    
+    // Ensure id and session are not empty strings
+    if (id != null && id!.isEmpty) id = null;
+    if (session != null && session!.isEmpty) session = null;
   }
 
   AuthResult(this.status);

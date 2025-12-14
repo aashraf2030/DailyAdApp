@@ -1,5 +1,6 @@
 import 'package:ads_app/Models/category_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:ads_app/Pages/Store/store_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CategoryButton extends StatefulWidget {
@@ -66,7 +67,7 @@ class _CategoryButtonState extends State<CategoryButton> with SingleTickerProvid
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
-          margin: EdgeInsets.all(8),
+          margin: EdgeInsets.all(4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: LinearGradient(
@@ -89,22 +90,22 @@ class _CategoryButtonState extends State<CategoryButton> with SingleTickerProvid
               borderRadius: BorderRadius.circular(20),
               onTap: () => clicked(context),
               child: Container(
-                padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     // أيقونة دائرية
                     Container(
-                      width: 50,
-                      height: 50,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.3),
                       ),
                       child: Icon(
                         category.icon,
-                        size: 28,
+                        size: 22,
                         color: Colors.white,
                       ),
                     ),
@@ -116,7 +117,7 @@ class _CategoryButtonState extends State<CategoryButton> with SingleTickerProvid
                       child: Text(
                         category.name,
                         style: GoogleFonts.cairo(
-                          fontSize: 14,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           height: 1.2,
@@ -132,7 +133,7 @@ class _CategoryButtonState extends State<CategoryButton> with SingleTickerProvid
                     // أيقونة سهم
                     Icon(
                       Icons.arrow_forward_ios,
-                      size: 12,
+                      size: 10,
                       color: Colors.white.withOpacity(0.8),
                     ),
                   ],
@@ -146,6 +147,10 @@ class _CategoryButtonState extends State<CategoryButton> with SingleTickerProvid
   }
 
   void clicked(context) {
+    if (widget.id == 12) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => StorePage()));
+      return;
+    }
     Navigator.pushNamed(context, "/show_cat",
         arguments: CategoryManager.getSearchCategoryById(widget.id));
   }

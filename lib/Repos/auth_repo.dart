@@ -29,7 +29,13 @@ class AuthRepo {
   Future<UserProfile> profile(String id, String session) async{
     final res = await web.getProfile(session, id);
 
-    if (res["name"] == null) {
+    // Check if response is an error
+    if (res is Map && res.containsKey("status") && res["status"] != "Success") {
+      throw Exception(res["message"] ?? "Can't Retrieve Data");
+    }
+
+    // Check if name exists
+    if (res["name"] == null || res["name"] == "Invalid") {
       throw Exception("Can't Retrieve Data");
     }
 
@@ -88,8 +94,8 @@ class AuthRepo {
     return AuthResult.fromJson(res);
   }
 
-  Future<AuthResult> changePass(String id, String session, String pass) async {
-    final res = await web.changePass(id, session, pass);
+  Future<AuthResult> changePass(String session, String pass) async {
+    final res = await web.changePass(session, pass);
 
     return AuthResult.fromJson(res);
   }
@@ -100,8 +106,8 @@ class AuthRepo {
     return AuthResult.fromJson(res);
   }
 
-  Future<AuthResult> validateResetPass(String email, String session, String code) async {
-    final res = await web.validateResetPass(email, session, code);
+  Future<AuthResult> validateResetPass(String session, String code) async {
+    final res = await web.validateResetPass(session, code);
 
     return AuthResult.fromJson(res);
   }

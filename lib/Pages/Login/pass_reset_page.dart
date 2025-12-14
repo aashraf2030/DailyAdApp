@@ -68,29 +68,25 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
                     child: SlideTransition(
                       position: _slideAnimation,
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(height: 30),
-                          
                           // Header
                           _buildHeader(),
                           
-                          SizedBox(height: 30),
+                          SizedBox(height: 40),
                           
                           // Code Card
                           _buildCodeCard(context),
                           
-                          SizedBox(height: 20),
+                          SizedBox(height: 25),
                           
                           // Resend Button
                           _buildResendButton(context),
                           
-                          SizedBox(height: 20),
+                          SizedBox(height: 25),
                           
                           // Back Button
                           _buildBackButton(context),
-                          
-                          SizedBox(height: 20),
                         ],
                       ),
                     ),
@@ -107,34 +103,37 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
     return Column(
       children: [
         Container(
-          width: 80,
-          height: 80,
+          width: 100,
+          height: 100,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
               colors: [
-                Color.fromRGBO(37, 150, 250, 1),
-                Color.fromRGBO(54, 74, 98, 1),
+                Color(0xFF2596FA),
+                Color(0xFF364A62),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: Color.fromRGBO(37, 150, 250, 0.4),
-                blurRadius: 20,
+                color: Color(0xFF2596FA).withOpacity(0.4),
+                blurRadius: 25,
                 spreadRadius: 5,
+                offset: Offset(0, 10),
               ),
             ],
           ),
-          child: Icon(
-            FontAwesomeIcons.shieldHalved,
-            size: 40,
-            color: Colors.white,
+          child: Center(
+            child: Icon(
+              FontAwesomeIcons.shieldHalved,
+              size: 45,
+              color: Colors.white,
+            ),
           ),
         ),
         
-        SizedBox(height: 20),
+        SizedBox(height: 25),
         
         Text(
           "تأكيد الرمز",
@@ -146,7 +145,7 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
               Shadow(
                 color: Colors.black26,
                 blurRadius: 10,
-                offset: Offset(0, 2),
+                offset: Offset(0, 4),
               ),
             ],
           ),
@@ -157,8 +156,9 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
         Text(
           "أدخل الرمز المرسل على بريدك",
           style: GoogleFonts.cairo(
-            fontSize: 15,
+            fontSize: 16,
             color: Colors.white.withOpacity(0.9),
+            height: 1.5,
           ),
           textAlign: TextAlign.center,
         ),
@@ -169,25 +169,36 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
   Widget _buildCodeCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
+            blurRadius: 30,
             spreadRadius: 0,
-            offset: Offset(0, 8),
+            offset: Offset(0, 15),
           ),
         ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.5),
+          width: 1.5,
+        ),
       ),
       child: Padding(
         padding: EdgeInsets.all(30),
         child: Column(
           children: [
-            Icon(
-              FontAwesomeIcons.envelope,
-              size: 60,
-              color: Color.fromRGBO(37, 150, 250, 1),
+            Container(
+              padding: EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Color(0xFF2596FA).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                FontAwesomeIcons.envelopeOpenText,
+                size: 40,
+                color: Color(0xFF2596FA),
+              ),
             ),
             
             SizedBox(height: 20),
@@ -197,7 +208,7 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
               style: GoogleFonts.cairo(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color.fromRGBO(54, 74, 98, 1),
+                color: Color(0xFF364A62),
               ),
             ),
             
@@ -221,42 +232,42 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
             
             Container(
               width: double.infinity,
-              height: 50,
+              height: 55,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(20),
                 gradient: LinearGradient(
                   colors: [
-                    Color.fromRGBO(37, 150, 250, 1),
-                    Color.fromRGBO(54, 74, 98, 1),
+                    Color(0xFF2596FA),
+                    Color(0xFF364A62),
                   ],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Color.fromRGBO(37, 150, 250, 0.3),
-                    blurRadius: 10,
+                    color: Color(0xFF2596FA).withOpacity(0.3),
+                    blurRadius: 15,
                     spreadRadius: 0,
-                    offset: Offset(0, 6),
+                    offset: Offset(0, 8),
                   ),
                 ],
               ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(20),
                   onTap: () => changePassRequest(context),
                   child: Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(FontAwesomeIcons.check, color: Colors.white, size: 18),
-                        SizedBox(width: 10),
+                        SizedBox(width: 12),
                         Text(
                           "تأكيد",
                           style: GoogleFonts.cairo(
                             color: Colors.white,
-                            fontSize: 17,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -273,96 +284,63 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
   }
 
   Widget _buildResendButton(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 50,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        color: Colors.white.withOpacity(0.9),
-        border: Border.all(
-          color: Color.fromRGBO(37, 150, 250, 1),
-          width: 2,
+    return TextButton(
+      onPressed: () => resendCode(context),
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        backgroundColor: Colors.white.withOpacity(0.9),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            spreadRadius: 0,
-            offset: Offset(0, 4),
-          ),
-        ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(25),
-          onTap: () => resendCode(context),
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(FontAwesomeIcons.rotateRight, 
-                  color: Color.fromRGBO(37, 150, 250, 1), 
-                  size: 18
-                ),
-                SizedBox(width: 10),
-                Text(
-                  "إعادة إرسال الرمز",
-                  style: GoogleFonts.cairo(
-                    color: Color.fromRGBO(37, 150, 250, 1),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(FontAwesomeIcons.rotateRight, 
+            color: Color(0xFF2596FA), 
+            size: 16
+          ),
+          SizedBox(width: 10),
+          Text(
+            "إعادة إرسال الرمز",
+            style: GoogleFonts.cairo(
+              color: Color(0xFF2596FA),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildBackButton(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 50,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        color: Color.fromRGBO(54, 74, 98, 0.8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 10,
-            spreadRadius: 0,
-            offset: Offset(0, 4),
-          ),
-        ],
+    return TextButton(
+      onPressed: () {
+        Navigator.of(context).pushReplacementNamed("/login");
+      },
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+        backgroundColor: Colors.white.withOpacity(0.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+          side: BorderSide(color: Colors.white.withOpacity(0.3)),
+        ),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(25),
-          onTap: () {
-            Navigator.of(context).pushReplacementNamed("/login");
-          },
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 18),
-                SizedBox(width: 10),
-                Text(
-                  "العودة",
-                  style: GoogleFonts.cairo(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(FontAwesomeIcons.arrowLeft, color: Colors.white, size: 16),
+          SizedBox(width: 10),
+          Text(
+            "العودة لتسجيل الدخول",
+            style: GoogleFonts.cairo(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -377,16 +355,42 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => Center(
-        child: Container(
-          padding: EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Color.fromRGBO(37, 150, 250, 1),
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.all(25),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Color(0xFF2596FA),
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "جاري التحقق...",
+                  style: GoogleFonts.cairo(
+                    color: Color(0xFF364A62),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -411,16 +415,42 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => Center(
-        child: Container(
-          padding: EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Color.fromRGBO(37, 150, 250, 1),
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.all(25),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Color(0xFF2596FA),
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "جاري الإرسال...",
+                  style: GoogleFonts.cairo(
+                    color: Color(0xFF364A62),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -452,11 +482,7 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
             padding: EdgeInsets.all(30),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(25),
-              gradient: LinearGradient(
-                colors: [Colors.white, Colors.green.shade50],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+              color: Colors.white,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -470,7 +496,7 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
                   ),
                   child: Icon(
                     FontAwesomeIcons.circleCheck,
-                    size: 45,
+                    size: 40,
                     color: Colors.green.shade400,
                   ),
                 ),
@@ -561,11 +587,7 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
             padding: EdgeInsets.all(30),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(25),
-              gradient: LinearGradient(
-                colors: [Colors.white, Colors.grey.shade50],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+              color: Colors.white,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -579,7 +601,7 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
                   ),
                   child: Icon(
                     FontAwesomeIcons.triangleExclamation,
-                    size: 45,
+                    size: 40,
                     color: Colors.red.shade400,
                   ),
                 ),
@@ -618,13 +640,13 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
                     borderRadius: BorderRadius.circular(15),
                     gradient: LinearGradient(
                       colors: [
-                        Color.fromRGBO(37, 150, 250, 1),
-                        Color.fromRGBO(54, 74, 98, 1),
+                        Color(0xFF2596FA),
+                        Color(0xFF364A62),
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Color.fromRGBO(37, 150, 250, 0.3),
+                        color: Color(0xFF2596FA).withOpacity(0.3),
                         blurRadius: 10,
                         offset: Offset(0, 5),
                       ),

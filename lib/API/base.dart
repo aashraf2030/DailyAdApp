@@ -1,6 +1,7 @@
 class BackendAPI{
   // Production URL (Active)
-  static const base = "https://hitech-wp.com/api/";
+  static const domain = "https://hitech-wp.com/";
+  static const base = "${domain}api/";
   
   // Local Development URL (Commented for now)
   // static const base = "http://127.0.0.1:8000/api/";  // Android Emulator

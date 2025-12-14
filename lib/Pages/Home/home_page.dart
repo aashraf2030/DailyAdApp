@@ -23,30 +23,38 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../chat/chat_page.dart';
 import '../chat/admin_chat_list_page.dart';
 import '../../core/di/service_locator.dart';
+import 'package:ads_app/Pages/Store/store_page.dart';
+import 'package:ads_app/Widgets/store_button.dart';
 import '../../Bloc/chat/chat_cubit.dart';
+import '../../Bloc/Store/store_cubit.dart';
 import 'category_area.dart';
 import 'my_ads.dart';
 import 'all_ads_area.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({super.key});
-
-  int _currentIndex = 0;
-  bool isAdmin = false;
+  const HomePage({super.key});
 
   @override
   HomePageState createState() => HomePageState();
 }
 
 class HomePageState extends State<HomePage> {
+  int _currentIndex = 0;
+  bool isAdmin = false;
 
   @override
   void initState() {
     super.initState();
+    _checkAdminStatus();
+  }
+
+  void _checkAdminStatus() {
     (BlocProvider.of<AuthCubit>(context).isAdmin()).then((x) {
-      setState(() {
-        widget.isAdmin = x;
-      });
+      if (mounted) {
+        setState(() {
+          isAdmin = x;
+        });
+      }
     });
   }
 
@@ -55,6 +63,35 @@ class HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: GradientAppBar(
         automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(FontAwesomeIcons.store, color: Colors.white),
+          tooltip: 'المتجر',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => MultiBlocProvider(
+                  providers: [
+                    BlocProvider(create: (_) => sl<StoreCubit>()),
+                    BlocProvider.value(value: BlocProvider.of<AuthCubit>(context)),
+                  ],
+                  child: StorePage(),
+                ),
+              ),
+            ).then((_) {
+              _checkAdminStatus();
+            });
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(FontAwesomeIcons.whatsapp, color: Colors.green),
+            onPressed: () {
+              _openWhatsApp();
+            },
+            tooltip: 'تواصل معنا على واتساب',
+          ),
+        ],
         title: BlocProvider.value(
           value: BlocProvider.of<HomeCubit>(context),
           child: PageTitle(),
@@ -87,17 +124,9 @@ class HomePageState extends State<HomePage> {
           if (state is HomeChatState) {
             return const SizedBox.shrink();
           }
-          // عرض أيقونة الواتساب في باقي الصفحات
-          return FloatingActionButton(
-            onPressed: _openWhatsApp,
-            backgroundColor: Color(0xFF25D366),
-            child: FaIcon(
-              FontAwesomeIcons.whatsapp,
-              color: Colors.white,
-              size: 30,
-            ),
-            tooltip: 'تواصل معنا على واتساب',
-          );
+          // The WhatsApp FloatingActionButton is now moved to AppBar actions.
+          // So, we always hide the FloatingActionButton here.
+          return const SizedBox.shrink();
         },
       ),
     );
@@ -252,7 +281,7 @@ class HomePageState extends State<HomePage> {
 
     if (state is HomeChatState) {
       // للمسؤول: عرض قائمة المحادثات مباشرة
-      if (widget.isAdmin) {
+      if (isAdmin) {
         return BlocProvider(
           create: (_) => sl<ChatCubit>(),
           child: const AdminChatListPage(),
@@ -320,7 +349,7 @@ class HomePageState extends State<HomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: List.generate(items.length, (index) {
-                  final isSelected = widget._currentIndex == index;
+                  final isSelected = _currentIndex == index;
                   final item = items[index];
                   
                   return Expanded(
@@ -393,7 +422,7 @@ class HomePageState extends State<HomePage> {
   }
 
   List<BottomNavigationBarItem> generateNavItems() {
-    if (widget.isAdmin) {
+    if (isAdmin) {
       return const [
         BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.house), label: "الرئيسية"),
@@ -432,7 +461,7 @@ class HomePageState extends State<HomePage> {
 
   void changeScreen(int i) {
     setState(() {
-      widget._currentIndex = BlocProvider.of<HomeCubit>(context).changeRoute(i);
+      _currentIndex = BlocProvider.of<HomeCubit>(context).changeRoute(i);
     });
   }
 }
@@ -530,7 +559,43 @@ class _HomeLandingState extends State<HomeLanding> {
                     
 
                     Expanded(
-                      child: _buildCategoriesGrid(),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: _searchQuery.isNotEmpty && _getFilteredCategories().isEmpty
+                                ? Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.search_off,
+                                          size: 80,
+                                          color: Colors.grey.shade400,
+                                        ),
+                                        SizedBox(height: 16),
+                                        Text(
+                                          "لا توجد نتائج",
+                                          style: GoogleFonts.cairo(
+                                            fontSize: 18,
+                                            color: Colors.grey.shade600,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          "جرب كلمة بحث أخرى",
+                                          style: GoogleFonts.cairo(
+                                            fontSize: 14,
+                                            color: Colors.grey.shade500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : _buildCategoriesGrid(),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -679,7 +744,7 @@ class _HomeLandingState extends State<HomeLanding> {
     return GridView.builder(
       padding: EdgeInsets.all(12),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+        crossAxisCount: 3,
         childAspectRatio: 0.85,
         crossAxisSpacing: 0,
         mainAxisSpacing: 0,

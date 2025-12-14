@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../Bloc/Ad/ad_cubit.dart';
 import '../../Bloc/Auth/auth_cubit.dart';
@@ -18,6 +19,10 @@ import '../../Web/authority_web.dart';
 import '../../Web/chat_web.dart';
 import '../../network/interceptors.dart' show AuthInterceptor, LoggerInterceptor;
 import '../constants/app_constants.dart';
+import '../../Bloc/Store/store_cubit.dart';
+import '../../Repos/store_repo.dart';
+import '../../Web/store_web.dart';
+import '../../Services/account_manager_service.dart';
 
 /// Global service locator instance
 final sl = GetIt.instance;
@@ -30,6 +35,16 @@ Future<void> initializeDependencies() async {
   // ============================================
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
+  
+  const secureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+    ),
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock_this_device,
+    ),
+  );
+  sl.registerLazySingleton<FlutterSecureStorage>(() => secureStorage);
 
   // ============================================
   // Dio Configuration
@@ -76,6 +91,7 @@ Future<void> initializeDependencies() async {
       AuthInitial(),
       sl<SharedPreferences>(),
       sl<AuthRepo>(),
+      sl<AccountManagerService>(),
     ),
   );
 
@@ -115,6 +131,23 @@ Future<void> initializeDependencies() async {
     () => ChatCubit(
       sl<ChatRepo>(),
       sl<SharedPreferences>(),
+    ),
+  );
+
+  // ============================================
+  // Store System
+  // ============================================
+  sl.registerLazySingleton<StoreServices>(() => StoreServices(sl<Dio>()));
+  sl.registerLazySingleton<StoreRepo>(() => StoreRepo(sl<StoreServices>()));
+  sl.registerFactory<StoreCubit>(() => StoreCubit(sl<StoreRepo>()));
+
+  // ============================================
+  // Account Manager Service
+  // ============================================
+  sl.registerLazySingleton<AccountManagerService>(
+    () => AccountManagerService(
+      sl<SharedPreferences>(),
+      sl<FlutterSecureStorage>(),
     ),
   );
 }
