@@ -1,0 +1,33 @@
+{
+    "provider": "apple_pay",
+    "data": {
+        "merchantIdentifier": "merchant.com.daily.mag",
+        "displayName": "Daily Mag App",
+        "merchantCapabilities": [
+            "3DS"
+        ],
+        "supportedNetworks": [
+            "visa",
+            "masterCard",
+            "amex",
+            "mada"
+        ],
+        "countryCode": "EG",
+        "currencyCode": "EGP",
+        "requiredBillingContactFields": [
+            "emailAddress",
+            "name",
+            "phoneNumber",
+            "postalAddress"
+        ],
+        "requiredShippingContactFields": [],
+        "shippingMethods": [
+            {
+                "amount": "0.00",
+                "detail": "Standard Delivery",
+                "identifier": "standard",
+                "label": "Standard Delivery"
+            }
+        ]
+    }
+}

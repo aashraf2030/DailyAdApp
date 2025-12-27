@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ads_app/API/base.dart';
 import 'package:ads_app/Bloc/Store/store_cubit.dart';
 import 'package:ads_app/Bloc/Store/store_state.dart';
@@ -6,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pay/pay.dart';
 
 class PaymentMethodPage extends StatefulWidget {
   final String receiverName;
@@ -25,6 +28,52 @@ class PaymentMethodPage extends StatefulWidget {
 
 class _PaymentMethodPageState extends State<PaymentMethodPage> {
   String selectedPaymentMethod = 'cash'; // Default to cash
+  
+  final List<PaymentItem> _paymentItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _calculateTotal();
+  }
+
+  void _calculateTotal() {
+    final cart = context.read<StoreCubit>().cart;
+    double total = 0;
+    for (var item in cart) {
+      total += (double.parse(item['price'].toString()) * item['quantity']);
+    }
+    
+    _paymentItems.add(
+      PaymentItem(
+        label: 'Total',
+        amount: total.toStringAsFixed(2),
+        status: PaymentItemStatus.final_price,
+      ),
+    );
+  }
+
+  void onApplePayResult(paymentResult) {
+    debugPrint('Apple Pay Result: $paymentResult');
+    context.read<StoreCubit>().placeOrder(
+      receiverName: widget.receiverName,
+      address: widget.address,
+      phone: widget.phone,
+      paymentMethod: 'apple_pay',
+      paymentToken: paymentResult,
+    );
+  }
+
+  void onGooglePayResult(paymentResult) {
+    debugPrint('Google Pay Result: $paymentResult');
+    context.read<StoreCubit>().placeOrder(
+      receiverName: widget.receiverName,
+      address: widget.address,
+      phone: widget.phone,
+      paymentMethod: 'google_pay',
+      paymentToken: paymentResult,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,19 +204,33 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                     
                     SizedBox(height: 16),
                     
-                    // Apple Pay Option (Placeholder for future implementation)
-                    PaymentMethodCard(
-                      icon: FontAwesomeIcons.applePay,
-                      title: "Apple Pay",
-                      description: "ادفع بشكل آمن عبر Apple Pay",
-                      isSelected: selectedPaymentMethod == 'apple_pay',
-                      color: Colors.black87,
-                      onTap: () {
-                        setState(() {
-                          selectedPaymentMethod = 'apple_pay';
-                        });
-                      },
-                    ),
+                    // Platform-specific digital payment
+                    if (Platform.isIOS)
+                      PaymentMethodCard(
+                        icon: FontAwesomeIcons.applePay,
+                        title: "Apple Pay",
+                        description: "ادفع بشكل آمن عبر Apple Pay",
+                        isSelected: selectedPaymentMethod == 'apple_pay',
+                        color: Colors.black87,
+                        onTap: () {
+                          setState(() {
+                            selectedPaymentMethod = 'apple_pay';
+                          });
+                        },
+                      )
+                    else if (Platform.isAndroid)
+                      PaymentMethodCard(
+                        icon: FontAwesomeIcons.googlePay,
+                        title: "Google Pay",
+                        description: "ادفع بشكل آمن عبر Google Pay",
+                        isSelected: selectedPaymentMethod == 'google_pay',
+                        color: Color(0xFF4285F4),
+                        onTap: () {
+                          setState(() {
+                            selectedPaymentMethod = 'google_pay';
+                          });
+                        },
+                      ),
                     
                     SizedBox(height: 30),
                   ],
@@ -175,8 +238,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               ),
             ),
             
-            // Confirm Button
-            _buildConfirmButton(context),
+            // Confirm/Payment Button Area
+            _buildActionArea(context),
           ],
         ),
       ),
@@ -264,7 +327,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     );
   }
 
-  Widget _buildConfirmButton(BuildContext context) {
+  Widget _buildActionArea(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -284,11 +347,90 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             return Center(child: CircularProgressIndicator());
           }
           
+          if (selectedPaymentMethod == 'apple_pay') {
+            return ApplePayButton(
+              paymentConfiguration: PaymentConfiguration.fromJsonString(
+                '''{
+                  "provider": "apple_pay",
+                  "data": {
+                    "merchantIdentifier": "merchant.com.daily.mag",
+                    "displayName": "Daily Mag App",
+                    "merchantCapabilities": ["3DS"],
+                    "supportedNetworks": ["visa", "masterCard", "amex", "mada"],
+                    "countryCode": "EG",
+                    "currencyCode": "EGP"
+                  }
+                }'''
+              ),
+              paymentItems: _paymentItems,
+              style: ApplePayButtonStyle.black,
+              width: double.infinity,
+              height: 55,
+              type: ApplePayButtonType.buy,
+              onPaymentResult: onApplePayResult,
+              loadingIndicator: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          } else if (selectedPaymentMethod == 'google_pay') {
+            return GooglePayButton(
+              paymentConfiguration: PaymentConfiguration.fromJsonString(
+                '''{
+                  "provider": "google_pay",
+                  "data": {
+                    "environment": "TEST",
+                    "apiVersion": 2,
+                    "apiVersionMinor": 0,
+                    "allowedPaymentMethods": [
+                      {
+                        "type": "CARD",
+                        "tokenizationSpecification": {
+                          "type": "PAYMENT_GATEWAY",
+                          "parameters": {
+                            "gateway": "example",
+                            "gatewayMerchantId": "exampleGatewayMerchantId"
+                          }
+                        },
+                        "parameters": {
+                          "allowedCardNetworks": ["VISA", "MASTERCARD"],
+                          "allowedAuthMethods": ["PAN_ONLY", "CRYPTOGRAM_3DS"]
+                        }
+                      }
+                    ],
+                    "merchantInfo": {
+                      "merchantId": "01234567890123456789",
+                      "merchantName": "Daily Mag App"
+                    },
+                    "transactionInfo": {
+                      "countryCode": "EG",
+                      "currencyCode": "EGP"
+                    }
+                  }
+                }'''
+              ),
+              paymentItems: _paymentItems,
+              type: GooglePayButtonType.buy,
+              onPaymentResult: onGooglePayResult,
+              loadingIndicator: const Center(
+                child: CircularProgressIndicator(),
+              ),
+              width: double.infinity,
+              height: 55,
+            );
+          }
+          
           return SizedBox(
             width: double.infinity,
             height: 55,
             child: ElevatedButton(
-              onPressed: () => _handlePayment(context),
+              onPressed: () {
+                context.read<StoreCubit>().placeOrder(
+                  receiverName: widget.receiverName,
+                  address: widget.address,
+                  phone: widget.phone,
+                  paymentMethod: 'cash',
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF2596FA),
                 shape: RoundedRectangleBorder(
@@ -299,15 +441,10 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (selectedPaymentMethod == 'cash')
-                    Icon(FontAwesomeIcons.moneyBill, size: 20)
-                  else
-                    Icon(FontAwesomeIcons.applePay, size: 20),
+                  Icon(FontAwesomeIcons.moneyBill, size: 20),
                   SizedBox(width: 10),
                   Text(
-                    selectedPaymentMethod == 'cash' 
-                        ? "تأكيد الطلب" 
-                        : "الدفع عبر Apple Pay",
+                    "تأكيد الطلب",
                     style: GoogleFonts.cairo(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -321,29 +458,5 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         },
       ),
     );
-  }
-
-  void _handlePayment(BuildContext context) {
-    if (selectedPaymentMethod == 'cash') {
-      // Handle cash payment
-      context.read<StoreCubit>().placeOrder(
-            receiverName: widget.receiverName,
-            address: widget.address,
-            phone: widget.phone,
-            paymentMethod: 'cash',
-          );
-    } else if (selectedPaymentMethod == 'apple_pay') {
-      // TODO: Handle Apple Pay integration
-      // For now, show a message that it's coming soon
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Apple Pay سيكون متاحاً قريباً",
-            style: GoogleFonts.cairo(),
-          ),
-          backgroundColor: Colors.orange,
-        ),
-      );
-    }
   }
 }

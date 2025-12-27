@@ -71,8 +71,8 @@ class StoreCubit extends Cubit<StoreState> {
     required String address,
     required String phone,
     required String receiverName,
-    required String paymentMethod, // 'cash' or 'apple_pay'
-    Map<String, dynamic>? applePayToken, // optional for Apple Pay
+    required String paymentMethod, // 'cash', 'apple_pay', or 'google_pay'
+    Map<String, dynamic>? paymentToken, // optional for digital payments
   }) async {
     emit(StoreLoading());
     try {
@@ -90,9 +90,9 @@ class StoreCubit extends Cubit<StoreState> {
         'payment_method': paymentMethod,
       };
 
-      // Add Apple Pay token if available
-      if (applePayToken != null) {
-        orderData['apple_pay_token'] = jsonEncode(applePayToken);
+      // Add payment token if available
+      if (paymentToken != null) {
+        orderData['payment_token'] = jsonEncode(paymentToken);
       }
 
       final success = await repo.createOrder(orderData);
