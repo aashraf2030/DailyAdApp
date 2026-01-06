@@ -1,4 +1,5 @@
 import 'package:ads_app/Models/auth_models.dart';
+import '../../core/utils/error_mapper.dart';
 import 'package:ads_app/Models/saved_account_model.dart';
 import 'package:ads_app/Repos/auth_repo.dart';
 import 'package:ads_app/Services/account_manager_service.dart';
@@ -103,7 +104,13 @@ class AuthCubit extends Cubit<AuthState>{
         res = false;
       }
     else{
-      emit(AuthError(x.status));
+      String msg = x.status;
+      if (msg == "Error" || msg.toLowerCase().contains("exception")) {
+         msg = "حدث خطأ أثناء تسجيل الدخول";
+      } else if (msg == "Unverified") {
+         msg = "الحساب غير مفعل";
+      }
+      emit(AuthError(msg));
       res = false;
     }
     return res;
@@ -164,7 +171,8 @@ class AuthCubit extends Cubit<AuthState>{
           return _cachedProfile!;
         }
         
-        emit(AuthError("لم نستطع استحضار الملف الشخصي"));
+        final failure = ErrorMapper.map(e);
+        emit(AuthError(failure.message));
         return UserProfile();
       }
     }
@@ -343,12 +351,16 @@ class AuthCubit extends Cubit<AuthState>{
     }
     else if (x.status == "User Exists")
       {
-        emit(AuthError("Existed User"));
+        emit(AuthError("هذا المستخدم مسجل بالفعل"));
         return false;
       }
     else
       {
-        emit(AuthInvalid());
+        String msg = x.status;
+        if (msg == "Error" || msg.toLowerCase().contains("exception")) {
+           msg = "حدث خطأ أثناء إنشاء الحساب";
+        }
+        emit(AuthError(msg));
         return false;
       }
   }
@@ -371,7 +383,11 @@ class AuthCubit extends Cubit<AuthState>{
       }
     else
       {
-        emit(AuthError(x.status));
+        String msg = x.status;
+        if (msg == "Error" || msg.toLowerCase().contains("exception")) {
+           msg = "فشل التحقق من الكود";
+        }
+        emit(AuthError(msg));
         return false;
       }
   }
@@ -394,7 +410,11 @@ class AuthCubit extends Cubit<AuthState>{
       }
     else
       {
-        emit(AuthError(x.status));
+        String msg = x.status;
+        if (msg == "Error" || msg.toLowerCase().contains("exception")) {
+           msg = "فشل إرسال الكود";
+        }
+        emit(AuthError(msg));
         return false;
       }
   }
@@ -422,7 +442,13 @@ class AuthCubit extends Cubit<AuthState>{
     }
     else
     {
-      emit(AuthError(x.status));
+       // Silent failure or specific message if needed, usually verification check is background or init
+       // But if explicit:
+      String msg = x.status;
+      if (msg == "Error" || msg.toLowerCase().contains("exception")) {
+         msg = "فشل التحقق من الحساب";
+      }
+      emit(AuthError(msg));
       return false;
     }
   }
@@ -445,7 +471,11 @@ class AuthCubit extends Cubit<AuthState>{
     }
     else
     {
-      emit(AuthError(x.status));
+      String msg = x.status;
+      if (msg == "Error" || msg.toLowerCase().contains("exception")) {
+         msg = "فشل تغيير كلمة المرور";
+      }
+      emit(AuthError(msg));
       return false;
     }
   }
@@ -469,7 +499,13 @@ class AuthCubit extends Cubit<AuthState>{
     }
     else
     {
-      emit(AuthError(x.status));
+      String msg = x.status;
+       if (msg == "Invalid Email") {
+         msg = "البريد الإلكتروني غير مسجل";
+       } else if (msg == "Error" || msg.toLowerCase().contains("exception")) {
+         msg = "حدث خطأ أثناء إعادة تعيين كلمة المرور";
+       }
+      emit(AuthError(msg));
       return false;
     }
   }
@@ -492,7 +528,11 @@ class AuthCubit extends Cubit<AuthState>{
     }
     else
     {
-      emit(AuthError(x.status));
+      String msg = x.status;
+      if (msg == "Error" || msg.toLowerCase().contains("exception")) {
+         msg = "فشل التحقق من الكود";
+      }
+      emit(AuthError(msg));
       return false;
     }
   }

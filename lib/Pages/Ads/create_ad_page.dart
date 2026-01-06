@@ -1,4 +1,5 @@
 import 'package:ads_app/Bloc/Auth/auth_cubit.dart';
+import 'package:ads_app/Pages/Ads/ad_payment_selection_page.dart';
 import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
 import 'package:ads_app/Models/category_manager.dart';
 import 'package:ads_app/Widgets/image_picker_button.dart';
@@ -534,34 +535,36 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
         return;
       }
 
-      final cubit = BlocProvider.of<OperationalCubit>(context);
-
+      // Map Type
       String adType = "Dynamic";
       if (widget.type == 1) {
         adType = "Fixed";
       } else if (widget.type == 2) {
         adType = "Premium";
       }
-      
-      final res = await cubit.createNewAd(
-        widget.name.out,
-        widget.picker.out!.path,
-        widget.picker.out!.name,
-        widget.link.out,
-        adType,
-        target,
-        widget.category,
-        widget.keys.out,
-      );
 
-      if (res) {
-        showSuccessMessage(context);
-      } else {
-        showErrorMessage(context, "فشل رفع الإعلان", "حدث خطأ أثناء رفع الإعلان، حاول مرة أخرى");
-        setState(() {
-          isSending = false;
-        });
-      }
+      setState(() {
+        isSending = false;
+      });
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: BlocProvider.of<OperationalCubit>(context),
+            child: AdPaymentSelectionPage(
+              name: widget.name.out,
+              imagePath: widget.picker.out!.path,
+              imageName: widget.picker.out!.name,
+              adLink: widget.link.out,
+              type: adType,
+              targetViews: target,
+              category: widget.category,
+              keywords: widget.keys.out,
+            ),
+          ),
+        ),
+      );
     }
   }
 

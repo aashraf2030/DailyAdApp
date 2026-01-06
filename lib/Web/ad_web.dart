@@ -305,4 +305,70 @@ class AdsWebServices {
       return _handleError(e, stackTrace);
     }
   }
+
+  Future<dynamic> initializeAdPayment({
+    required String name,
+    required String imagePath,
+    required String imageName,
+    required String adLink,
+    required String type,
+    required int targetViews,
+    required int category,
+    required String keywords,
+    required String paymentMethod,
+    required String platform,
+  }) async {
+    try {
+      final bytes = await _readFileAsBytes(imagePath);
+      final file = MultipartFile.fromBytes(bytes, filename: imageName);
+
+      final formDataMap = {
+        "file": file,
+        "name": name,
+        "path": adLink, // 'path' in backend represents the URL/Link
+        "type": type,
+        "targetViews": targetViews,
+        "category": category,
+        "keywords": keywords,
+        "payment_method": paymentMethod,
+        "platform": platform,
+      };
+
+      final formData = FormData.fromMap(formDataMap);
+
+      final response = await dio.post(
+        BackendAPI.ad_payment_initialize,
+        data: formData,
+        options: Options(
+          validateStatus: (status) {
+            return status != null && (status >= 200 && status < 300) || status == 422;
+          },
+        ),
+      );
+
+      if (response.statusCode == 422) {
+        throw DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          type: DioExceptionType.badResponse,
+        );
+      }
+
+      return response;
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
+    }
+  }
+
+  Future<dynamic> checkAdPaymentStatus(String paymentId) async {
+    try {
+      final response = await dio.post(
+        BackendAPI.ad_payment_status,
+        data: {"payment_id": paymentId},
+      );
+      return response;
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
+    }
+  }
 }

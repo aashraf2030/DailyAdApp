@@ -76,6 +76,15 @@ class AppConstants {
   static const String successAdCreated = "تم إنشاء الإعلان بنجاح";
   static const String successAdUpdated = "تم تحديث الإعلان بنجاح";
 
+  // Store & Payment Errors (Arabic)
+  static const String errorPaymentFailed = "فشلت عملية الدفع، يرجى المحاولة مرة أخرى";
+  static const String errorPaymentCancelled = "تم إلغاء عملية الدفع";
+  static const String errorInsufficientFunds = "رصيد غير كافٍ";
+  static const String errorCardDeclined = "تم رفض البطاقة";
+  static const String errorOrderCreation = "فشل إنشاء الطلب";
+  static const String errorProductLoad = "فشل تحميل المنتجات";
+  static const String errorInvalidAmount = "المبلغ غير صحيح";
+
   // ============================================
   // Response Status Codes
   // ============================================

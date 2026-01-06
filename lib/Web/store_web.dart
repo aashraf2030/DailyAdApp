@@ -18,12 +18,38 @@ class StoreServices {
     }
   }
 
-  Future<bool> createOrder(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> createOrder(Map<String, dynamic> data) async {
     try {
       final response = await dio.post("${BackendAPI.base}store/order", data: data);
-      return response.statusCode == 200;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data;
+      }
+      return {'status': 'Error', 'message': 'Failed to create order'};
     } catch (e) {
+      if (e is DioException && e.response != null) {
+        return e.response!.data is Map 
+            ? e.response!.data as Map<String, dynamic>
+            : {'status': 'Error', 'message': e.response!.statusMessage};
+      }
       throw e;
+    }
+  }
+
+  Future<Map<String, dynamic>> checkOrderStatus(int orderId) async {
+    try {
+      final response = await dio.post("${BackendAPI.base}store/order/status", data: {'order_id': orderId});
+      if (response.statusCode == 200) {
+        return response.data;
+      }
+      return {'status': 'Error', 'message': 'Failed to check status'};
+    } catch (e) {
+      if (e is DioException && e.response != null) {
+        return e.response!.data is Map 
+            ? e.response!.data as Map<String, dynamic>
+            : {'status': 'Error', 'message': e.response!.statusMessage};
+      }
+      print("Check Order Status Error: $e");
+      return {'status': 'Error', 'message': 'Connection error'};
     }
   }
 

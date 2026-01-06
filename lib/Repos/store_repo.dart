@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../Web/store_web.dart';
+import '../core/utils/error_mapper.dart';
 
 class StoreRepo {
   final StoreServices services;
@@ -16,12 +17,21 @@ class StoreRepo {
     }
   }
 
-  Future<bool> createOrder(Map<String, dynamic> orderData) async {
+  Future<Map<String, dynamic>> createOrder(Map<String, dynamic> orderData) async {
     try {
       return await services.createOrder(orderData);
     } catch (e) {
-      print("StoreRepo Order Error: $e");
-      return false;
+      final failure = ErrorMapper.map(e);
+      return {'status': 'Error', 'message': failure.message};
+    }
+  }
+
+  Future<Map<String, dynamic>> checkOrderStatus(int orderId) async {
+    try {
+      return await services.checkOrderStatus(orderId);
+    } catch (e) {
+      print("StoreRepo Check Status Error: $e");
+      return {'status': 'Error', 'message': e.toString()};
     }
   }
 

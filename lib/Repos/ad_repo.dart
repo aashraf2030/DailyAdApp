@@ -110,4 +110,54 @@ class AdsRepo {
 
     return response.map((x) => AdData.fromJson(x)).toList();
   }
+
+  Future<Map<String, dynamic>> initializeAdPayment({
+    required String name,
+    required String imagePath,
+    required String imageName,
+    required String adLink,
+    required String type,
+    required int targetViews,
+    required int category,
+    required String keywords,
+    required String paymentMethod,
+    required String platform,
+  }) async {
+    final response = await web.initializeAdPayment(
+      name: name,
+      imagePath: imagePath,
+      imageName: imageName,
+      adLink: adLink,
+      type: type,
+      targetViews: targetViews,
+      category: category,
+      keywords: keywords,
+      paymentMethod: paymentMethod,
+      platform: platform,
+    );
+
+    if (response is Map<String, dynamic>) {
+      return response;
+    }
+
+    if (response.data != null && response.data is Map) {
+      return response.data;
+    }
+
+    return {"status": "Error", "message": "Unknown error"};
+  }
+
+  Future<Map<String, dynamic>> checkAdPaymentStatus(String paymentId) async {
+    final response = await web.checkAdPaymentStatus(paymentId);
+
+    if (response is Map<String, dynamic>) {
+      return response;
+    }
+
+    if (response.data != null && response.data is Map) {
+      return response.data;
+    }
+
+    return {"status": "Error", "message": "Unknown error"};
+  }
 }

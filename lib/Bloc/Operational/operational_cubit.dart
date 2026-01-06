@@ -93,4 +93,105 @@ class OperationalCubit extends Cubit<OperationalState>{
 
       return response == "Success";
   }
+
+  // ==========================================
+  // Ad Payment Flow
+  // ==========================================
+
+  Future<void> initializeAdPayment({
+    required String name,
+    required String imagePath,
+    required String imageName,
+    required String adLink,
+    required String type,
+    required int targetViews,
+    required int category,
+    required String keywords,
+    required String paymentMethod,
+    required String platform,
+  }) async {
+    emit(AdPaymentLoading());
+
+    try {
+      final response = await repo.initializeAdPayment(
+        name: name,
+        imagePath: imagePath,
+        imageName: imageName,
+        adLink: adLink,
+        type: type,
+        targetViews: targetViews,
+        category: category,
+        keywords: keywords,
+        paymentMethod: paymentMethod,
+        platform: platform,
+      );
+
+      if (response['status'] == 'Success') {
+        final data = response['data'];
+        
+        if (paymentMethod == 'apple_pay') {
+          emit(AdApplePayRequired(
+            orderId: data['order_id'],
+            clientSecret: data['client_secret'],
+            amount: (data['amount'] as num).toDouble(),
+            currency: data['currency'],
+          ));
+        } else if (paymentMethod == 'card') {
+          // Changed paymentId to orderId for consistency with store flow if needed, 
+          // but AdPaymentRequired expects orderId.
+          emit(AdPaymentRequired(
+            data['payment_url'],
+            data['order_id'],
+          ));
+        } else {
+            // Cash or other methods that auto-complete (if supported in future)
+            // But currently backend handles card/apple_pay
+             emit(AdPaymentSuccess("تم إنشاء الطلب بنجاح"));
+        }
+      } else {
+        String errorMsg = response['message'] ?? "حدث خطأ غير معروف";
+        if (errorMsg == "Error" || errorMsg.contains("Exception")) {
+             errorMsg = "فشل في بدء عملية الدفع";
+        }
+        emit(AdPaymentFailure(errorMsg));
+      }
+    } catch (e) {
+      print("Error initializing ad payment: $e");
+      emit(AdPaymentFailure("حدث خطأ أثناء الاتصال بالخادم"));
+    }
+  }
+
+  Future<void> verifyAdPayment(String paymentId) async {
+    // Poll loop or single check? 
+    // Usually webview waits for return url or we poll.
+    // Let's polling for a few times.
+    
+    int retries = 0;
+    const maxRetries = 10;
+    
+    while (retries < maxRetries) {
+      await Future.delayed(Duration(seconds: 3));
+      try {
+        final response = await repo.checkAdPaymentStatus(paymentId);
+        
+        if (response['status'] == 'Success') {
+           final data = response['data'];
+           if (data['status'] == 'successful') {
+             emit(AdPaymentSuccess("تم الدفع وإنشاء الإعلان بنجاح"));
+             return; // Initialized and verified
+           } else if (data['status'] == 'failed') {
+             emit(AdPaymentFailure("فشلت عملية الدفع"));
+             return;
+           }
+        }
+      } catch (e) {
+         print("Polling error: $e");
+      }
+      retries++;
+    }
+    // If loop finishes without success/fail
+    // Don't emit failure necessarily, maybe user is still paying?
+    // But usually webview is closed or user manually checks.
+    // Let's just stop polling.
+  }
 }

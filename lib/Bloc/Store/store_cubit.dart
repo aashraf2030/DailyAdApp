@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../../core/utils/error_mapper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
@@ -19,7 +20,8 @@ class StoreCubit extends Cubit<StoreState> {
       products = await repo.getProducts();
       emit(StoreLoaded(products));
     } catch (e) {
-      emit(StoreError("Failed to load products"));
+      final failure = ErrorMapper.map(e);
+      emit(StoreError(failure.message));
     }
   }
 
@@ -71,7 +73,7 @@ class StoreCubit extends Cubit<StoreState> {
     required String address,
     required String phone,
     required String receiverName,
-    required String paymentMethod, // 'cash', 'apple_pay', or 'google_pay'
+    required String paymentMethod, // 'cash', 'card', 'apple_pay', or 'google_pay'
     Map<String, dynamic>? paymentToken, // optional for digital payments
   }) async {
     emit(StoreLoading());
@@ -90,25 +92,100 @@ class StoreCubit extends Cubit<StoreState> {
         'payment_method': paymentMethod,
       };
 
-      // Add payment token if available
+      // Add payment token if available (though usually handled by backend for web/iframe)
       if (paymentToken != null) {
         orderData['payment_token'] = jsonEncode(paymentToken);
       }
-
-      final success = await repo.createOrder(orderData);
       
-      if (success) {
+      // Determine platform
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        orderData['platform'] = 'ios';
+      } else if (defaultTargetPlatform == TargetPlatform.android) {
+        orderData['platform'] = 'android';
+      } else {
+        orderData['platform'] = 'web';
+      }
+
+      final response = await repo.createOrder(orderData);
+      
+      if (response['status'] == 'Success') {
+        final data = response['data'] ?? {};
+        final int orderId = data['order_id'];
+        
+        // Handle different payment methods
+        if (paymentMethod == 'cash') {
+          cart.clear();
+          emit(StoreOrderSuccess(response));
+          return true;
+        } else if (paymentMethod == 'card') {
+          final String paymentUrl = data['payment_url'];
+          emit(StorePaymentRequired(paymentUrl, orderId));
+          return true;
+        } else if (paymentMethod == 'apple_pay') {
+           final String clientSecret = data['client_secret'];
+           final double amount = double.tryParse(data['amount'].toString()) ?? total;
+           final String currency = data['currency'] ?? 'EGP';
+           
+           emit(StoreApplePayRequired(
+             clientSecret: clientSecret,
+             orderId: orderId,
+             amount: amount,
+             currency: currency
+           ));
+           return true;
+        }
+
+        // Fallback for success without specific payment flow
         cart.clear();
-        emit(StoreOrderSuccess());
+        emit(StoreOrderSuccess(response));
         return true;
       } else {
-        emit(StoreOrderError("Failed to place order"));
+        emit(StoreOrderError(response['message'] ?? "Failed to place order"));
         return false;
       }
     } catch (e) {
-      emit(StoreOrderError("Error placing order: $e"));
+      final failure = ErrorMapper.map(e);
+      emit(StoreOrderError(failure.message));
       return false;
     }
+  }
+
+  // Poll for payment status
+  void verifyPayment(int orderId) async {
+    // Don't emit loading here to avoid disrupting the UI if the user is looking at something
+    // Or emit a subtle loading state if needed.
+    // For now, let's just check silently and emit success if done.
+    
+    int retries = 0;
+    const int maxRetries = 10;
+    
+    while (retries < maxRetries) {
+      await Future.delayed(Duration(seconds: 3)); // Poll every 3 seconds
+      
+      try {
+        final response = await repo.checkOrderStatus(orderId);
+        if (response['status'] == 'Success') {
+          final data = response['data'];
+          final status = data['status'];
+          
+          if (status == 'processing' || status == 'completed') {
+            cart.clear();
+            emit(StorePaymentSuccess(orderId));
+            return;
+          } else if (status == 'cancelled') {
+             emit(StoreOrderError("Payment was cancelled or failed."));
+             return;
+          }
+           // if pending_payment, continue polling
+        }
+      } catch (e) {
+        print("Polling error: $e");
+      }
+      retries++;
+    }
+    
+    // If we reach here, we timed out or stopped polling
+    // Don't necessarily emit error, user might verify manually later
   }
 
   Future<bool> addProduct(String name, String? desc, double price, dynamic imageFile, int stock) async {

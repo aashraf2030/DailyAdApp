@@ -33,6 +33,10 @@ class BackendAPI{
   static const get_user_ad = "$base${ad}get_user_ads";
   static const fetch_cat_ad = "$base${ad}fetch_cat";
   static const renew_ad = "$base${ad}renew";
+  
+  static const ad_payment = "ad-payment/";
+  static const ad_payment_initialize = "$base${ad_payment}initialize";
+  static const ad_payment_status = "$base${ad_payment}status";
 
   static const view = "view/";
   static const watch = "${base}${view}watch";
