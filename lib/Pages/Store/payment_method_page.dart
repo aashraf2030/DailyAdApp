@@ -162,6 +162,65 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 backgroundColor: Colors.red,
               ),
             );
+          } else if (state is StoreApplePayRequired) {
+            // Payment initiated successfully, treat as success for now
+            // or navigate to a status page if needed.
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        FontAwesomeIcons.circleCheck,
+                        color: Colors.green,
+                        size: 60,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        "تم عملية الدفع بنجاح!",
+                        style: GoogleFonts.cairo(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "تم استلام طلبك وسيتم معالجته.",
+                        style: GoogleFonts.cairo(color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context)
+                                .popUntil((route) => route.isFirst);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            "العودة للرئيسية",
+                            style: GoogleFonts.cairo(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
           }
         },
         child: Column(
@@ -353,12 +412,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 '''{
                   "provider": "apple_pay",
                   "data": {
-                    "merchantIdentifier": "merchant.com.daily.mag",
+                    "merchantIdentifier": "merchant.com.aladvertelement.daily",
                     "displayName": "Daily Mag App",
-                    "merchantCapabilities": ["3DS"],
+                    "merchantCapabilities": ["3DS", "debit", "credit"],
                     "supportedNetworks": ["visa", "masterCard", "amex", "mada"],
                     "countryCode": "EG",
-                    "currencyCode": "EGP"
+                    "currencyCode": "EGP",
+                    "requiredBillingContactFields": ["email", "name", "phoneNumber"], 
+                    "requiredShippingContactFields": []
                   }
                 }'''
               ),
