@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
 import 'package:ads_app/Pages/Ads/ad_payment_webview_page.dart';
 import 'package:flutter/material.dart';
@@ -166,20 +167,20 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                  }).catchError((e) {
                     print("Apple Pay Error: $e");
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("تم إلغاء الدفع أو فشل العملية")));
+                      _showErrorDialog(context, e);
                     }
                  });
                }
              } catch (e) {
                 print("Pay Init Error: $e");
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("فشل في تهيئة Apple Pay")));
+                  _showErrorDialog(context, e);
                 }
              }
 
           } else if (state is AdPaymentFailure) {
             Navigator.pop(context); // Close loading
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error)));
+            _showErrorDialog(context, state.error);
           } else if (state is DoneOperational) {
              // For Cash flow (old flow)
              Navigator.popUntil(context, (route) => route.isFirst);
@@ -395,6 +396,37 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, dynamic error) {
+    String title = "حدث خطأ";
+    String content = "خطأ غير معروف";
+
+    if (error is PlatformException) {
+      title = "خطأ في النظام (Platform Exception)";
+      content = "Code: ${error.code}\nMessage: ${error.message}\nDetails: ${error.details}";
+    } else {
+      content = error.toString();
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title, style: GoogleFonts.cairo(fontWeight: FontWeight.bold, color: Colors.red)),
+        content: SingleChildScrollView(
+          child: SelectableText(
+            content,
+            style: GoogleFonts.cairo(fontSize: 14),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("إغلاق", style: GoogleFonts.cairo(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }

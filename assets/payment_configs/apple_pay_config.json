@@ -14,8 +14,8 @@
             "amex",
             "mada"
         ],
-        "countryCode": "EG",
-        "currencyCode": "EGP",
+        "countryCode": "SA",
+        "currencyCode": "SAR",
         "requiredBillingContactFields": [
             "name",
             "email",
