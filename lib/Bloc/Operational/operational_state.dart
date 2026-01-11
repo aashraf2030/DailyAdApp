@@ -19,12 +19,14 @@ class AdPaymentRequired extends OperationalState {
 
 class AdApplePayRequired extends OperationalState {
   final int orderId;
+  final String paymentId; // Corresponds to backend ad_payment id
   final String clientSecret;
   final double amount;
   final String currency;
 
   AdApplePayRequired({
     required this.orderId,
+    required this.paymentId,
     required this.clientSecret,
     required this.amount,
     required this.currency,

@@ -371,4 +371,19 @@ class AdsWebServices {
       return _handleError(e, stackTrace);
     }
   }
+
+  Future<dynamic> confirmAdApplePay(String paymentId, String paymentToken) async {
+    try {
+      final response = await dio.post(
+        BackendAPI.ad_payment_confirm_apple,
+        data: {
+          "payment_id": paymentId,
+          "apple_pay_token": paymentToken, 
+        },
+      );
+      return response;
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
+    }
+  }
 }

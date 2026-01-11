@@ -132,6 +132,7 @@ class OperationalCubit extends Cubit<OperationalState>{
         if (paymentMethod == 'apple_pay') {
           emit(AdApplePayRequired(
             orderId: data['order_id'],
+            paymentId: data['payment_id'].toString(),
             clientSecret: data['client_secret'],
             amount: (data['amount'] as num).toDouble(),
             currency: data['currency'],
@@ -158,6 +159,26 @@ class OperationalCubit extends Cubit<OperationalState>{
     } catch (e) {
       print("Error initializing ad payment: $e");
       emit(AdPaymentFailure("حدث خطأ أثناء الاتصال بالخادم"));
+    }
+  }
+
+  Future<void> confirmAdApplePay(String paymentId, String paymentToken) async {
+    emit(AdPaymentLoading());
+    try {
+      final response = await repo.confirmAdApplePay(paymentId, paymentToken);
+      
+      if (response['status'] == 'Success') {
+        final data = response['data'] ?? {};
+        // If pending, maybe we should poll or just show success?
+        // Typically Apple Pay is fast.
+        // Assuming success or verifyAdPayment can follow if pending.
+        
+        emit(AdPaymentSuccess("تم الدفع وإنشاء الإعلان بنجاح"));
+      } else {
+        emit(AdPaymentFailure(response['message'] ?? "فشلت عملية الدفع"));
+      }
+    } catch (e) {
+      emit(AdPaymentFailure("حدث خطأ أثناء معالجة الدفع: $e"));
     }
   }
 

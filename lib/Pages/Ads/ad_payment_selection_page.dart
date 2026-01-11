@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
 import 'package:ads_app/Pages/Ads/ad_payment_webview_page.dart';
@@ -135,7 +136,37 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
             );
           } else if (state is AdApplePayRequired) {
              Navigator.pop(context); // Close loading
-             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Apple Pay integration in progress")));
+             
+             // Trigger Apple Pay Sheet
+             final payClient = Pay.withAssets(['payment_configs/apple_pay_config.json']);
+             final paymentItems = [
+               PaymentItem(
+                 label: 'Ad Payment',
+                 amount: state.amount.toStringAsFixed(2),
+                 status: PaymentItemStatus.final_price,
+               )
+             ];
+             
+             try {
+               payClient.showPaymentSelector(
+                 PayProvider.apple_pay,
+                 paymentItems,
+               ).then((result) {
+                  // User authorized payment
+                  final String tokenString = jsonEncode(result);
+                  
+                  // Call Cubit to confirm payment with backend
+                  final cubit = BlocProvider.of<OperationalCubit>(context);
+                  cubit.confirmAdApplePay(state.paymentId, tokenString);
+                  
+               }).catchError((e) {
+                  print("Apple Pay Error: $e");
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("تم إلغاء الدفع أو فشل العملية")));
+               });
+             } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("فشل في تهيئة Apple Pay")));
+             }
+
           } else if (state is AdPaymentFailure) {
             Navigator.pop(context); // Close loading
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error)));

@@ -160,4 +160,18 @@ class AdsRepo {
 
     return {"status": "Error", "message": "Unknown error"};
   }
+
+  Future<Map<String, dynamic>> confirmAdApplePay(String paymentId, String paymentToken) async {
+    final response = await web.confirmAdApplePay(paymentId, paymentToken);
+
+    if (response is Map<String, dynamic>) {
+      return response;
+    }
+
+    if (response.data != null && response.data is Map) {
+      return response.data;
+    }
+
+    return {"status": "Error", "message": "Unknown error"};
+  }
 }
