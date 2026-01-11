@@ -70,7 +70,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
         ),
       ),
       body: BlocListener<OperationalCubit, OperationalState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is AdPaymentLoading) {
             showDialog(
               context: context,
@@ -138,33 +138,43 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              Navigator.pop(context); // Close loading
              
              // Trigger Apple Pay Sheet
-             final payClient = Pay.withAssets(['payment_configs/apple_pay_config.json']);
-             final paymentItems = [
-               PaymentItem(
-                 label: 'Ad Payment',
-                 amount: state.amount.toStringAsFixed(2),
-                 status: PaymentItemStatus.final_price,
-               )
-             ];
-             
              try {
-               payClient.showPaymentSelector(
-                 PayProvider.apple_pay,
-                 paymentItems,
-               ).then((result) {
-                  // User authorized payment
-                  final String tokenString = jsonEncode(result);
-                  
-                  // Call Cubit to confirm payment with backend
-                  final cubit = BlocProvider.of<OperationalCubit>(context);
-                  cubit.confirmAdApplePay(state.paymentId, tokenString);
-                  
-               }).catchError((e) {
-                  print("Apple Pay Error: $e");
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("تم إلغاء الدفع أو فشل العملية")));
-               });
+               final config = await PaymentConfiguration.fromAsset('assets/payment_configs/apple_pay_config.json');
+               final payClient = Pay({PayProvider.apple_pay: config});
+
+               final paymentItems = [
+                 PaymentItem(
+                   label: 'Ad Payment',
+                   amount: state.amount.toStringAsFixed(2),
+                   status: PaymentItemStatus.final_price,
+                 )
+               ];
+             
+               if (context.mounted) {
+                 payClient.showPaymentSelector(
+                   PayProvider.apple_pay,
+                   paymentItems,
+                 ).then((result) {
+                    if (!context.mounted) return;
+                    // User authorized payment
+                    final String tokenString = jsonEncode(result);
+                    
+                    // Call Cubit to confirm payment with backend
+                    final cubit = BlocProvider.of<OperationalCubit>(context);
+                    cubit.confirmAdApplePay(state.paymentId, tokenString);
+                    
+                 }).catchError((e) {
+                    print("Apple Pay Error: $e");
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("تم إلغاء الدفع أو فشل العملية")));
+                    }
+                 });
+               }
              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("فشل في تهيئة Apple Pay")));
+                print("Pay Init Error: $e");
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("فشل في تهيئة Apple Pay")));
+                }
              }
 
           } else if (state is AdPaymentFailure) {
