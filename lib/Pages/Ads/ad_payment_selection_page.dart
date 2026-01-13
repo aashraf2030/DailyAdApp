@@ -408,8 +408,13 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
     String content = "خطأ غير معروف";
 
     if (error is PlatformException) {
-      title = "خطأ في النظام (Platform Exception)";
-      content = "Code: ${error.code}\nMessage: ${error.message}\nDetails: ${error.details}";
+      if (error.code == 'paymentCanceled') {
+        title = "تم إلغاء الدفع";
+        content = "لقد قمت بإلغاء عملية الدفع";
+      } else {
+        title = "خطأ في النظام (Platform Exception)";
+        content = "Code: ${error.code}\nMessage: ${error.message}\nDetails: ${error.details}";
+      }
     } else {
       content = error.toString();
     }
