@@ -115,10 +115,12 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => AdPaymentWebViewPage(
-                  url: state.paymentUrl,
-                  orderId: state.orderId,
-                  onSuccess: () {
+                builder: (newContext) => BlocProvider.value(
+                  value: context.read<OperationalCubit>(),
+                  child: AdPaymentWebViewPage(
+                    url: state.paymentUrl,
+                    orderId: state.orderId,
+                    onSuccess: () {
                      // Payment Success from webview
                      Navigator.pop(context); // Close webview
                      // Verification is handled inside page or here?
@@ -127,11 +129,12 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                      // So we don't need to do anything here except maybe nothing because the listener above (AdPaymentSuccess) will fire globally?
                      // Yes, OperationalCubit is global (or scoped above). AdPaymentWebViewPage uses the SAME cubit instance.
                      // So when verifyAdPayment emits AdPaymentSuccess, THIS listener will catch it too!
-                  },
-                  onFailure: () {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("فشل الدفع")));
-                    Navigator.pop(context);
-                  },
+                    },
+                    onFailure: () {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("فشل الدفع")));
+                      Navigator.pop(context);
+                    },
+                  ),
                 ),
               ),
             );
@@ -140,7 +143,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              
              // Trigger Apple Pay Sheet
              try {
-               final config = await PaymentConfiguration.fromAsset('assets/payment_configs/apple_pay_config.json');
+               final config = await PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
                final payClient = Pay({PayProvider.apple_pay: config});
 
                final paymentItems = [
