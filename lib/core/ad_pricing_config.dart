@@ -1,24 +1,22 @@
 class AdPricingConfig {
-  static const Map<int, double> pricingTiers = {
-    1000: 34.5,
-    2000: 55.0,
-    5000: 125.0,
-    10000: 210.0,
-    20000: 350.0,
-    30000: 480.0,
-    50000: 700.0,
-    75000: 860.0,
-    100000: 980.0,
-  };
+  static double pricePerView = 0.025;
+  static int minViews = 500;
+  static String currency = "ر.س";
 
-  static double getPriceForViews(int views) {
-    if (pricingTiers.containsKey(views)) {
-      return pricingTiers[views]!;
+  // Updates the configuration from backend response
+  static void updateConfig(Map<String, dynamic> data) {
+    if (data.containsKey('price_per_view')) {
+      pricePerView = double.tryParse(data['price_per_view'].toString()) ?? 0.025;
     }
-    // Fallback logic if needed, or return standard rate
-    // For now, defaulting to key lookup or 0.0
-    return 0.0;
+    if (data.containsKey('min_views')) {
+      minViews = int.tryParse(data['min_views'].toString()) ?? 500;
+    }
+    if (data.containsKey('currency')) {
+      currency = data['currency'];
+    }
   }
 
-  static List<int> get availableViews => pricingTiers.keys.toList();
+  static double calculatePrice(int views) {
+    return views * pricePerView;
+  }
 }

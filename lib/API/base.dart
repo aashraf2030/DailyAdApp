@@ -37,6 +37,7 @@ class BackendAPI{
   static const ad_payment = "ad-payment/";
   static const ad_payment_initialize = "$base${ad_payment}initialize";
   static const ad_payment_status = "$base${ad_payment}status";
+  static const ad_payment_pricing = "$base${ad_payment}pricing";
   static const ad_payment_confirm_apple = "$base${ad_payment}confirm_apple_pay";
   static const validate_coupon = "$base${ad_payment}validate_coupon";
 

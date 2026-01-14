@@ -47,7 +47,8 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
-    double originalPrice = AdPricingConfig.getPriceForViews(widget.targetViews);
+    // Calculate price dynamically
+    double originalPrice = AdPricingConfig.calculatePrice(widget.targetViews);
     double totalPrice = _finalPrice ?? originalPrice;
 
     return Scaffold(

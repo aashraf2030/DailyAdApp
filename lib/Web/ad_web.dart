@@ -405,5 +405,12 @@ class AdsWebServices {
     } catch (e, stackTrace) {
       return _handleError(e, stackTrace);
     }
+  Future<dynamic> fetchPricing() async {
+    try {
+      final response = await dio.get(BackendAPI.ad_payment_pricing);
+      return response;
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
+    }
   }
 }

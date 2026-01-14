@@ -190,4 +190,17 @@ class AdsRepo {
 
     return {"status": "Error", "message": "Unknown error"};
   }
+
+  Future<void> fetchPricing() async {
+    try {
+      final response = await web.fetchPricing();
+      if (response is Map<String, dynamic> && response['status'] == 'Success') {
+         AdPricingConfig.updateConfig(response['data']);
+      } else if (response.data != null && response.data['status'] == 'Success') {
+         AdPricingConfig.updateConfig(response.data['data']);
+      }
+    } catch (e) {
+      print("Error fetching pricing: $e");
+    }
+  }
 }

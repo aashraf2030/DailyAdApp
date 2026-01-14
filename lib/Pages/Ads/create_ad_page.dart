@@ -30,7 +30,8 @@ class CreateAdPage extends StatefulWidget {
 class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderStateMixin {
   bool isSending = false;
   bool isAdmin = false;
-  int selectedViews = 1000; // Default value matching first tier
+  final TextEditingController _viewsController = TextEditingController();
+  double _priceEstimate = 0.0;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -38,6 +39,18 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
   @override
   void initState() {
     super.initState();
+
+    // Fetch pricing when page loads
+    context.read<OperationalCubit>().repo.fetchPricing().then((_) {
+      if(mounted) setState(() {});
+    });
+    
+    _viewsController.addListener(() {
+      setState(() {
+        int views = int.tryParse(_viewsController.text) ?? 0;
+        _priceEstimate = AdPricingConfig.calculatePrice(views);
+      });
+    });
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -65,6 +78,7 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
   @override
   void dispose() {
     _animationController.dispose();
+    _viewsController.dispose(); // Dispose the controller
     super.dispose();
   }
 
@@ -136,7 +150,45 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
       _buildSectionTitle("التفاصيل", FontAwesomeIcons.circleInfo),
       SizedBox(height: 12),
       _buildCard([
-        _buildViewsDropdown(),
+        // _buildViewsDropdown(), // Replaced by text field
+        SizedBox(height: 16),
+                      
+        // Target Views Input
+        Text(
+          "عدد المشاهدات المستهدفة (أقل عدد ${AdPricingConfig.minViews})",
+          style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        TextFormField(
+          controller: _viewsController,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            hintText: "أدخل عدد المشاهدات",
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            suffixText: "مشاهدة",
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "الرجاء إدخال عدد المشاهدات";
+            }
+            int? views = int.tryParse(value);
+            if (views == null) {
+               return "الرجاء إدخال رقم صحيح";
+            }
+            if (views < AdPricingConfig.minViews) {
+               return "أقل عدد مشاهدات هو ${AdPricingConfig.minViews}";
+            }
+            return null;
+          },
+        ),
+        SizedBox(height: 8),
+        Text(
+          "التكلفة التقديرية: ${_priceEstimate.toStringAsFixed(2)} ${AdPricingConfig.currency}",
+          style: GoogleFonts.cairo(
+            color: Color(0xFF2596FA),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ]),
 
       SizedBox(height: 24),
@@ -389,6 +441,7 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
     );
   }
 
+  // This method is no longer used as a TextFormField is used instead
   Widget _buildViewsDropdown() {
     return DropdownButtonFormField<int>(
       value: selectedViews,
@@ -555,7 +608,8 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
     if (widget.name.out.isEmpty ||
         !widget.picker.imageIsSelected ||
         widget.link.out.isEmpty ||
-        widget.keys.out.isEmpty) {
+        widget.keys.out.isEmpty ||
+        _viewsController.text.isEmpty) { // Added check for views controller
       showErrorMessage(context, "بيانات الإعلان غير مكتملة", "برجاء ملء جميع الحقول المطلوبة");
       setState(() {
         isSending = false;
@@ -566,8 +620,14 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
         isSending = false;
       });
     } else {
-      // Logic for target parsing removed as we use selectedViews now
-      int target = selectedViews;
+      int? target = int.tryParse(_viewsController.text);
+      if (target == null || target < AdPricingConfig.minViews) {
+        showErrorMessage(context, "عدد المشاهدات غير صالح", "برجاء إدخال عدد مشاهدات صحيح لا يقل عن ${AdPricingConfig.minViews}");
+        setState(() {
+          isSending = false;
+        });
+        return;
+      }
 
       // Map Type
       String adType = "Dynamic";
@@ -671,6 +731,11 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () {
+                        // The provided snippet for onTap was syntactically incorrect.
+                        // Assuming the intent was to add a check before navigating,
+                        // but placing it here in a success dialog's "Awesome!" button
+                        // doesn't make logical sense.
+                        // Reverting to original onTap logic for success message.
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                       },
@@ -788,3 +853,4 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
     );
   }
 }
+```
