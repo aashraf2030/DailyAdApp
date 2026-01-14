@@ -110,7 +110,15 @@ class StoreCubit extends Cubit<StoreState> {
       
       if (response['status'] == 'Success') {
         final data = response['data'] ?? {};
-        final int orderId = data['order_id'];
+        
+        // Helper to extract value from data or root response
+        dynamic getValue(String key) {
+          if (data is Map && data.containsKey(key)) return data[key];
+          if (response.containsKey(key)) return response[key];
+          return null;
+        }
+
+        final int orderId = int.tryParse(getValue('order_id').toString()) ?? 0;
         
         // Handle different payment methods
         if (paymentMethod == 'cash') {
@@ -118,21 +126,25 @@ class StoreCubit extends Cubit<StoreState> {
           emit(StoreOrderSuccess(response));
           return true;
         } else if (paymentMethod == 'card') {
-          final String paymentUrl = data['payment_url'];
-          emit(StorePaymentRequired(paymentUrl, orderId));
-          return true;
+          final String? paymentUrl = getValue('payment_url');
+          if (paymentUrl != null) {
+            emit(StorePaymentRequired(paymentUrl, orderId));
+            return true;
+          }
         } else if (paymentMethod == 'apple_pay') {
-           final String clientSecret = data['client_secret'];
-           final double amount = double.tryParse(data['amount'].toString()) ?? total;
-           final String currency = data['currency'] ?? 'EGP';
+           final String? clientSecret = getValue('client_secret');
+           final double amount = double.tryParse(getValue('amount').toString()) ?? total;
+           final String currency = getValue('currency') ?? 'SAR';
            
-           emit(StoreApplePayRequired(
-             clientSecret: clientSecret,
-             orderId: orderId,
-             amount: amount,
-             currency: currency
-           ));
-           return true;
+           if (clientSecret != null) {
+             emit(StoreApplePayRequired(
+               clientSecret: clientSecret,
+               orderId: orderId,
+               amount: amount,
+               currency: currency
+             ));
+             return true;
+           }
         }
 
         // Fallback for success without specific payment flow

@@ -69,7 +69,7 @@ class CreditsPage extends StatelessWidget
                   textDirection: TextDirection.rtl,
                 ),
 
-                Text("50 ريال لكل 1000 مشاهدة", style: GoogleFonts.cairo(
+                Text("50 ريال سعودي لكل 1000 مشاهدة", style: GoogleFonts.cairo(
                   fontSize: 15,
 
                 ),

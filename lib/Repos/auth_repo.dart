@@ -73,6 +73,9 @@ class AuthRepo {
   Future<AuthResult> isLoggedIn(String id, String session) async {
     final res = await web.isLoggedIn(id, session);
 
+    if (res is! Map<String, dynamic>) {
+      return AuthResult("Error");
+    }
     return AuthResult.fromJson(res);
   }
 
@@ -85,6 +88,9 @@ class AuthRepo {
   Future<AuthResult> verifyCheck(String id, String session) async {
     final res = await web.tryVerifyCheck(id, session);
 
+    if (res is! Map<String, dynamic>) {
+      return AuthResult("Error");
+    }
     return AuthResult.fromJson(res);
   }
 

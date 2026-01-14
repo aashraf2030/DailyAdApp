@@ -45,7 +45,7 @@ class _AdminProductPageState extends State<AdminProductPage> {
     price = LoginTextbox(
       padding: 10, 
       icon: FontAwesomeIcons.moneyBill1, // Changed icon
-      hint: "السعر (ر.س)", 
+      hint: "السعر (ريال سعودي)", 
       initialValue: widget.product != null ? widget.product['price'].toString() : null
     );
     stock = LoginTextbox(

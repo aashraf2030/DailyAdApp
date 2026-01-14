@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pay/pay.dart';
-import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart';
 
 import '../Bloc/Store/store_cubit.dart';
 import '../Bloc/Store/store_state.dart';
+import '../Bloc/Auth/auth_cubit.dart';
+import '../Bloc/Home/home_cubit.dart';
+import '../Bloc/Ad/ad_cubit.dart';
+import '../Bloc/Operational/operational_cubit.dart';
+import 'Store/store_page.dart';
+import '../core/di/service_locator.dart';
 import 'payment_webview_page.dart';
 
 class PaymentMethodSelectionPage extends StatefulWidget {
@@ -105,7 +111,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                 title: 'Cash on Delivery'
               ),
               const SizedBox(height: 15),
-              if (Platform.isIOS) ...[
+              if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ...[
                  _buildPaymentOption(
                   id: 'apple_pay', 
                   icon: FontAwesomeIcons.apple, 
@@ -204,9 +210,31 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); // Close dialog
-              Navigator.of(context).pop(); // Close payment page
-              Navigator.of(context).pop(); // Close cart/checkout page (optional based on flow)
+              print("🔵 [DEBUG] Success Dialog - Done button pressed");
+              final authCubit = context.read<AuthCubit>();
+              final nav = Navigator.of(context);
+
+              print("🔵 [DEBUG] Closing dialog...");
+              nav.pop(); // Close dialog
+
+              print("🔵 [DEBUG] Navigating directly to Store...");
+              // Direct navigation to Store, clearing all previous routes
+              nav.pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (_) => MultiBlocProvider(
+                    providers: [
+                      BlocProvider(create: (_) => sl<HomeCubit>()),
+                      BlocProvider(create: (_) => sl<AdCubit>()),
+                      BlocProvider(create: (_) => sl<StoreCubit>()),
+                      BlocProvider(create: (_) => sl<OperationalCubit>()),
+                      BlocProvider.value(value: authCubit),
+                    ],
+                    child: StorePage(),
+                  ),
+                ),
+                (route) => false, // Remove all previous routes
+              );
+              print("🔵 [DEBUG] Navigation complete!");
             },
             child: const Text("Done"),
           )

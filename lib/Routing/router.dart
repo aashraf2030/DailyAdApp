@@ -35,18 +35,22 @@ class RouteGenerator {
       this.auth, this.home, this.operational, this.ad, this.authority);
 
   Route<dynamic> generateRoute(RouteSettings settings) {
+    print("🔷 [ROUTER] generateRoute called with: ${settings.name}");
     switch (settings.name) {
       case "/splash":
         return animateThis(
             BlocProvider.value(value: auth, child: SplashPage()));
 
       case "/home":
+        print("🟢 [ROUTER] /home route called");
         home.changeRoute(0);
 
         return animateThis(FutureBuilder<bool>(
             future: auth.isLoggedIn(),
             builder: (context, res) {
+              print("🟢 [ROUTER] isLoggedIn FutureBuilder - hasData: ${res.hasData}, hasError: ${res.hasError}, data: ${res.data}");
               if (res.hasData) {
+                print("🟢 [ROUTER] isLoggedIn returned: ${res.data}");
                 if ((res.data)!) {
                   return FutureBuilder<bool>(
                       future: auth.verifyCheck(),
@@ -71,7 +75,19 @@ class RouteGenerator {
                             );
                           }
                         } else if (res.hasError) {
-                          return ErrorRoute();
+                          print("🔴 [ROUTER] verifyCheck ERROR: ${res.error}");
+                          // If verification check fails, stay in app (allow guest browsing)
+                          return MultiBlocProvider(
+                            providers: [
+                              BlocProvider.value(value: home),
+                              BlocProvider.value(value: ad),
+                              BlocProvider.value(value: auth),
+                              BlocProvider.value(value: operational),
+                              BlocProvider.value(value: authority),
+                              BlocProvider(create: (_) => sl<ChatCubit>()),
+                            ],
+                            child: HomePage(),
+                          );
                         } else {
                           return Center(
                               child: SizedBox(
@@ -82,13 +98,34 @@ class RouteGenerator {
                         }
                       });
                 } else {
-                  return BlocProvider.value(
-                    value: auth,
-                    child: LoginPage(),
+                  // User not logged in - allow guest browsing (go to HomePage)
+                  print("🟢 [ROUTER] User not logged in - showing HomePage for guest browsing");
+                  return MultiBlocProvider(
+                    providers: [
+                      BlocProvider.value(value: home),
+                      BlocProvider.value(value: ad),
+                      BlocProvider.value(value: auth),
+                      BlocProvider.value(value: operational),
+                      BlocProvider.value(value: authority),
+                      BlocProvider(create: (_) => sl<ChatCubit>()),
+                    ],
+                    child: HomePage(),
                   );
                 }
               } else if (res.hasError) {
-                return ErrorRoute();
+                print("🔴 [ROUTER] isLoggedIn ERROR: ${res.error}");
+                // If login check fails, stay in app (allow guest browsing)
+                return MultiBlocProvider(
+                  providers: [
+                    BlocProvider.value(value: home),
+                    BlocProvider.value(value: ad),
+                    BlocProvider.value(value: auth),
+                    BlocProvider.value(value: operational),
+                    BlocProvider.value(value: authority),
+                    BlocProvider(create: (_) => sl<ChatCubit>()),
+                  ],
+                  child: HomePage(),
+                );
               } else {
                 return Scaffold(
                   body: Center(
@@ -370,6 +407,7 @@ class ErrorRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("🔴🔴🔴 [ERROR ROUTE] ErrorRoute is being displayed!");
     return Scaffold(
       appBar: AppBar(
         title: Text(

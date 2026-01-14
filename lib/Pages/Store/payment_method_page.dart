@@ -1,4 +1,5 @@
-import 'dart:io';
+// import 'dart:io'; // Removed for Web compatibility
+import 'package:flutter/foundation.dart';
 
 import 'package:ads_app/API/base.dart';
 import 'package:ads_app/Bloc/Store/store_cubit.dart';
@@ -6,9 +7,16 @@ import 'package:ads_app/Bloc/Store/store_state.dart';
 import 'package:ads_app/Widgets/payment_method_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ads_app/Bloc/Auth/auth_cubit.dart';
+import 'package:ads_app/Bloc/Home/home_cubit.dart';
+import 'package:ads_app/Bloc/Ad/ad_cubit.dart';
+import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
+import 'package:ads_app/Pages/Store/store_page.dart';
+import 'package:ads_app/core/di/service_locator.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pay/pay.dart';
+import 'package:ads_app/Pages/payment_webview_page.dart';
 
 class PaymentMethodPage extends StatefulWidget {
   final String receiverName;
@@ -162,6 +170,94 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 backgroundColor: Colors.red,
               ),
             );
+          } else if (state is StorePaymentRequired) {
+            // Navigate to Webview
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PaymentWebviewPage(
+                  url: state.paymentUrl,
+                  orderId: state.orderId,
+                ),
+              ),
+            ).then((success) {
+              if (success == true) {
+                // Show success dialog
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => Dialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            FontAwesomeIcons.circleCheck,
+                            color: Colors.green,
+                            size: 60,
+                          ),
+                          SizedBox(height: 20),
+                          Text(
+                            "تم عملية الدفع بنجاح!",
+                            style: GoogleFonts.cairo(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            "تم استلام طلبك.",
+                            style: GoogleFonts.cairo(color: Colors.grey),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                final authCubit = context.read<AuthCubit>();
+                                final nav = Navigator.of(context);
+
+                                // Direct navigation to Store, clearing all previous routes
+                                nav.pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (_) => MultiBlocProvider(
+                                      providers: [
+                                        BlocProvider(create: (_) => sl<HomeCubit>()),
+                                        BlocProvider(create: (_) => sl<AdCubit>()),
+                                        BlocProvider(create: (_) => sl<StoreCubit>()),
+                                        BlocProvider(create: (_) => sl<OperationalCubit>()),
+                                        BlocProvider.value(value: authCubit),
+                                      ],
+                                      child: StorePage(),
+                                    ),
+                                  ),
+                                  (route) => false, // Remove all previous routes
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(
+                                "العودة للرئيسية",
+                                style: GoogleFonts.cairo(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+            });
           } else if (state is StoreApplePayRequired) {
             // Payment initiated successfully, treat as success for now
             // or navigate to a status page if needed.
@@ -264,7 +360,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                     SizedBox(height: 16),
                     
                     // Platform-specific digital payment
-                    if (Platform.isIOS)
+                    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
                       PaymentMethodCard(
                         icon: FontAwesomeIcons.applePay,
                         title: "Apple Pay",
@@ -277,7 +373,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                           });
                         },
                       )
-                    else if (Platform.isAndroid)
+                    else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
                       PaymentMethodCard(
                         icon: FontAwesomeIcons.googlePay,
                         title: "Google Pay",
@@ -372,7 +468,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 ),
               ),
               Text(
-                "$total EGP",
+                "$total ريال سعودي",
                 style: GoogleFonts.cairo(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -416,8 +512,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                     "displayName": "Daily Mag App",
                     "merchantCapabilities": ["3DS", "debit", "credit"],
                     "supportedNetworks": ["visa", "masterCard", "amex", "mada"],
-                    "countryCode": "EG",
-                    "currencyCode": "EGP",
+                    "countryCode": "SA",
+                    "currencyCode": "SAR",
                     "requiredBillingContactFields": ["email", "name", "phoneNumber"], 
                     "requiredShippingContactFields": []
                   }
@@ -463,8 +559,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       "merchantName": "Daily Mag App"
                     },
                     "transactionInfo": {
-                      "countryCode": "EG",
-                      "currencyCode": "EGP"
+                      "countryCode": "SA",
+                      "currencyCode": "SAR"
                     }
                   }
                 }'''

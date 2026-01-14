@@ -143,7 +143,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         ),
                       ),
                       Text(
-                        "${widget.product['price']} EGP",
+                        "${widget.product['price']} ريال سعودي",
                         style: GoogleFonts.cairo(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,

@@ -378,7 +378,7 @@ class _StorePageState extends State<StorePage> {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                "${product['price']} SAR", 
+                                "${product['price']} ريال سعودي", 
                                 style: GoogleFonts.cairo(
                                   color: Color(0xFF2596FA),
                                   fontWeight: FontWeight.bold,

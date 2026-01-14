@@ -108,7 +108,7 @@ class CartPage extends StatelessWidget {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  "${item['price']} EGP",
+                                  "${item['price']} ريال سعودي",
                                   style: GoogleFonts.cairo(
                                     color: Color(0xFF2596FA),
                                     fontWeight: FontWeight.bold,
@@ -170,7 +170,7 @@ class CartPage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "$total EGP",
+                          "$total ريال سعودي",
                           style: GoogleFonts.cairo(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,

@@ -296,7 +296,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                     onTap: _selectedMethod != 0 ? () => _submitPayment(totalPrice) : null,
                     child: Center(
                       child: Text(
-                        _selectedMethod == 1 ? "تأكيد الإعلان" : "دفع ${totalPrice.toStringAsFixed(2)} ر.س",
+                        _selectedMethod == 1 ? "تأكيد الإعلان" : "دفع ${totalPrice.toStringAsFixed(2)} ريال سعودي",
                         style: GoogleFonts.cairo(
                           color: Colors.white,
                           fontSize: 18,
@@ -356,7 +356,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                        Text(
-                         "${totalPrice.toStringAsFixed(2)} ر.س",
+                         "${totalPrice.toStringAsFixed(2)} ريال سعودي",
                          style: GoogleFonts.cairo(
                            fontSize: 14, 
                            decoration: TextDecoration.lineThrough,
@@ -364,7 +364,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                          )
                        ),
                        Text(
-                         "${(_finalPrice ?? totalPrice).toStringAsFixed(2)} ر.س",
+                         "${(_finalPrice ?? totalPrice).toStringAsFixed(2)} ريال سعودي",
                          style: GoogleFonts.cairo(
                            fontSize: 24, 
                            fontWeight: FontWeight.bold, 
@@ -375,7 +375,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                   )
                else
                  Text(
-                   "${totalPrice.toStringAsFixed(2)} ر.س",
+                   "${totalPrice.toStringAsFixed(2)} ريال سعودي",
                    style: GoogleFonts.cairo(
                      fontSize: 24, 
                      fontWeight: FontWeight.bold, 
@@ -471,7 +471,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
            children: [
              Icon(Icons.local_offer, color: Colors.green),
              SizedBox(width: 12),
-             Expanded(child: Text("تم استخدام كوبون: $_appliedCouponCode\nوفرت ${_discountAmount?.toStringAsFixed(2)} ر.س", style: GoogleFonts.cairo(color: Colors.green[800], fontWeight: FontWeight.bold))),
+             Expanded(child: Text("تم استخدام كوبون: $_appliedCouponCode\nوفرت ${_discountAmount?.toStringAsFixed(2)} ريال سعودي", style: GoogleFonts.cairo(color: Colors.green[800], fontWeight: FontWeight.bold))),
              IconButton(
                icon: Icon(Icons.close, color: Colors.red),
                onPressed: () {

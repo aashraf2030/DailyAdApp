@@ -188,30 +188,47 @@ class AuthCubit extends Cubit<AuthState>{
 
   Future<bool> isLoggedIn () async
   {
+    print("🟡 [AUTH] isLoggedIn called");
     if (prefs.getBool("guest")?? false)
       {
+        print("🟡 [AUTH] User is in guest mode - returning true");
         return true;
       }
 
-    final id = prefs.getString("id");
-    final session = prefs.getString("session");
+    try {
+      final id = prefs.getString("id");
+      final session = prefs.getString("session");
+      print("🟡 [AUTH] Session check - id: ${id != null ? 'exists' : 'null'}, session: ${session != null ? 'exists' : 'null'}");
 
-    bool res = false;
+      bool res = false;
 
-    if (id != null && session != null)
-      {
-
-        final response = await repo.isLoggedIn(id, session);
-
-        if (response.status == "Valid")
+      if (id != null && session != null)
         {
-          emit(AuthDone());
-          res = true;
-        }
 
+          print("🟡 [AUTH] Calling repo.isLoggedIn...");
+          final response = await repo.isLoggedIn(id, session);
+          print("🟡 [AUTH] repo.isLoggedIn response: ${response.status}");
+
+          if (response.status == "Valid")
+          {
+            print("🟡 [AUTH] Session valid - emitting AuthDone");
+            emit(AuthDone());
+            res = true;
+          } else {
+            print("🟡 [AUTH] Session not valid: ${response.status}");
+          }
+
+        } else {
+        print("🟡 [AUTH] No id/session - returning false");
       }
 
-    return res;
+      print("🟡 [AUTH] isLoggedIn returning: $res");
+      return res;
+    } catch (e, stackTrace) {
+      print("🔴 [AUTH] isLoggedIn Error: $e");
+      print("🔴 [AUTH] Stack trace: $stackTrace");
+      return false;
+    }
   }
 
   bool isGuestMode()
