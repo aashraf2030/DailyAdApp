@@ -109,6 +109,7 @@ class OperationalCubit extends Cubit<OperationalState>{
     required String keywords,
     required String paymentMethod,
     required String platform,
+    String? couponCode,
   }) async {
     emit(AdPaymentLoading());
 
@@ -124,6 +125,7 @@ class OperationalCubit extends Cubit<OperationalState>{
         keywords: keywords,
         paymentMethod: paymentMethod,
         platform: platform,
+        couponCode: couponCode,
       );
 
       if (response['status'] == 'Success') {
@@ -214,5 +216,26 @@ class OperationalCubit extends Cubit<OperationalState>{
     // Don't emit failure necessarily, maybe user is still paying?
     // But usually webview is closed or user manually checks.
     // Let's just stop polling.
+    // Let's just stop polling.
+  }
+
+  Future<void> validateCoupon(String code, double amount) async {
+    emit(AdCouponLoading());
+    try {
+      final response = await repo.validateCode(code, amount);
+
+      if (response['status'] == 'Success') {
+        final data = response['data'];
+         // Ensure we parse doubles correctly
+        double discount = double.tryParse(data['discount_amount'].toString()) ?? 0.0;
+        double newTotal = double.tryParse(data['new_total'].toString()) ?? amount;
+        
+        emit(AdCouponValid(discount, newTotal, code));
+      } else {
+        emit(AdCouponInvalid(response['message'] ?? 'الكود غير صالح'));
+      }
+    } catch (e) {
+      emit(AdCouponInvalid("حدث خطأ أثناء التحقق"));
+    }
   }
 }

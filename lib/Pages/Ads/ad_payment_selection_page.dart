@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pay/pay.dart';
+import 'package:ads_app/core/ad_pricing_config.dart';
 
 class AdPaymentSelectionPage extends StatefulWidget {
   final String name;
@@ -37,11 +38,17 @@ class AdPaymentSelectionPage extends StatefulWidget {
 
 class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
   int _selectedMethod = 0; // 0: None, 1: Cash, 2: Card, 3: Apple Pay
-  final double _pricePerView = 1.0; // 1 SAR per view (config match)
+  
+  // Coupon State
+  final TextEditingController _couponController = TextEditingController();
+  String? _appliedCouponCode;
+  double? _discountAmount;
+  double? _finalPrice; // If null, use original price
 
   @override
   Widget build(BuildContext context) {
-    double totalPrice = widget.targetViews * _pricePerView;
+    double originalPrice = AdPricingConfig.getPriceForViews(widget.targetViews);
+    double totalPrice = _finalPrice ?? originalPrice;
 
     return Scaffold(
       backgroundColor: Color(0xFFF8F9FA),
@@ -189,6 +196,25 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              Navigator.popUntil(context, (route) => route.isFirst);
              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("تم إنشاء الإعلان بنجاح")));
              Navigator.pushReplacementNamed(context, "/home");
+
+          // Coupon Listeners
+          } else if (state is AdCouponLoading) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (ctx) => Center(child: CircularProgressIndicator()),
+            );
+          } else if (state is AdCouponValid) {
+             Navigator.pop(context); // Close loading
+             setState(() {
+               _appliedCouponCode = state.code;
+               _discountAmount = state.discountAmount;
+               _finalPrice = state.newTotal;
+             });
+             ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.green, content: Text("تم تفعيل الكود بنجاح")));
+          } else if (state is AdCouponInvalid) {
+             Navigator.pop(context); // Close loading
+             ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(state.error)));
           }
         },
         child: SingleChildScrollView(
@@ -197,7 +223,12 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Summary Card
-              _buildSummaryCard(totalPrice),
+              _buildSummaryCard(originalPrice),
+              
+              SizedBox(height: 24),
+              
+              // Coupon Code Section
+              _buildCouponSection(originalPrice),
               
               SizedBox(height: 24),
               
@@ -261,7 +292,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
-                    onTap: _selectedMethod != 0 ? _submitPayment : null,
+                    onTap: _selectedMethod != 0 ? () => _submitPayment(totalPrice) : null,
                     child: Center(
                       child: Text(
                         _selectedMethod == 1 ? "تأكيد الإعلان" : "دفع ${totalPrice.toStringAsFixed(2)} ر.س",
@@ -319,14 +350,37 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-               Text(
-                 "${totalPrice.toStringAsFixed(2)} ر.س",
-                 style: GoogleFonts.cairo(
-                   fontSize: 24, 
-                   fontWeight: FontWeight.bold, 
-                   color: Color(0xFF2596FA)
-                 )
-               ),
+               if (_discountAmount != null && _discountAmount! > 0)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                       Text(
+                         "${totalPrice.toStringAsFixed(2)} ر.س",
+                         style: GoogleFonts.cairo(
+                           fontSize: 14, 
+                           decoration: TextDecoration.lineThrough,
+                           color: Colors.grey
+                         )
+                       ),
+                       Text(
+                         "${(_finalPrice ?? totalPrice).toStringAsFixed(2)} ر.س",
+                         style: GoogleFonts.cairo(
+                           fontSize: 24, 
+                           fontWeight: FontWeight.bold, 
+                           color: Color(0xFF2596FA)
+                         )
+                       ),
+                    ],
+                  )
+               else
+                 Text(
+                   "${totalPrice.toStringAsFixed(2)} ر.س",
+                   style: GoogleFonts.cairo(
+                     fontSize: 24, 
+                     fontWeight: FontWeight.bold, 
+                     color: Color(0xFF2596FA)
+                   )
+                 ),
                Text(
                  "الإجمالي",
                  style: GoogleFonts.cairo(color: Colors.grey.shade600, fontWeight: FontWeight.bold)
@@ -403,6 +457,66 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
     );
   }
 
+  Widget _buildCouponSection(double originalPrice) {
+    if (_appliedCouponCode != null) {
+      return Container(
+         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+         decoration: BoxDecoration(
+           color: Colors.green.withOpacity(0.1),
+           borderRadius: BorderRadius.circular(12),
+           border: Border.all(color: Colors.green),
+         ),
+         child: Row(
+           children: [
+             Icon(Icons.local_offer, color: Colors.green),
+             SizedBox(width: 12),
+             Expanded(child: Text("تم استخدام كوبون: $_appliedCouponCode\nوفرت ${_discountAmount?.toStringAsFixed(2)} ر.س", style: GoogleFonts.cairo(color: Colors.green[800], fontWeight: FontWeight.bold))),
+             IconButton(
+               icon: Icon(Icons.close, color: Colors.red),
+               onPressed: () {
+                 setState(() {
+                   _appliedCouponCode = null;
+                   _discountAmount = null;
+                   _finalPrice = null;
+                 });
+               },
+             )
+           ],
+         ),
+      );
+    }
+    
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+             controller: _couponController,
+             decoration: InputDecoration(
+               hintText: "كود الخصم",
+               hintStyle: GoogleFonts.cairo(),
+               prefixIcon: Icon(Icons.discount_outlined),
+               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+               contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+             ),
+          ),
+        ),
+        SizedBox(width: 12),
+        ElevatedButton(
+          onPressed: () {
+            if (_couponController.text.isEmpty) return;
+            context.read<OperationalCubit>().validateCoupon(_couponController.text, originalPrice);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFF364A62),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          ),
+          child: Text("تطبيق", style: GoogleFonts.cairo(color: Colors.white, fontWeight: FontWeight.bold)),
+        )
+      ],
+    );
+  }
+
   void _showErrorDialog(BuildContext context, dynamic error) {
     String title = "حدث خطأ";
     String content = "خطأ غير معروف";
@@ -439,7 +553,8 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
     );
   }
 
-  void _submitPayment() {
+  void _submitPayment(double currentTotal) {
+    // We don't really use currentTotal here because we use state variables, but good for logs
     final cubit = BlocProvider.of<OperationalCubit>(context);
     
     if (_selectedMethod == 1) {
@@ -485,6 +600,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
         keywords: widget.keywords,
         paymentMethod: method,
         platform: platform,
+        couponCode: _appliedCouponCode,
       );
     }
   }

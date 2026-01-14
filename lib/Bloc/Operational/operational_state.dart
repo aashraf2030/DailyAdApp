@@ -42,3 +42,18 @@ class AdPaymentFailure extends OperationalState {
   final String error;
   AdPaymentFailure(this.error);
 }
+
+// Coupon States
+class AdCouponLoading extends OperationalState {}
+
+class AdCouponValid extends OperationalState {
+  final double discountAmount;
+  final double newTotal;
+  final String code;
+  AdCouponValid(this.discountAmount, this.newTotal, this.code);
+}
+
+class AdCouponInvalid extends OperationalState {
+  final String error;
+  AdCouponInvalid(this.error);
+}

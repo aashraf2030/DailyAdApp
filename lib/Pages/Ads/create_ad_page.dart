@@ -9,12 +9,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ads_app/Widgets/gradient_app_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ads_app/core/ad_pricing_config.dart';
 
 class CreateAdPage extends StatefulWidget {
   CreateAdPage({super.key});
 
   InputTextForm name = InputTextForm("اسم الاعلان", FontAwesomeIcons.rectangleAd);
-  InputTextForm target = InputTextForm("عدد المشاهدات المطلوبة", FontAwesomeIcons.streetView);
+  // InputTextForm target removed in favor of dropdown in state
   InputTextForm keys = InputTextForm("كلمات مفتاحية", FontAwesomeIcons.key);
   InputTextForm link = InputTextForm("رابط الاعلان", FontAwesomeIcons.link);
   int category = 11; // متنوع (Other) كقيمة افتراضية
@@ -29,6 +30,7 @@ class CreateAdPage extends StatefulWidget {
 class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderStateMixin {
   bool isSending = false;
   bool isAdmin = false;
+  int selectedViews = 1000; // Default value matching first tier
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -134,7 +136,7 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
       _buildSectionTitle("التفاصيل", FontAwesomeIcons.circleInfo),
       SizedBox(height: 12),
       _buildCard([
-        widget.target,
+        _buildViewsDropdown(),
       ]),
 
       SizedBox(height: 24),
@@ -387,6 +389,56 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
     );
   }
 
+  Widget _buildViewsDropdown() {
+    return DropdownButtonFormField<int>(
+      value: selectedViews,
+      items: AdPricingConfig.pricingTiers.entries.map((entry) {
+        return DropdownMenuItem<int>(
+          value: entry.key,
+          child: Row(
+            children: [
+              Icon(FontAwesomeIcons.eye, size: 16, color: Color(0xFF2596FA)),
+              SizedBox(width: 12),
+              Text(
+                "${entry.key} مشاهدة - ${entry.value} ر.س",
+                style: GoogleFonts.cairo(),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+      onChanged: (val) {
+        if (val != null) {
+          setState(() {
+            selectedViews = val;
+          });
+        }
+      },
+      isExpanded: true,
+      icon: Icon(Icons.keyboard_arrow_down, color: Color(0xFF2596FA)),
+      style: GoogleFonts.cairo(color: Color(0xFF2C3E50), fontSize: 15),
+      decoration: InputDecoration(
+        labelText: "عدد المشاهدات",
+        labelStyle: GoogleFonts.cairo(color: Colors.grey.shade600),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Color(0xFF2596FA), width: 2),
+        ),
+        prefixIcon: Icon(FontAwesomeIcons.layerGroup, color: Color(0xFF2596FA)),
+        filled: true,
+        fillColor: Colors.grey.shade50,
+      ),
+    );
+  }
+
   List<DropdownMenuItem> buildCategories() {
     List<DropdownMenuItem> res = [];
 
@@ -503,8 +555,7 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
     if (widget.name.out.isEmpty ||
         !widget.picker.imageIsSelected ||
         widget.link.out.isEmpty ||
-        widget.keys.out.isEmpty ||
-        widget.target.out.isEmpty) {
+        widget.keys.out.isEmpty) {
       showErrorMessage(context, "بيانات الإعلان غير مكتملة", "برجاء ملء جميع الحقول المطلوبة");
       setState(() {
         isSending = false;
@@ -515,25 +566,8 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
         isSending = false;
       });
     } else {
-      int target = 0;
-
-      try {
-        target = int.parse(widget.target.out);
-      } on Exception {
-        showErrorMessage(context, "عدد المشاهدات غير صالح", "برجاء إدخال رقم صحيح");
-        setState(() {
-          isSending = false;
-        });
-        return;
-      }
-
-      if (target < 50) {
-        showErrorMessage(context, "عدد المشاهدات قليل جداً", "أقل عدد مشاهدات مسموح به هو 50 مشاهدة");
-        setState(() {
-          isSending = false;
-        });
-        return;
-      }
+      // Logic for target parsing removed as we use selectedViews now
+      int target = selectedViews;
 
       // Map Type
       String adType = "Dynamic";

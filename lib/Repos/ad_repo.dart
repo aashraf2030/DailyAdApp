@@ -122,6 +122,7 @@ class AdsRepo {
     required String keywords,
     required String paymentMethod,
     required String platform,
+    String? couponCode,
   }) async {
     final response = await web.initializeAdPayment(
       name: name,
@@ -134,6 +135,7 @@ class AdsRepo {
       keywords: keywords,
       paymentMethod: paymentMethod,
       platform: platform,
+      couponCode: couponCode,
     );
 
     if (response is Map<String, dynamic>) {
@@ -163,6 +165,20 @@ class AdsRepo {
 
   Future<Map<String, dynamic>> confirmAdApplePay(String paymentId, String paymentToken) async {
     final response = await web.confirmAdApplePay(paymentId, paymentToken);
+
+    if (response is Map<String, dynamic>) {
+      return response;
+    }
+
+    if (response.data != null && response.data is Map) {
+      return response.data;
+    }
+
+    return {"status": "Error", "message": "Unknown error"};
+  }
+
+  Future<Map<String, dynamic>> validateCode(String code, double amount) async {
+    final response = await web.validateCoupon(code, amount);
 
     if (response is Map<String, dynamic>) {
       return response;

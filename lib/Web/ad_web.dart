@@ -317,6 +317,7 @@ class AdsWebServices {
     required String keywords,
     required String paymentMethod,
     required String platform,
+    String? couponCode,
   }) async {
     try {
       final bytes = await _readFileAsBytes(imagePath);
@@ -333,6 +334,10 @@ class AdsWebServices {
         "payment_method": paymentMethod,
         "platform": platform,
       };
+
+      if (couponCode != null && couponCode.isNotEmpty) {
+        formDataMap["coupon_code"] = couponCode;
+      }
 
       final formData = FormData.fromMap(formDataMap);
 
@@ -379,6 +384,21 @@ class AdsWebServices {
         data: {
           "payment_id": paymentId,
           "apple_pay_token": paymentToken, 
+        },
+      );
+      return response;
+    } catch (e, stackTrace) {
+      return _handleError(e, stackTrace);
+    }
+  }
+
+  Future<dynamic> validateCoupon(String code, double amount) async {
+    try {
+      final response = await dio.post(
+        BackendAPI.validate_coupon,
+        data: {
+          "code": code,
+          "amount": amount,
         },
       );
       return response;
