@@ -150,7 +150,6 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
       _buildSectionTitle("التفاصيل", FontAwesomeIcons.circleInfo),
       SizedBox(height: 12),
       _buildCard([
-        // _buildViewsDropdown(), // Replaced by text field
         SizedBox(height: 16),
                       
         // Target Views Input
@@ -428,57 +427,10 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF2596FA), width: 2),
-        ),
-        prefixIcon: Icon(FontAwesomeIcons.arrowsUpToLine, color: Color(0xFF2596FA)),
-        filled: true,
-        fillColor: Colors.grey.shade50,
-      ),
-    );
-  }
+
 
   // This method is no longer used as a TextFormField is used instead
-  Widget _buildViewsDropdown() {
-    return DropdownButtonFormField<int>(
-      value: selectedViews,
-      items: AdPricingConfig.pricingTiers.entries.map((entry) {
-        return DropdownMenuItem<int>(
-          value: entry.key,
-          child: Row(
-            children: [
-              Icon(FontAwesomeIcons.eye, size: 16, color: Color(0xFF2596FA)),
-              SizedBox(width: 12),
-              Text(
-                "${entry.key} مشاهدة - ${entry.value} ر.س",
-                style: GoogleFonts.cairo(),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-      onChanged: (val) {
-        if (val != null) {
-          setState(() {
-            selectedViews = val;
-          });
-        }
-      },
-      isExpanded: true,
-      icon: Icon(Icons.keyboard_arrow_down, color: Color(0xFF2596FA)),
-      style: GoogleFonts.cairo(color: Color(0xFF2C3E50), fontSize: 15),
-      decoration: InputDecoration(
-        labelText: "عدد المشاهدات",
-        labelStyle: GoogleFonts.cairo(color: Colors.grey.shade600),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+  // Dropdown removed
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
@@ -853,4 +805,4 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
     );
   }
 }
-```
+
