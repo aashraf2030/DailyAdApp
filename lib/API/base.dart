@@ -43,6 +43,8 @@ class BackendAPI{
 
   static const view = "view/";
   static const watch = "${base}${view}watch";
+  static const view_ad = "${base}${view}ad"; // Track ad views and award points
+  static const view_history = "${base}${view}history"; // Get viewing history
 
   static const authority = "authority/";
   static const defaultReq = "$base${authority}default_req";

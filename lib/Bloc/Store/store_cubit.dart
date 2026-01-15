@@ -126,10 +126,20 @@ class StoreCubit extends Cubit<StoreState> {
           emit(StoreOrderSuccess(response));
           return true;
         } else if (paymentMethod == 'card') {
+          print("🔍 [STORE] Card payment response: $response");
+          print("🔍 [STORE] Data object: $data");
+          
           final String? paymentUrl = getValue('payment_url');
-          if (paymentUrl != null) {
+          print("🔍 [STORE] Payment URL extracted: $paymentUrl");
+          
+          if (paymentUrl != null && paymentUrl.isNotEmpty) {
+            print("✅ [STORE] Emitting StorePaymentRequired with URL: $paymentUrl");
             emit(StorePaymentRequired(paymentUrl, orderId));
             return true;
+          } else {
+            print("🔴 [STORE] Payment URL is null or empty!");
+            emit(StoreOrderError("فشل في الحصول على رابط الدفع"));
+            return false;
           }
         } else if (paymentMethod == 'apple_pay') {
            final String? clientSecret = getValue('client_secret');

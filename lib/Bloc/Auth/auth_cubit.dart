@@ -38,15 +38,19 @@ class AuthCubit extends Cubit<AuthState>{
     prefs.remove("isAdmin");
   }
 
-  Future<bool> login(String user, String pass, {bool rememberMe = false}) async
+  Future<Map<String, dynamic>> login(String user, String pass, {bool rememberMe = false}) async
   {
-    bool res = false;
+    Map<String, dynamic> result = {
+      'success': false,
+      'welcome_bonus': false,
+      'bonus_points': 0,
+    };
 
     final x = await repo.login(user, pass);
     if (x.status == "Success")
       {
         emit(AuthDone());
-        res = true;
+        result['success'] = true;
       }
     else if (x.status == "Valid")
       {
@@ -54,6 +58,13 @@ class AuthCubit extends Cubit<AuthState>{
         prefs.setString("session", x.session ?? "");
         prefs.remove("guest");  // إزالة وضع الزائر عند تسجيل الدخول ✅
         clearProfileCache();  // مسح الـ cache القديم
+        
+        // Fetch and cache admin status immediately after login
+        await isAdmin(forceRefresh: true);
+        
+        // Check for welcome bonus
+        result['welcome_bonus'] = x.welcomeBonus ?? false;
+        result['bonus_points'] = x.bonusPoints ?? 0;
         
         // Save account if remember me is enabled
         if (rememberMe && accountManager != null && x.id != null) {
@@ -87,7 +98,7 @@ class AuthCubit extends Cubit<AuthState>{
         }
         
         emit(AuthDone());
-        res = true;
+        result['success'] = true;
       }
     else if (x.status == "Unverified")
       {
@@ -96,12 +107,12 @@ class AuthCubit extends Cubit<AuthState>{
         prefs.remove("guest");  // إزالة وضع الزائر ✅
         clearProfileCache();
         emit(AuthError("Unverified"));
-        res = false;
+        result['success'] = false;
       }
     else if (x.status == "Invalid Auth")
       {
         emit(AuthInvalid());
-        res = false;
+        result['success'] = false;
       }
     else{
       String msg = x.status;
@@ -111,9 +122,9 @@ class AuthCubit extends Cubit<AuthState>{
          msg = "الحساب غير مفعل";
       }
       emit(AuthError(msg));
-      res = false;
+      result['success'] = false;
     }
-    return res;
+    return result;
   }
 
   Future<UserProfile> getProfile({bool forceRefresh = false}) async{
@@ -236,50 +247,66 @@ class AuthCubit extends Cubit<AuthState>{
     return prefs.getBool("guest")?? false;
   }
 
-  Future<bool> isAdmin () async
-  {
+  Future<bool> isAdmin({bool forceRefresh = false}) async {
+    print("🟣 [AUTH] isAdmin called (forceRefresh: $forceRefresh)");
+    
     final id = prefs.getString("id");
     final session = prefs.getString("session");
 
-    bool res = false;
+    // If no session, definitely not admin
+    if (id == null || session == null) {
+      print("🟣 [AUTH] No session - not admin");
+      prefs.setBool("isAdmin", false);
+      return false;
+    }
 
-    if (id != null && session != null)
-    {
-      try {
-        // Get raw response to access isAdmin field directly
-        final rawResponse = await repo.isAdminRaw(id, session);
-        
-        // Backend returns: {status: 'Valid'/'Invalid', isAdmin: true/false}
-        // Check the isAdmin field directly - this is the source of truth
-        if (rawResponse.containsKey("isAdmin")) {
-          final isAdminValue = rawResponse["isAdmin"];
-          // Handle both boolean and int (0/1) from backend
-          if (isAdminValue is bool) {
-            res = isAdminValue;
-          } else if (isAdminValue is int) {
-            res = isAdminValue == 1;
-          } else if (isAdminValue is String) {
-            res = isAdminValue.toLowerCase() == "true" || isAdminValue == "1";
-          } else {
-            // Fallback: check status
-            res = rawResponse["status"] == "Valid";
-          }
+    // Use cached value unless force refresh requested
+    if (!forceRefresh) {
+      final cachedIsAdmin = prefs.getBool("isAdmin");
+      if (cachedIsAdmin != null) {
+        print("🟣 [AUTH] Using cached isAdmin value: $cachedIsAdmin");
+        return cachedIsAdmin;
+      }
+      print("🟣 [AUTH] No cached value, fetching from backend...");
+    } else {
+      print("🟣 [AUTH] Force refresh requested, fetching from backend...");
+    }
+
+    // Fetch from backend only if no cache or force refresh
+    bool res = false;
+    try {
+      // Get raw response to access isAdmin field directly
+      final rawResponse = await repo.isAdminRaw(id, session);
+      
+      // Backend returns: {status: 'Valid'/'Invalid', isAdmin: true/false}
+      // Check the isAdmin field directly - this is the source of truth
+      if (rawResponse.containsKey("isAdmin")) {
+        final isAdminValue = rawResponse["isAdmin"];
+        // Handle both boolean and int (0/1) from backend
+        if (isAdminValue is bool) {
+          res = isAdminValue;
+        } else if (isAdminValue is int) {
+          res = isAdminValue == 1;
+        } else if (isAdminValue is String) {
+          res = isAdminValue.toLowerCase() == "true" || isAdminValue == "1";
         } else {
-          // Fallback: if no isAdmin field, check status
+          // Fallback: check status
           res = rawResponse["status"] == "Valid";
         }
-        
-        // Save admin status to SharedPreferences for quick access
-        prefs.setBool("isAdmin", res);
-      } catch (e) {
-        // On error, assume not admin
-        prefs.setBool("isAdmin", false);
-        res = false;
+      } else {
+        // Fallback: if no isAdmin field, check status
+        res = rawResponse["status"] == "Valid";
       }
-    } else {
-      // No session, definitely not admin
-      prefs.setBool("isAdmin", false);
-      res = false;
+      
+      // Save admin status to SharedPreferences for quick access
+      prefs.setBool("isAdmin", res);
+      print("🟣 [AUTH] Fetched and cached isAdmin: $res");
+    } catch (e) {
+      print("🔴 [AUTH] isAdmin Error: $e");
+      // On error, use cached value if available, otherwise assume not admin
+      final cachedIsAdmin = prefs.getBool("isAdmin") ?? false;
+      prefs.setBool("isAdmin", cachedIsAdmin);
+      res = cachedIsAdmin;
     }
 
     return res;
@@ -590,9 +617,9 @@ class AuthCubit extends Cubit<AuthState>{
       }
 
       // Login with saved credentials (don't save again, already saved)
-      final success = await login(account.username, password, rememberMe: false);
+      final loginResult = await login(account.username, password, rememberMe: false);
       
-      if (success) {
+      if (loginResult['success'] == true) {
         clearProfileCache();
         emit(AuthDone());
         return true;

@@ -73,8 +73,8 @@ class HomeCubit extends Cubit<HomeState>{
         if (isAdmin) {
           emit(HomeAdminState());
         } else {
-          // المستخدم العادي - الدردشة
-          emit(HomeChatState());
+          // المستخدم العادي - المتجر (بدل الدردشة)
+          emit(HomeStoreState());
         }
         break;
 
@@ -103,7 +103,7 @@ class HomeCubit extends Cubit<HomeState>{
         break;
 
       case 7:
-        emit(HomeChatState());
+        emit(HomeStoreState());
         break;
 
       default:

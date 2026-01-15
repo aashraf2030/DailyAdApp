@@ -60,75 +60,79 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: GradientAppBar(
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          icon: Icon(FontAwesomeIcons.store, color: Colors.white),
-          tooltip: 'المتجر',
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => MultiBlocProvider(
-                  providers: [
-                    BlocProvider(create: (_) => sl<StoreCubit>()),
-                    BlocProvider.value(value: BlocProvider.of<AuthCubit>(context)),
+    return BlocBuilder<HomeCubit, HomeState>(
+      buildWhen: (previous, current) => previous.runtimeType != current.runtimeType || current is HomeStoreState,
+      builder: (context, state) {
+        return Scaffold(
+          appBar: state is HomeStoreState
+              ? null // Hide AppBar in Store page (it has its own)
+              : GradientAppBar(
+                  automaticallyImplyLeading: false,
+                  leading: IconButton(
+                    icon: Icon(FontAwesomeIcons.solidCommentDots, color: Colors.white),
+                    tooltip: 'الدردشة',
+                    onPressed: () {
+                      final authCubit = BlocProvider.of<AuthCubit>(context);
+                      authCubit.isLoggedIn().then((isLoggedIn) {
+                         final isGuest = BlocProvider.of<OperationalCubit>(context).prefs.getBool("guest") ?? false;
+                         
+                         if (isLoggedIn && !isGuest) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider(
+                                  create: (_) => sl<ChatCubit>(),
+                                  child: const ChatPage(),
+                                ),
+                              ),
+                            );
+                         } else {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text("يجب تسجيل الدخول لاستخدام الدردشة")),
+                           );
+                         }
+                      });
+                    },
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(FontAwesomeIcons.whatsapp, color: Colors.green),
+                      onPressed: () {
+                        _openWhatsApp();
+                      },
+                      tooltip: 'تواصل معنا على واتساب',
+                    ),
                   ],
-                  child: StorePage(),
+                  title: BlocProvider.value(
+                    value: BlocProvider.of<HomeCubit>(context),
+                    child: PageTitle(),
+                  ),
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color.fromRGBO(37, 150, 250, 1),
+                      Color.fromRGBO(54, 74, 98, 0.85)
+                    ],
+                    transform: GradientRotation(0.5),
+                  ),
                 ),
-              ),
-            ).then((_) {
-              _checkAdminStatus();
-            });
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(FontAwesomeIcons.whatsapp, color: Colors.green),
-            onPressed: () {
-              _openWhatsApp();
+          backgroundColor: const Color.fromRGBO(250, 255, 255, 1),
+          body: Stack(
+            children: [
+              buildBody(context, state),
+            ],
+          ),
+          bottomNavigationBar: buildNavbar(context, state),
+          floatingActionButton: Builder(
+            builder: (context) {
+              // Hide FAB in Chat or Store (Store has its own)
+              if (state is HomeChatState || state is HomeStoreState) {
+                return const SizedBox.shrink();
+              }
+              return const SizedBox.shrink();
             },
-            tooltip: 'تواصل معنا على واتساب',
           ),
-        ],
-        title: BlocProvider.value(
-          value: BlocProvider.of<HomeCubit>(context),
-          child: PageTitle(),
-        ),
-        gradient: const LinearGradient(
-          colors: [
-            Color.fromRGBO(37, 150, 250, 1),
-            Color.fromRGBO(54, 74, 98, 0.85)
-          ],
-          transform: GradientRotation(0.5),
-        ),
-      ),
-      backgroundColor: const Color.fromRGBO(250, 255, 255, 1),
-      body: Stack(
-        children: [
-
-          BlocBuilder<HomeCubit, HomeState>(
-            bloc: BlocProvider.of(context),
-            builder: buildBody,
-          ),
-
-
-        ],
-      ),
-      bottomNavigationBar:
-          BlocBuilder<HomeCubit, HomeState>(builder: buildNavbar),
-      floatingActionButton: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
-          // إخفاء أيقونة الواتساب في صفحة الدردشة
-          if (state is HomeChatState) {
-            return const SizedBox.shrink();
-          }
-          // The WhatsApp FloatingActionButton is now moved to AppBar actions.
-          // So, we always hide the FloatingActionButton here.
-          return const SizedBox.shrink();
-        },
-      ),
+        );
+      },
     );
   }
 
@@ -276,6 +280,16 @@ class HomePageState extends State<HomePage> {
             return _buildAccessDeniedPage(context);
           }
         },
+      );
+    }
+
+    if (state is HomeStoreState) {
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => sl<StoreCubit>()),
+          BlocProvider.value(value: BlocProvider.of<AuthCubit>(context)),
+        ],
+        child: StorePage(),
       );
     }
 
@@ -440,7 +454,7 @@ class HomePageState extends State<HomePage> {
         BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.moneyBillTransfer), label: "المدفوعات"),
         BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.comments), label: "الدردشة"),
+          icon: FaIcon(FontAwesomeIcons.bagShopping), label: "المتجر"),
       ];
     } else {
       // المستخدم العادي: أيقونة مخصصة للدردشة (message icon)
@@ -454,7 +468,7 @@ class HomePageState extends State<HomePage> {
         BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.circleUser), label: "الحساب"),
         BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.message), label: "الدردشة"),
+          icon: FaIcon(FontAwesomeIcons.bagShopping), label: "المتجر"),
       ];
     }
   }

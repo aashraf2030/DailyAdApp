@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../Widgets/login_background.dart';
 import 'package:ads_app/Widgets/login_textbox.dart';
+import 'package:ads_app/Widgets/welcome_bonus_dialog.dart';
 
 
 
@@ -483,42 +484,55 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   void tryLogin(context) async {
-    final cubit = BlocProvider.of<AuthCubit>(context);
+  final cubit = BlocProvider.of<AuthCubit>(context);
 
-    // Show loading indicator
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => Center(
-        child: Container(
-          padding: EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Color.fromRGBO(37, 150, 250, 1),
-            ),
+  // Show loading indicator
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => Center(
+      child: Container(
+        padding: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(
+            Color.fromRGBO(37, 150, 250, 1),
           ),
         ),
       ),
-    );
+    ),
+  );
 
-    final loginResult = await cubit.login(user.data, pass.data, rememberMe: _rememberMe);
+  final loginResult = await cubit.login(user.data, pass.data, rememberMe: _rememberMe);
 
-    // Close loading
-    Navigator.of(context).pop();
+  // Close loading
+  Navigator.of(context).pop();
 
-    if (loginResult) {
-      final isVerified = await cubit.verifyCheck();
+  // Check if login was successful
+  if (loginResult['success'] == true) {
+    // Check if user received welcome bonus
+    if (loginResult['welcome_bonus'] == true && loginResult['bonus_points'] > 0) {
+      // Show welcome bonus dialog
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => WelcomeBonusDialog(
+          bonusPoints: loginResult['bonus_points'],
+        ),
+      );
+    }
 
-      if (isVerified) {
-        Navigator.pushReplacementNamed(context, "/home");
-      } else {
-        Navigator.pushReplacementNamed(context, "/verify");
-      }
+    final isVerified = await cubit.verifyCheck();
+
+    if (isVerified) {
+      Navigator.pushReplacementNamed(context, "/home");
     } else {
+      Navigator.pushReplacementNamed(context, "/verify");
+    }
+  } else {
       // Check if account is unverified
       if (cubit.state is AuthError) {
         final errorState = cubit.state as AuthError;

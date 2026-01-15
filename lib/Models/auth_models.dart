@@ -2,6 +2,8 @@ class AuthResult{
   late String status;
   String? id;
   String? session;
+  bool? welcomeBonus;
+  int? bonusPoints;
 
   AuthResult.fromJson(Map<String, dynamic> json)
   {
@@ -25,13 +27,17 @@ class AuthResult{
     // Ensure id and session are not empty strings
     if (id != null && id!.isEmpty) id = null;
     if (session != null && session!.isEmpty) session = null;
+    
+    // Parse welcome bonus info
+    welcomeBonus = json["welcome_bonus"] as bool?;
+    bonusPoints = json["bonus_points"] as int?;
   }
 
   AuthResult(this.status);
 
   @override
   String toString() {
-    return "{Status : $status, id : $id, session : $session}";
+    return "{Status : $status, id : $id, session : $session, welcomeBonus: $welcomeBonus, bonusPoints: $bonusPoints}";
   }
 }
 

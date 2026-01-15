@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../Bloc/Store/store_cubit.dart';
 import '../Bloc/Store/store_state.dart';
 
@@ -19,7 +21,7 @@ class PaymentWebviewPage extends StatefulWidget {
 }
 
 class _PaymentWebviewPageState extends State<PaymentWebviewPage> {
-  late final WebViewController controller;
+  WebViewController? controller;
   bool isLoading = true;
 
   @override
@@ -29,29 +31,49 @@ class _PaymentWebviewPageState extends State<PaymentWebviewPage> {
     // Start polling for payment status
     context.read<StoreCubit>().verifyPayment(widget.orderId);
 
-    controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            // Update loading bar.
-          },
-          onPageStarted: (String url) {},
-          onPageFinished: (String url) {
-            setState(() {
-              isLoading = false;
-            });
-          },
-          onWebResourceError: (WebResourceError error) {},
-          onNavigationRequest: (NavigationRequest request) {
-            // Check for success/failure redirects if needed
-            // Otherwise reliance on webhook+polling is safer
-            return NavigationDecision.navigate;
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.url));
+    if (kIsWeb) {
+      // On Web, launch URL in new tab
+      _launchPaymentUrl();
+    } else {
+      // On Mobile/Desktop, use WebView
+      controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0x00000000))
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onProgress: (int progress) {
+              // Update loading bar.
+            },
+            onPageStarted: (String url) {},
+            onPageFinished: (String url) {
+              if (mounted) {
+                setState(() {
+                  isLoading = false;
+                });
+              }
+            },
+            onWebResourceError: (WebResourceError error) {},
+            onNavigationRequest: (NavigationRequest request) {
+              return NavigationDecision.navigate;
+            },
+          ),
+        )
+        ..loadRequest(Uri.parse(widget.url));
+    }
+  }
+
+  Future<void> _launchPaymentUrl() async {
+    final uri = Uri.parse(widget.url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch payment URL')),
+      );
+    }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -68,13 +90,36 @@ class _PaymentWebviewPageState extends State<PaymentWebviewPage> {
         appBar: AppBar(
           title: const Text('Complete Payment'),
         ),
-        body: Stack(
-          children: [
-            WebViewWidget(controller: controller),
-            if (isLoading)
-              const Center(child: CircularProgressIndicator()),
-          ],
-        ),
+        body: kIsWeb
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.payment, size: 80, color: Colors.blue),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'جاري الدفع في نافذة جديدة...',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text('يرجى إتمام عملية الدفع في النافذة المنبثقة'),
+                    const SizedBox(height: 30),
+                    ElevatedButton(
+                      onPressed: _launchPaymentUrl,
+                      child: const Text('فتح صفحة الدفع مرة أخرى'),
+                    ),
+                    const SizedBox(height: 10),
+                    if (isLoading) const CircularProgressIndicator(),
+                  ],
+                ),
+              )
+            : Stack(
+                children: [
+                  if (controller != null) WebViewWidget(controller: controller!),
+                  if (isLoading)
+                    const Center(child: CircularProgressIndicator()),
+                ],
+              ),
       ),
     );
   }

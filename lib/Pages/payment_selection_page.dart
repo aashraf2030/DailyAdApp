@@ -56,8 +56,55 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
             }
           });
         } else if (state is StoreOrderSuccess) {
-          // Cash order success
-          _showSuccessDialog();
+          // Cash order success - navigate directly to Store
+          print("✅ [PAYMENT] Order success - navigating to Store");
+          
+          try {
+            final authCubit = context.read<AuthCubit>();
+            final nav = Navigator.of(context);
+            
+            // Show quick success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("تم تأكيد الطلب بنجاح! رقم الطلب: ${state.data['order_id'] ?? 'N/A'}"),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+            
+            print("✅ [PAYMENT] Creating navigation route...");
+            
+            // Navigate to Store directly
+            nav.pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (_) => MultiBlocProvider(
+                  providers: [
+                    BlocProvider(create: (_) => sl<HomeCubit>()),
+                    BlocProvider(create: (_) => sl<AdCubit>()),
+                    BlocProvider(create: (_) => sl<StoreCubit>()),
+                    BlocProvider(create: (_) => sl<OperationalCubit>()),
+                    BlocProvider.value(value: authCubit),
+                  ],
+                  child: StorePage(),
+                ),
+              ),
+              (route) => false,
+            );
+            
+            print("✅ [PAYMENT] Navigation completed!");
+          } catch (e, stackTrace) {
+            print("🔴 [PAYMENT ERROR] Exception during navigation: $e");
+            print("🔴 [PAYMENT ERROR] Stack trace: $stackTrace");
+            
+            // Show error to user
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("حدث خطأ أثناء التنقل: $e"),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 5),
+              ),
+            );
+          }
         } else if (state is StoreOrderError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message), backgroundColor: Colors.red),

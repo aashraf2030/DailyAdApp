@@ -64,9 +64,34 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFF5F7FA),
-      child: BlocConsumer<ChatCubit, ChatState>(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "الدعم الفني",
+          style: GoogleFonts.cairo(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF2596FA), Color(0xFF364A62)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      backgroundColor: const Color(0xFFF5F7FA),
+      body: BlocConsumer<ChatCubit, ChatState>(
         listener: (context, state) {
           if (state is ChatMessagesLoadedState) {
             _scrollToBottom();

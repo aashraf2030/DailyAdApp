@@ -37,6 +37,12 @@ class RouteGenerator {
   Route<dynamic> generateRoute(RouteSettings settings) {
     print("🔷 [ROUTER] generateRoute called with: ${settings.name}");
     switch (settings.name) {
+      case "/":
+        print("🟢 [ROUTER] / (root) route - redirecting to home");
+        // Redirect to home
+        home.changeRoute(0);
+        return generateRoute(RouteSettings(name: "/home"));
+        
       case "/splash":
         return animateThis(
             BlocProvider.value(value: auth, child: SplashPage()));
@@ -234,7 +240,11 @@ class RouteGenerator {
         );
 
       default:
-        return animateThis(ErrorRoute());
+        print("🔴 [ROUTER] Unknown route requested: ${settings.name}");
+        return animateThis(ErrorRoute(
+          errorMessage: "الصفحة المطلوبة غير موجودة",
+          error: "Route not found: ${settings.name}",
+        ));
     }
   }
 
@@ -403,30 +413,164 @@ class RouteGenerator {
 }
 
 class ErrorRoute extends StatelessWidget {
-  const ErrorRoute({super.key});
+  final String? errorMessage;
+  final Object? error;
+  final StackTrace? stackTrace;
+  
+  const ErrorRoute({
+    super.key, 
+    this.errorMessage,
+    this.error,
+    this.stackTrace,
+  });
 
   @override
   Widget build(BuildContext context) {
     print("🔴🔴🔴 [ERROR ROUTE] ErrorRoute is being displayed!");
+    print("Error: $error");
+    print("Message: $errorMessage");
+    print("Stack: $stackTrace");
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(
           "خطأ",
           textDirection: TextDirection.rtl,
         ),
+        backgroundColor: Colors.red,
       ),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              "خطأ",
-              style: TextStyle(color: Colors.red),
+            Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: 80,
             ),
-            OutlinedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, "/login");
-                },
-                child: Text("العودة"))
+            SizedBox(height: 20),
+            Text(
+              "حدث خطأ",
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20),
+            
+            // Error Message
+            if (errorMessage != null) ...[
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "رسالة الخطأ:",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      errorMessage!,
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16),
+            ],
+            
+            // Error Object
+            if (error != null) ...[
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "تفاصيل الخطأ:",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      error.toString(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16),
+            ],
+            
+            // Stack Trace (collapsed by default)
+            if (stackTrace != null) ...[
+              ExpansionTile(
+                title: Text("Stack Trace (للمطورين)"),
+                backgroundColor: Colors.grey.shade100,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    color: Colors.black87,
+                    child: Text(
+                      stackTrace.toString(),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontFamily: 'monospace',
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+            ],
+            
+            // Actions
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
+              },
+              icon: Icon(Icons.home),
+              label: Text("العودة للرئيسية"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                padding: EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+            SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, "/login");
+              },
+              icon: Icon(Icons.login),
+              label: Text("تسجيل الدخول"),
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
           ],
         ),
       ),

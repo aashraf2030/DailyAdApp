@@ -328,12 +328,33 @@ class _StorePageState extends State<StorePage> {
                     flex: 3,
                     child: Stack(
                       children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                            image: DecorationImage(
-                              image: NetworkImage(product['image'] != null ? "${BackendAPI.base}store/image/${product['image']}" : 'https://via.placeholder.com/150'),
-                              fit: BoxFit.cover,
+                        ClipRRect(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                          child: Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            color: Colors.grey.shade50, // خلفية فاتحة للصورة
+                            child: Image.network(
+                              product['image'] != null 
+                                  ? "${BackendAPI.base}store/image/${product['image']}" 
+                                  : 'https://via.placeholder.com/150',
+                              fit: BoxFit.cover, // يملأ المساحة
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(
+                                  child: Icon(Icons.image_not_supported, color: Colors.grey.shade300, size: 40),
+                                );
+                              },
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                        : null,
+                                    strokeWidth: 2,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),

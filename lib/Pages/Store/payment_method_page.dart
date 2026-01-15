@@ -175,9 +175,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => PaymentWebviewPage(
-                  url: state.paymentUrl,
-                  orderId: state.orderId,
+                builder: (_) => BlocProvider.value(
+                  value: context.read<StoreCubit>(),
+                  child: PaymentWebviewPage(
+                    url: state.paymentUrl,
+                    orderId: state.orderId,
+                  ),
                 ),
               ),
             ).then((success) {
@@ -359,7 +362,23 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                     
                     SizedBox(height: 16),
                     
-                    // Platform-specific digital payment
+                    // Card/Visa Payment (All Platforms)
+                    PaymentMethodCard(
+                      icon: FontAwesomeIcons.creditCard,
+                      title: "بطاقة ائتمان / مدى",
+                      description: "ادفع بشكل آمن عبر Visa أو Mastercard",
+                      isSelected: selectedPaymentMethod == 'card',
+                      color: Color(0xFF2596FA).withOpacity(0.1),
+                      onTap: () {
+                        setState(() {
+                          selectedPaymentMethod = 'card';
+                        });
+                      },
+                    ),
+                    
+                    SizedBox(height: 16),
+                    
+                    // Apple Pay (iOS only)
                     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
                       PaymentMethodCard(
                         icon: FontAwesomeIcons.applePay,
@@ -370,19 +389,6 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                         onTap: () {
                           setState(() {
                             selectedPaymentMethod = 'apple_pay';
-                          });
-                        },
-                      )
-                    else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
-                      PaymentMethodCard(
-                        icon: FontAwesomeIcons.googlePay,
-                        title: "Google Pay",
-                        description: "ادفع بشكل آمن عبر Google Pay",
-                        isSelected: selectedPaymentMethod == 'google_pay',
-                        color: Color(0xFF4285F4),
-                        onTap: () {
-                          setState(() {
-                            selectedPaymentMethod = 'google_pay';
                           });
                         },
                       ),
@@ -483,99 +489,96 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
   }
 
   Widget _buildActionArea(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: Offset(0, -5),
-          ),
-        ],
-      ),
-      child: BlocBuilder<StoreCubit, StoreState>(
-        builder: (context, state) {
-          if (state is StoreLoading) {
-            return Center(child: CircularProgressIndicator());
-          }
-          
-          if (selectedPaymentMethod == 'apple_pay') {
-            return ApplePayButton(
-              paymentConfiguration: PaymentConfiguration.fromJsonString(
-                '''{
-                  "provider": "apple_pay",
-                  "data": {
-                    "merchantIdentifier": "merchant.com.aladvertelement.daily",
-                    "displayName": "Daily Mag App",
-                    "merchantCapabilities": ["3DS", "debit", "credit"],
-                    "supportedNetworks": ["visa", "masterCard", "amex", "mada"],
-                    "countryCode": "SA",
-                    "currencyCode": "SAR",
-                    "requiredBillingContactFields": ["email", "name", "phoneNumber"], 
-                    "requiredShippingContactFields": []
-                  }
-                }'''
+  return Container(
+    padding: EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 20,
+          offset: Offset(0, -5),
+        ),
+      ],
+    ),
+    child: BlocBuilder<StoreCubit, StoreState>(
+      builder: (context, state) {
+        if (state is StoreLoading) {
+          return Center(child: CircularProgressIndicator());
+        }
+        
+        // Apple Pay Button (iOS only)
+        if (selectedPaymentMethod == 'apple_pay') {
+          return ApplePayButton(
+            paymentConfiguration: PaymentConfiguration.fromJsonString(
+              '''{
+                "provider": "apple_pay",
+                "data": {
+                  "merchantIdentifier": "merchant.com.aladvertelement.daily",
+                  "displayName": "Daily Mag App",
+                  "merchantCapabilities": ["3DS", "debit", "credit"],
+                  "supportedNetworks": ["visa", "masterCard", "amex", "mada"],
+                  "countryCode": "SA",
+                  "currencyCode": "SAR",
+                  "requiredBillingContactFields": ["email", "name", "phoneNumber"], 
+                  "requiredShippingContactFields": []
+                }
+              }'''
+            ),
+            paymentItems: _paymentItems,
+            style: ApplePayButtonStyle.black,
+            width: double.infinity,
+            height: 55,
+            type: ApplePayButtonType.buy,
+            onPaymentResult: onApplePayResult,
+            loadingIndicator: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } 
+        // Card Payment Button
+        else if (selectedPaymentMethod == 'card') {
+          return SizedBox(
+            width: double.infinity,
+            height: 55,
+            child: ElevatedButton(
+              onPressed: () {
+                // Place order with card payment
+                context.read<StoreCubit>().placeOrder(
+                  receiverName: widget.receiverName,
+                  address: widget.address,
+                  phone: widget.phone,
+                  paymentMethod: 'card',
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF2596FA),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                elevation: 5,
               ),
-              paymentItems: _paymentItems,
-              style: ApplePayButtonStyle.black,
-              width: double.infinity,
-              height: 55,
-              type: ApplePayButtonType.buy,
-              onPaymentResult: onApplePayResult,
-              loadingIndicator: const Center(
-                child: CircularProgressIndicator(),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(FontAwesomeIcons.creditCard, size: 20),
+                  SizedBox(width: 10),
+                  Text(
+                    "ادفع ببطاقة الائتمان",
+                    style: GoogleFonts.cairo(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-            );
-          } else if (selectedPaymentMethod == 'google_pay') {
-            return GooglePayButton(
-              paymentConfiguration: PaymentConfiguration.fromJsonString(
-                '''{
-                  "provider": "google_pay",
-                  "data": {
-                    "environment": "TEST",
-                    "apiVersion": 2,
-                    "apiVersionMinor": 0,
-                    "allowedPaymentMethods": [
-                      {
-                        "type": "CARD",
-                        "tokenizationSpecification": {
-                          "type": "PAYMENT_GATEWAY",
-                          "parameters": {
-                            "gateway": "example",
-                            "gatewayMerchantId": "exampleGatewayMerchantId"
-                          }
-                        },
-                        "parameters": {
-                          "allowedCardNetworks": ["VISA", "MASTERCARD"],
-                          "allowedAuthMethods": ["PAN_ONLY", "CRYPTOGRAM_3DS"]
-                        }
-                      }
-                    ],
-                    "merchantInfo": {
-                      "merchantId": "01234567890123456789",
-                      "merchantName": "Daily Mag App"
-                    },
-                    "transactionInfo": {
-                      "countryCode": "SA",
-                      "currencyCode": "SAR"
-                    }
-                  }
-                }'''
-              ),
-              paymentItems: _paymentItems,
-              type: GooglePayButtonType.buy,
-              onPaymentResult: onGooglePayResult,
-              loadingIndicator: const Center(
-                child: CircularProgressIndicator(),
-              ),
-              width: double.infinity,
-              height: 55,
-            );
-          }
-          
+            ),
+          );
+        }
+        // Cash Payment Button
+        else {
           return SizedBox(
             width: double.infinity,
             height: 55,
@@ -589,7 +592,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF2596FA),
+                backgroundColor: Color(0xFF4CAF50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -612,8 +615,9 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               ),
             ),
           );
-        },
-      ),
-    );
-  }
+        }
+      },
+    ),
+  );
+}
 }
