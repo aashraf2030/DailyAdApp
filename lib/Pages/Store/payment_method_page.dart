@@ -381,11 +381,11 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                     // Apple Pay (iOS only)
                     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
                       PaymentMethodCard(
-                        icon: FontAwesomeIcons.apple, // Use generic Apple icon or import official asset
+                        icon: FontAwesomeIcons.applePay, // Use distinct Apple Pay icon
                         title: "Apple Pay",
                         description: "ادفع بسهولة وأمان",
                         isSelected: selectedPaymentMethod == 'apple_pay',
-                        color: Colors.white, // Plain white to avoid branding clash
+                        color: Colors.black, // Apple Pay brand color
                         onTap: () {
                           setState(() {
                             selectedPaymentMethod = 'apple_pay';
@@ -513,20 +513,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           return Column(
             children: [
               ApplePayButton(
-                paymentConfiguration: PaymentConfiguration.fromJsonString(
-                  '''{
-                    "provider": "apple_pay",
-                    "data": {
-                      "merchantIdentifier": "merchant.com.aladvertelement.daily", 
-                      "displayName": "Daily Mag App",
-                      "merchantCapabilities": ["3DS", "debit", "credit"],
-                      "supportedNetworks": ["visa", "masterCard", "amex", "mada"],
-                      "countryCode": "SA",
-                      "currencyCode": "SAR",
-                      "requiredBillingContactFields": ["email", "name", "phoneNumber"], 
-                      "requiredShippingContactFields": []
-                    }
-                  }'''
+                paymentConfiguration: PaymentConfiguration.fromAsset(
+                  'payment_configs/apple_pay_config.json',
                 ),
                 paymentItems: _paymentItems,
                 style: ApplePayButtonStyle.black,
@@ -539,6 +527,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 ),
                 onError: (e) {
                   // Handle error if button fails to load or payment fails
+                  debugPrint("Apple Pay Error: $e");
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('حدث خطأ في تحميل Apple Pay')),
                   );
