@@ -36,6 +36,7 @@ class PaymentMethodPage extends StatefulWidget {
 
 class _PaymentMethodPageState extends State<PaymentMethodPage> {
   String selectedPaymentMethod = 'cash'; // Default to cash
+  late Future<PaymentConfiguration> _applePayConfigFuture;
   
   final List<PaymentItem> _paymentItems = [];
 
@@ -43,6 +44,9 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
   void initState() {
     super.initState();
     _calculateTotal();
+    _applePayConfigFuture = PaymentConfiguration.fromAsset(
+      'payment_configs/apple_pay_config.json',
+    );
   }
 
   void _calculateTotal() {
@@ -510,36 +514,44 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         
         // Apple Pay Button (iOS only)
         if (selectedPaymentMethod == 'apple_pay') {
-          return Column(
-            children: [
-              ApplePayButton(
-                paymentConfiguration: PaymentConfiguration.fromAsset(
-                  'payment_configs/apple_pay_config.json',
-                ),
-                paymentItems: _paymentItems,
-                style: ApplePayButtonStyle.black,
-                width: double.infinity,
-                height: 55,
-                type: ApplePayButtonType.buy,
-                onPaymentResult: onApplePayResult,
-                loadingIndicator: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                onError: (e) {
-                  // Handle error if button fails to load or payment fails
-                  debugPrint("Apple Pay Error: $e");
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('حدث خطأ في تحميل Apple Pay')),
-                  );
-                },
-              ),
-              // Helper text if button doesn't appear
-               const SizedBox(height: 8),
-               Text(
-                 "إذا لم يظهر الزر، تأكد من إعدادات الـ Merchant ID",
-                 style: GoogleFonts.cairo(fontSize: 10, color: Colors.grey),
-               ),
-            ],
+          return FutureBuilder<PaymentConfiguration>(
+            future: _applePayConfigFuture,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Column(
+                  children: [
+                    ApplePayButton(
+                      paymentConfiguration: snapshot.data!,
+                      paymentItems: _paymentItems,
+                      style: ApplePayButtonStyle.black,
+                      width: double.infinity,
+                      height: 55,
+                      type: ApplePayButtonType.buy,
+                      onPaymentResult: onApplePayResult,
+                      loadingIndicator: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      onError: (e) {
+                        // Handle error if button fails to load or payment fails
+                        debugPrint("Apple Pay Error: $e");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('حدث خطأ في تحميل Apple Pay')),
+                        );
+                      },
+                    ),
+                    // Helper text if button doesn't appear
+                     const SizedBox(height: 8),
+                     Text(
+                       "إذا لم يظهر الزر، تأكد من إعدادات الـ Merchant ID",
+                       style: GoogleFonts.cairo(fontSize: 10, color: Colors.grey),
+                     ),
+                  ],
+                );
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error loading Apple Pay config'));
+              }
+              return Center(child: CircularProgressIndicator());
+            }
           );
         } 
         // Card Payment Button

@@ -45,6 +45,16 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
   double? _discountAmount;
   double? _finalPrice; // If null, use original price
 
+  // Apple Pay State
+  late Future<PaymentConfiguration> _paymentConfigFuture;
+  String? _pendingApplePayToken;
+
+  @override
+  void initState() {
+    super.initState();
+    _paymentConfigFuture = PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
+  }
+
   @override
   Widget build(BuildContext context) {
     // Calculate price dynamically
@@ -149,43 +159,43 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
           } else if (state is AdApplePayRequired) {
              Navigator.pop(context); // Close loading
              
-             // Trigger Apple Pay Sheet
-             try {
-               final config = await PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
-               final payClient = Pay({PayProvider.apple_pay: config});
-
-               final paymentItems = [
-                 PaymentItem(
-                   label: 'Ad Payment',
-                   amount: state.amount.toStringAsFixed(2),
-                   status: PaymentItemStatus.final_price,
-                 )
-               ];
-             
-               if (context.mounted) {
-                 payClient.showPaymentSelector(
-                   PayProvider.apple_pay,
-                   paymentItems,
-                 ).then((result) {
-                    if (!context.mounted) return;
-                    // User authorized payment
-                    final String tokenString = jsonEncode(result);
-                    
-                    // Call Cubit to confirm payment with backend
-                    final cubit = BlocProvider.of<OperationalCubit>(context);
-                    cubit.confirmAdApplePay(state.paymentId, tokenString);
-                    
-                 }).catchError((e) {
-                    print("Apple Pay Error: $e");
-                    if (context.mounted) {
-                      _showErrorDialog(context, e);
-                    }
-                 });
-               }
-             } catch (e) {
-                print("Pay Init Error: $e");
-                if (context.mounted) {
-                  _showErrorDialog(context, e);
+             if (_pendingApplePayToken != null) {
+                // Token already captured from Native Button
+                final cubit = BlocProvider.of<OperationalCubit>(context);
+                cubit.confirmAdApplePay(state.paymentId, _pendingApplePayToken!);
+                _pendingApplePayToken = null; // Clear token
+             } else {
+                // Fallback: Trigger Apple Pay Sheet manually (if for some reason native button wasn't used)
+                try {
+                  final config = await PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
+                  final payClient = Pay({PayProvider.apple_pay: config});
+   
+                  final paymentItems = [
+                    PaymentItem(
+                      label: 'Ad Payment',
+                      amount: state.amount.toStringAsFixed(2),
+                      status: PaymentItemStatus.final_price,
+                    )
+                  ];
+                
+                  if (context.mounted) {
+                    payClient.showPaymentSelector(
+                      PayProvider.apple_pay,
+                      paymentItems,
+                    ).then((result) {
+                       if (!context.mounted) return;
+                       final String tokenString = jsonEncode(result);
+                       final cubit = BlocProvider.of<OperationalCubit>(context);
+                       cubit.confirmAdApplePay(state.paymentId, tokenString);
+                       
+                    }).catchError((e) {
+                       debugPrint("Apple Pay Error: $e");
+                       if (context.mounted) _showErrorDialog(context, e);
+                    });
+                  }
+                } catch (e) {
+                   debugPrint("Pay Init Error: $e");
+                   if (context.mounted) _showErrorDialog(context, e);
                 }
              }
 
@@ -274,39 +284,82 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
               
               SizedBox(height: 40),
               
+              SizedBox(height: 40),
+              
               // Pay Button
-              Container(
-                width: double.infinity,
-                height: 56,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(
-                    colors: _selectedMethod != 0 
-                        ? [Color(0xFF2596FA), Color(0xFF364A62)]
-                        : [Colors.grey, Colors.grey.shade600],
-                  ),
-                  boxShadow: _selectedMethod != 0 
-                      ? [BoxShadow(color: Color(0xFF2596FA).withOpacity(0.4), blurRadius: 15, offset: Offset(0, 8))]
-                      : [],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
+              if (_selectedMethod == 3 && defaultTargetPlatform == TargetPlatform.iOS)
+                 FutureBuilder<PaymentConfiguration>(
+                  future: _paymentConfigFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return ApplePayButton(
+                        paymentConfiguration: snapshot.data!,
+                        paymentItems: [
+                          PaymentItem(
+                            label: 'Ad Payment',
+                            amount: totalPrice.toStringAsFixed(2),
+                            status: PaymentItemStatus.final_price,
+                          )
+                        ],
+                        style: ApplePayButtonStyle.black,
+                        type: ApplePayButtonType.buy,
+                        width: double.infinity,
+                        height: 56,
+                        onPaymentResult: (result) {
+                          // 1. Capture Token
+                          setState(() {
+                            _pendingApplePayToken = jsonEncode(result);
+                          });
+                          // 2. Start Backend Flow (Initialize)
+                          _submitPayment(totalPrice); 
+                        },
+                        loadingIndicator: const Center(child: CircularProgressIndicator()),
+                        onError: (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                             const SnackBar(content: Text("Error loading Apple Pay")),
+                          );
+                        },
+                      );
+                    }
+                    return const SizedBox(
+                      height: 56, 
+                      child: Center(child: CircularProgressIndicator())
+                    );
+                  }
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  height: 56,
+                  decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    onTap: _selectedMethod != 0 ? () => _submitPayment(totalPrice) : null,
-                    child: Center(
-                      child: Text(
-                        _selectedMethod == 1 ? "تأكيد الإعلان" : "دفع ${totalPrice.toStringAsFixed(2)} ريال سعودي",
-                        style: GoogleFonts.cairo(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                    gradient: LinearGradient(
+                      colors: _selectedMethod != 0 
+                          ? [Color(0xFF2596FA), Color(0xFF364A62)]
+                          : [Colors.grey, Colors.grey.shade600],
+                    ),
+                    boxShadow: _selectedMethod != 0 
+                        ? [BoxShadow(color: Color(0xFF2596FA).withOpacity(0.4), blurRadius: 15, offset: Offset(0, 8))]
+                        : [],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: _selectedMethod != 0 ? () => _submitPayment(totalPrice) : null,
+                      child: Center(
+                        child: Text(
+                          _selectedMethod == 1 ? "تأكيد الإعلان" : "دفع ${totalPrice.toStringAsFixed(2)} ريال سعودي",
+                          style: GoogleFonts.cairo(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
