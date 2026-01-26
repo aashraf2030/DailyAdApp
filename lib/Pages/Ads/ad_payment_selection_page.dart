@@ -315,9 +315,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                         },
                         loadingIndicator: const Center(child: CircularProgressIndicator()),
                         onError: (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                             const SnackBar(content: Text("Error loading Apple Pay")),
-                          );
+                          debugPrint("Apple Pay Error: $e");
                         },
                       );
                     }
@@ -453,6 +451,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
     required Color color,
   }) {
     bool isSelected = _selectedMethod == index;
+    bool isApplePay = index == 3;
     
     return GestureDetector(
       onTap: () {
@@ -485,6 +484,34 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                Icon(Icons.circle_outlined, color: Colors.grey.shade400),
              
              Spacer(),
+
+             if (isApplePay) ...[
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.black, width: 1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(FontAwesomeIcons.apple, size: 14, color: Colors.black),
+                      SizedBox(width: 4),
+                      Text(
+                        "Pay",
+                        style: GoogleFonts.cairo(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          height: 1.2
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 12),
+             ],
              
              Text(
                title,
@@ -572,17 +599,16 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
   }
 
   void _showErrorDialog(BuildContext context, dynamic error) {
+    if (error is PlatformException && error.code == 'paymentCanceled') {
+      return;
+    }
+
     String title = "حدث خطأ";
     String content = "خطأ غير معروف";
 
     if (error is PlatformException) {
-      if (error.code == 'paymentCanceled') {
-        title = "تم إلغاء الدفع";
-        content = "لقد قمت بإلغاء عملية الدفع";
-      } else {
-        title = "خطأ في النظام (Platform Exception)";
-        content = "Code: ${error.code}\nMessage: ${error.message}\nDetails: ${error.details}";
-      }
+       title = "خطأ في النظام (Platform Exception)";
+       content = "Code: ${error.code}\nMessage: ${error.message}\nDetails: ${error.details}";
     } else {
       content = error.toString();
     }
