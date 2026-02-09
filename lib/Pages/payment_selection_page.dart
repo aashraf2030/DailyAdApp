@@ -158,7 +158,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                 title: 'Cash on Delivery'
               ),
               const SizedBox(height: 15),
-              if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ...[
+              if (!kIsWeb && false && defaultTargetPlatform == TargetPlatform.iOS) ...[
                  _buildPaymentOption(
                   id: 'apple_pay', 
                   icon: FontAwesomeIcons.apple, 

@@ -1,4 +1,5 @@
 import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
+import 'package:ads_app/Bloc/Auth/auth_cubit.dart';
 import 'package:ads_app/Models/ad_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -331,6 +332,29 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
       }
       return;
     }
+
+    // فحص 3: التحقق من الحد المسموح للمشاهدات محلياً
+    // 0 = مسموح + طلب API
+    // 1 = مسموح فقط (بدون طلب)
+    // 2 = ممنوع
+    final int availability = await cubit.recordLocalView(widget.ad.id);
+
+    if (availability == 2) {
+      if (context.mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تجاوزت الحد المسموح (10 مرات) لهذا الإعلان. يرجى الانتظار ساعة واحدة.',
+              textDirection: TextDirection.rtl,
+              style: GoogleFonts.cairo(),
+            ),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
     
     // إذا كل شيء تمام، نفتح الإعلان
     final url = widget.ad.path;
@@ -344,58 +368,35 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
           mode: LaunchMode.externalApplication,
         );
         
-        // بعد فتح الرابط، نسجل المشاهدة
-        final res = await cubit.watchAd(widget.ad.id);
+        // إذا كان الفحص المحلي يطلب تسجيل المشاهدة في السيرفر (0)
+        if (availability == 0) {
+          final res = await cubit.watchAd(widget.ad.id);
 
-        if (!res) {
-          // معالجة الأخطاء من Laravel
-          if (context.mounted) {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text(
-                    "تنبيه",
-                    style: GoogleFonts.cairo(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  content: Text(
-                    "لا يمكنك مشاهدة هذا الإعلان. قد تكون شاهدته من قبل أو هناك مشكلة في الحساب.",
-                    style: GoogleFonts.cairo(
-                      color: Color(0xFF2C3E50),
-                      fontSize: 14,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  backgroundColor: Colors.white,
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        "حسناً",
-                        style: GoogleFonts.cairo(
-                          color: Color(0xFF2596FA),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
+          if (!res) {
+            // معالجة الأخطاء من Laravel (مثل المشاهدة المسبقة)
+            // هنا ممكن نتجاهل الخطأ لأنه كده كده المستخدم فتح الرابط
+            // بس لو عايزين ننبه المستخدم إنه مش هياخد نقط:
+            /*
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('تمت مشاهدة الإعلان مسبقاً (لن يتم احتساب نقاط)', style: GoogleFonts.cairo()),
+                  backgroundColor: Colors.grey,
+                )
+              );
+            }
+            */
+          } else {
+            // نجحت المشاهدة - تحديث العداد
+            setState(() {
+              views++;
+            });
+            
+            // تحديث بيانات المستخدم (النقاط) فوراً
+            if (context.mounted) {
+              context.read<AuthCubit>().getProfile(forceRefresh: true);
+            }
           }
-        } else {
-          // نجحت المشاهدة - تحديث العداد
-          setState(() {
-            views++;
-          });
         }
       } else {
         // لو الرابط مش قادر يتفتح

@@ -383,7 +383,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                     SizedBox(height: 16),
                     
                     // Apple Pay (iOS only)
-                    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
+                    if (!kIsWeb && false && defaultTargetPlatform == TargetPlatform.iOS)
                       PaymentMethodCard(
                         icon: FontAwesomeIcons.applePay, // Use distinct Apple Pay icon
                         title: "Apple Pay",

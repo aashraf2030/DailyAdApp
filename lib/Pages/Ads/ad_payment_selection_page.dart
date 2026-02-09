@@ -272,7 +272,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                 color: Color(0xFF2596FA),
               ),
               
-              if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+              if (false && defaultTargetPlatform == TargetPlatform.iOS) ...[
                 SizedBox(height: 12),
                 _buildPaymentOption(
                   index: 3,
@@ -287,7 +287,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
               SizedBox(height: 40),
               
               // Pay Button
-              if (_selectedMethod == 3 && defaultTargetPlatform == TargetPlatform.iOS)
+              if (_selectedMethod == 3 && false && defaultTargetPlatform == TargetPlatform.iOS)
                  FutureBuilder<PaymentConfiguration>(
                   future: _paymentConfigFuture,
                   builder: (context, snapshot) {
@@ -301,10 +301,11 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                             status: PaymentItemStatus.final_price,
                           )
                         ],
-                        style: ApplePayButtonStyle.black,
-                        type: ApplePayButtonType.buy,
+                        style: ApplePayButtonStyle.whiteOutline,
+                        type: ApplePayButtonType.plain,
                         width: double.infinity,
                         height: 56,
+                        cornerRadius: 16,
                         onPaymentResult: (result) {
                           // 1. Capture Token
                           setState(() {
@@ -485,53 +486,53 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              
              Spacer(),
 
-             if (isApplePay) ...[
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.black, width: 1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(FontAwesomeIcons.apple, size: 14, color: Colors.black),
-                      SizedBox(width: 4),
-                      Text(
-                        "Pay",
-                        style: GoogleFonts.cairo(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          height: 1.2
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 12),
+             if (isApplePay)
+               Container(
+                 padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                 decoration: BoxDecoration(
+                   color: Colors.white,
+                   border: Border.all(color: Colors.black, width: 1.2),
+                   borderRadius: BorderRadius.circular(6),
+                 ),
+                 child: Row(
+                   mainAxisSize: MainAxisSize.min,
+                   children: [
+                     Icon(FontAwesomeIcons.apple, size: 21, color: Colors.black),
+                     SizedBox(width: 4),
+                     Text(
+                       "Pay",
+                       style: GoogleFonts.cairo(
+                         fontSize: 21,
+                         fontWeight: FontWeight.bold,
+                         color: Colors.black,
+                         height: 1.1,
+                       ),
+                     ),
+                     SizedBox(width: 2),
+                   ],
+                 ),
+               )
+             else ...[
+               Text(
+                 title,
+                 style: GoogleFonts.cairo(
+                   fontSize: 16,
+                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                   color: Color(0xFF364A62),
+                 ),
+               ),
+               
+               SizedBox(width: 16),
+               
+               Container(
+                 padding: EdgeInsets.all(8),
+                 decoration: BoxDecoration(
+                   color: color.withOpacity(0.1),
+                   borderRadius: BorderRadius.circular(8),
+                 ),
+                 child: Icon(icon, color: color, size: 20),
+               ),
              ],
-             
-             Text(
-               title,
-               style: GoogleFonts.cairo(
-                 fontSize: 16,
-                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                 color: Color(0xFF364A62),
-               ),
-             ),
-             
-             SizedBox(width: 16),
-             
-             Container(
-               padding: EdgeInsets.all(8),
-               decoration: BoxDecoration(
-                 color: color.withOpacity(0.1),
-                 borderRadius: BorderRadius.circular(8),
-               ),
-               child: Icon(icon, color: color, size: 20),
-             ),
           ],
         ),
       ),
