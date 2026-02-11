@@ -11,6 +11,7 @@ import 'package:ads_app/Bloc/Auth/auth_cubit.dart';
 import 'package:ads_app/Bloc/Home/home_cubit.dart';
 import 'package:ads_app/Bloc/Ad/ad_cubit.dart';
 import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
+import '../../Widgets/custom_apple_pay_icon.dart';
 import 'package:ads_app/Pages/Store/store_page.dart';
 import 'package:ads_app/core/di/service_locator.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -383,13 +384,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                     SizedBox(height: 16),
                     
                     // Apple Pay (iOS only)
-                    if (!kIsWeb && false && defaultTargetPlatform == TargetPlatform.iOS)
+                    if (true)
                       PaymentMethodCard(
                         icon: FontAwesomeIcons.applePay, // Use distinct Apple Pay icon
                         title: "Apple Pay",
                         description: "ادفع بسهولة وأمان",
                         isSelected: selectedPaymentMethod == 'apple_pay',
                         color: Colors.black, // Apple Pay brand color
+                        customIcon: const CustomApplePayIcon(height: 30),
                         onTap: () {
                           setState(() {
                             selectedPaymentMethod = 'apple_pay';

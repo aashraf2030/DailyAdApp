@@ -13,6 +13,7 @@ import '../Bloc/Operational/operational_cubit.dart';
 import 'Store/store_page.dart';
 import '../core/di/service_locator.dart';
 import 'payment_webview_page.dart';
+import '../Widgets/custom_apple_pay_icon.dart';
 
 class PaymentMethodSelectionPage extends StatefulWidget {
   final String address;
@@ -158,11 +159,12 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                 title: 'Cash on Delivery'
               ),
               const SizedBox(height: 15),
-              if (!kIsWeb && false && defaultTargetPlatform == TargetPlatform.iOS) ...[
+              if (true) ...[
                  _buildPaymentOption(
                   id: 'apple_pay', 
                   icon: FontAwesomeIcons.apple, 
-                  title: 'Apple Pay'
+                  title: 'Apple Pay',
+                  customIcon: const CustomApplePayIcon(height: 28),
                 ),
                  const SizedBox(height: 30),
               ],
@@ -203,7 +205,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
     );
   }
 
-  Widget _buildPaymentOption({required String id, required IconData icon, required String title}) {
+  Widget _buildPaymentOption({required String id, required IconData icon, required String title, Widget? customIcon}) {
     final isSelected = selectedMethod == id;
     
     return GestureDetector(
@@ -224,7 +226,16 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? Colors.blueAccent : Colors.grey, size: 28),
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.blueAccent.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: customIcon ?? Icon(icon, color: isSelected ? Colors.blueAccent : Colors.grey, size: 28),
+            ),
             const SizedBox(width: 20),
             Text(
               title,

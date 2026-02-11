@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pay/pay.dart';
 import 'package:ads_app/core/ad_pricing_config.dart';
+import '../../Widgets/custom_apple_pay_icon.dart';
 
 class AdPaymentSelectionPage extends StatefulWidget {
   final String name;
@@ -272,7 +273,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                 color: Color(0xFF2596FA),
               ),
               
-              if (false && defaultTargetPlatform == TargetPlatform.iOS) ...[
+              if (true) ...[
                 SizedBox(height: 12),
                 _buildPaymentOption(
                   index: 3,
@@ -287,7 +288,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
               SizedBox(height: 40),
               
               // Pay Button
-              if (_selectedMethod == 3 && false && defaultTargetPlatform == TargetPlatform.iOS)
+              if (_selectedMethod == 3)
                  FutureBuilder<PaymentConfiguration>(
                   future: _paymentConfigFuture,
                   builder: (context, snapshot) {
@@ -486,53 +487,28 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              
              Spacer(),
 
-             if (isApplePay)
-               Container(
-                 padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                 decoration: BoxDecoration(
-                   color: Colors.white,
-                   border: Border.all(color: Colors.black, width: 1.2),
-                   borderRadius: BorderRadius.circular(6),
+                 if (isApplePay)
+                   CustomApplePayIcon(height: 32)
+                 else ...[
+                   Text(
+                   title,
+                   style: GoogleFonts.cairo(
+                     fontSize: 16,
+                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                     color: Color(0xFF364A62),
+                   ),
                  ),
-                 child: Row(
-                   mainAxisSize: MainAxisSize.min,
-                   children: [
-                     Icon(FontAwesomeIcons.apple, size: 21, color: Colors.black),
-                     SizedBox(width: 4),
-                     Text(
-                       "Pay",
-                       style: GoogleFonts.cairo(
-                         fontSize: 21,
-                         fontWeight: FontWeight.bold,
-                         color: Colors.black,
-                         height: 1.1,
-                       ),
+                 
+                 SizedBox(width: 16),
+                   Container(
+                     padding: EdgeInsets.all(8),
+                     decoration: BoxDecoration(
+                       color: color.withOpacity(0.1),
+                       borderRadius: BorderRadius.circular(8),
                      ),
-                     SizedBox(width: 2),
-                   ],
-                 ),
-               )
-             else ...[
-               Text(
-                 title,
-                 style: GoogleFonts.cairo(
-                   fontSize: 16,
-                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                   color: Color(0xFF364A62),
-                 ),
-               ),
-               
-               SizedBox(width: 16),
-               
-               Container(
-                 padding: EdgeInsets.all(8),
-                 decoration: BoxDecoration(
-                   color: color.withOpacity(0.1),
-                   borderRadius: BorderRadius.circular(8),
-                 ),
-                 child: Icon(icon, color: color, size: 20),
-               ),
-             ],
+                     child: Icon(icon, color: color, size: 20),
+                   ),
+                 ],
           ],
         ),
       ),

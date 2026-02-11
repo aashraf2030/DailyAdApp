@@ -9,6 +9,7 @@ class PaymentMethodCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final Color? color;
+  final Widget? customIcon;
 
   const PaymentMethodCard({
     super.key,
@@ -18,6 +19,7 @@ class PaymentMethodCard extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
     this.color,
+    this.customIcon,
   });
 
   @override
@@ -52,6 +54,7 @@ class PaymentMethodCard extends StatelessWidget {
         ),
         child: Row(
           children: [
+
             // Icon Section
             Container(
               width: 60,
@@ -62,7 +65,7 @@ class PaymentMethodCard extends StatelessWidget {
                     : color ?? Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
+              child: customIcon ?? Icon(
                 icon,
                 color: isSelected ? Colors.white : Colors.grey.shade700,
                 size: 28,
