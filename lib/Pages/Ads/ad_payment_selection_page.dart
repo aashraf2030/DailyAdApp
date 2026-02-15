@@ -366,7 +366,6 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
             ),
           ),
         ),
-      ),
     );
   }
 
