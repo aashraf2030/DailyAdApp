@@ -229,138 +229,141 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(state.error)));
           }
         },
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Summary Card
-              _buildSummaryCard(originalPrice),
-              
-              SizedBox(height: 24),
-              
-              // Coupon Code Section
-              _buildCouponSection(originalPrice),
-              
-              SizedBox(height: 24),
-              
-              Text(
-                "طريقة الدفع",
-                style: GoogleFonts.cairo(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF364A62),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Summary Card
+                _buildSummaryCard(originalPrice),
+                
+                SizedBox(height: 24),
+                
+                // Coupon Code Section
+                _buildCouponSection(originalPrice),
+                
+                SizedBox(height: 24),
+                
+                Text(
+                  "طريقة الدفع",
+                  style: GoogleFonts.cairo(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF364A62),
+                  ),
+                  textAlign: TextAlign.end,
                 ),
-                textAlign: TextAlign.end,
-              ),
-              
-              SizedBox(height: 12),
-              
-              // Payment Methods
-              _buildPaymentOption(
-                index: 1,
-                title: "دفع نقدي (عند التفعيل)",
-                icon: FontAwesomeIcons.moneyBillWave,
-                color: Colors.green,
-              ),
-              
-              SizedBox(height: 12),
-              
-              _buildPaymentOption(
-                index: 2,
-                title: "بطاقة ائتمان / مدى",
-                icon: FontAwesomeIcons.creditCard,
-                color: Color(0xFF2596FA),
-              ),
-              
-              if (true) ...[
+                
                 SizedBox(height: 12),
+                
+                // Payment Methods
                 _buildPaymentOption(
-                  index: 3,
-                  title: "Apple Pay",
-                  icon: FontAwesomeIcons.apple,
-                  color: Colors.black,
+                  index: 1,
+                  title: "دفع نقدي (عند التفعيل)",
+                  icon: FontAwesomeIcons.moneyBillWave,
+                  color: Colors.green,
                 ),
-              ],
-              
-              SizedBox(height: 40),
-              
-              SizedBox(height: 40),
-              
-              // Pay Button
-              if (_selectedMethod == 3)
-                 FutureBuilder<PaymentConfiguration>(
-                  future: _paymentConfigFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return ApplePayButton(
-                        paymentConfiguration: snapshot.data!,
-                        paymentItems: [
-                          PaymentItem(
-                            label: 'Ad Payment',
-                            amount: totalPrice.toStringAsFixed(2),
-                            status: PaymentItemStatus.final_price,
-                          )
-                        ],
-                        style: ApplePayButtonStyle.whiteOutline,
-                        type: ApplePayButtonType.plain,
-                        width: double.infinity,
-                        height: 56,
-                        cornerRadius: 16,
-                        onPaymentResult: (result) {
-                          // 1. Capture Token
-                          setState(() {
-                            _pendingApplePayToken = jsonEncode(result);
-                          });
-                          // 2. Start Backend Flow (Initialize)
-                          _submitPayment(totalPrice); 
-                        },
-                        loadingIndicator: const Center(child: CircularProgressIndicator()),
-                        onError: (e) {
-                          debugPrint("Apple Pay Error: $e");
-                        },
+                
+                SizedBox(height: 12),
+                
+                _buildPaymentOption(
+                  index: 2,
+                  title: "بطاقة ائتمان / مدى",
+                  icon: FontAwesomeIcons.creditCard,
+                  color: Color(0xFF2596FA),
+                ),
+                
+                if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+                  SizedBox(height: 12),
+                  _buildPaymentOption(
+                    index: 3,
+                    title: "Apple Pay",
+                    icon: FontAwesomeIcons.apple,
+                    color: Colors.black,
+                  ),
+                ],
+                
+                SizedBox(height: 40),
+                
+                SizedBox(height: 40),
+                
+                // Pay Button
+                if (_selectedMethod == 3)
+                   FutureBuilder<PaymentConfiguration>(
+                    future: _paymentConfigFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return ApplePayButton(
+                          paymentConfiguration: snapshot.data!,
+                          paymentItems: [
+                            PaymentItem(
+                              label: 'Ad Payment',
+                              amount: totalPrice.toStringAsFixed(2),
+                              status: PaymentItemStatus.final_price,
+                            )
+                          ],
+                          style: ApplePayButtonStyle.whiteOutline,
+                          type: ApplePayButtonType.plain,
+                          width: double.infinity,
+                          height: 56,
+                          cornerRadius: 16,
+                          onPaymentResult: (result) {
+                            // 1. Capture Token
+                            setState(() {
+                              _pendingApplePayToken = jsonEncode(result);
+                            });
+                            // 2. Start Backend Flow (Initialize)
+                            _submitPayment(totalPrice); 
+                          },
+                          loadingIndicator: const Center(child: CircularProgressIndicator()),
+                          onError: (e) {
+                            debugPrint("Apple Pay Error: $e");
+                          },
+                        );
+                      }
+                      return const SizedBox(
+                        height: 56, 
+                        child: Center(child: CircularProgressIndicator())
                       );
                     }
-                    return const SizedBox(
-                      height: 56, 
-                      child: Center(child: CircularProgressIndicator())
-                    );
-                  }
-                )
-              else
-                Container(
-                  width: double.infinity,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      colors: _selectedMethod != 0 
-                          ? [Color(0xFF2596FA), Color(0xFF364A62)]
-                          : [Colors.grey, Colors.grey.shade600],
-                    ),
-                    boxShadow: _selectedMethod != 0 
-                        ? [BoxShadow(color: Color(0xFF2596FA).withOpacity(0.4), blurRadius: 15, offset: Offset(0, 8))]
-                        : [],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
+                  )
+                else
+                  Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      onTap: _selectedMethod != 0 ? () => _submitPayment(totalPrice) : null,
-                      child: Center(
-                        child: Text(
-                          _selectedMethod == 1 ? "تأكيد الإعلان" : "دفع ${totalPrice.toStringAsFixed(2)} ريال سعودي",
-                          style: GoogleFonts.cairo(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                      gradient: LinearGradient(
+                        colors: _selectedMethod != 0 
+                            ? [Color(0xFF2596FA), Color(0xFF364A62)]
+                            : [Colors.grey, Colors.grey.shade600],
+                      ),
+                      boxShadow: _selectedMethod != 0 
+                          ? [BoxShadow(color: Color(0xFF2596FA).withOpacity(0.4), blurRadius: 15, offset: Offset(0, 8))]
+                          : [],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: _selectedMethod != 0 ? () => _submitPayment(totalPrice) : null,
+                        child: Center(
+                          child: Text(
+                            _selectedMethod == 1 ? "تأكيد الإعلان" : "دفع ${totalPrice.toStringAsFixed(2)} ريال سعودي",
+                            style: GoogleFonts.cairo(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),

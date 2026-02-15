@@ -327,87 +327,89 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             );
           }
         },
-        child: Column(
-          children: [
-            // Order Summary Section
-            _buildOrderSummary(context),
-            
-            SizedBox(height: 20),
-            
-            // Payment Methods Section
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "اختر طريقة الدفع",
-                      style: GoogleFonts.cairo(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Order Summary Section
+              _buildOrderSummary(context),
+              
+              SizedBox(height: 20),
+              
+              // Payment Methods Section
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "اختر طريقة الدفع",
+                        style: GoogleFonts.cairo(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 16),
-                    
-                    // Cash Payment Option
-                    PaymentMethodCard(
-                      icon: FontAwesomeIcons.moneyBill,
-                      title: "الدفع نقداً",
-                      description: "ادفع عند استلام الطلب",
-                      isSelected: selectedPaymentMethod == 'cash',
-                      color: Colors.green.shade100,
-                      onTap: () {
-                        setState(() {
-                          selectedPaymentMethod = 'cash';
-                        });
-                      },
-                    ),
-                    
-                    SizedBox(height: 16),
-                    
-                    // Card/Visa Payment (All Platforms)
-                    PaymentMethodCard(
-                      icon: FontAwesomeIcons.creditCard,
-                      title: "بطاقة ائتمان / مدى",
-                      description: "ادفع بشكل آمن عبر Visa أو Mastercard",
-                      isSelected: selectedPaymentMethod == 'card',
-                      color: Color(0xFF2596FA).withOpacity(0.1),
-                      onTap: () {
-                        setState(() {
-                          selectedPaymentMethod = 'card';
-                        });
-                      },
-                    ),
-                    
-                    SizedBox(height: 16),
-                    
-                    // Apple Pay (iOS only)
-                    if (true)
+                      SizedBox(height: 16),
+                      
+                      // Cash Payment Option
                       PaymentMethodCard(
-                        icon: FontAwesomeIcons.applePay, // Use distinct Apple Pay icon
-                        title: "Apple Pay",
-                        description: "ادفع بسهولة وأمان",
-                        isSelected: selectedPaymentMethod == 'apple_pay',
-                        color: Colors.black, // Apple Pay brand color
-                        customIcon: const CustomApplePayIcon(height: 30),
+                        icon: FontAwesomeIcons.moneyBill,
+                        title: "الدفع نقداً",
+                        description: "ادفع عند استلام الطلب",
+                        isSelected: selectedPaymentMethod == 'cash',
+                        color: Colors.green.shade100,
                         onTap: () {
                           setState(() {
-                            selectedPaymentMethod = 'apple_pay';
+                            selectedPaymentMethod = 'cash';
                           });
                         },
                       ),
-                    
-                    SizedBox(height: 30),
-                  ],
+                      
+                      SizedBox(height: 16),
+                      
+                      // Card/Visa Payment (All Platforms)
+                      PaymentMethodCard(
+                        icon: FontAwesomeIcons.creditCard,
+                        title: "بطاقة ائتمان / مدى",
+                        description: "ادفع بشكل آمن عبر Visa أو Mastercard",
+                        isSelected: selectedPaymentMethod == 'card',
+                        color: Color(0xFF2596FA).withOpacity(0.1),
+                        onTap: () {
+                          setState(() {
+                            selectedPaymentMethod = 'card';
+                          });
+                        },
+                      ),
+                      
+                      SizedBox(height: 16),
+                      
+                      // Apple Pay (iOS only)
+                      if (defaultTargetPlatform == TargetPlatform.iOS)
+                        PaymentMethodCard(
+                          icon: FontAwesomeIcons.applePay, // Use distinct Apple Pay icon
+                          title: "Apple Pay",
+                          description: "ادفع بسهولة وأمان",
+                          isSelected: selectedPaymentMethod == 'apple_pay',
+                          color: Colors.black, // Apple Pay brand color
+                          customIcon: const CustomApplePayIcon(height: 30),
+                          onTap: () {
+                            setState(() {
+                              selectedPaymentMethod = 'apple_pay';
+                            });
+                          },
+                        ),
+                      
+                      SizedBox(height: 30),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            
-            // Confirm/Payment Button Area
-            _buildActionArea(context),
-          ],
+              
+              // Confirm/Payment Button Area
+              _buildActionArea(context),
+            ],
+          ),
         ),
       ),
     );
