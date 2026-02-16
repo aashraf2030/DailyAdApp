@@ -354,11 +354,11 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       
                       // Cash Payment Option
                       PaymentMethodCard(
-                        icon: FontAwesomeIcons.moneyBill,
+                        icon: FontAwesomeIcons.moneyBillWave,
                         title: "الدفع نقداً",
                         description: "ادفع عند استلام الطلب",
                         isSelected: selectedPaymentMethod == 'cash',
-                        color: Colors.green.shade100,
+                        color: Colors.green,
                         onTap: () {
                           setState(() {
                             selectedPaymentMethod = 'cash';
@@ -374,7 +374,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                         title: "بطاقة ائتمان / مدى",
                         description: "ادفع بشكل آمن عبر Visa أو Mastercard",
                         isSelected: selectedPaymentMethod == 'card',
-                        color: Color(0xFF2596FA).withOpacity(0.1),
+                        color: Color(0xFF2596FA),
                         onTap: () {
                           setState(() {
                             selectedPaymentMethod = 'card';
@@ -387,12 +387,96 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       // Apple Pay (iOS only)
                       if (defaultTargetPlatform == TargetPlatform.iOS)
                         PaymentMethodCard(
-                          icon: FontAwesomeIcons.applePay, // Use distinct Apple Pay icon
                           title: "Apple Pay",
-                          description: "ادفع بسهولة وأمان",
+                          description: "", // handled by customBody
                           isSelected: selectedPaymentMethod == 'apple_pay',
-                          color: Colors.black, // Apple Pay brand color
-                          customIcon: const CustomApplePayIcon(height: 30),
+                          color: Color(0xFF2596FA), // Blue color for icon bg
+                          customIcon: Container(
+                             padding: EdgeInsets.all(4), // Inner padding for Apple icon
+                             child: Icon(FontAwesomeIcons.apple, color: Colors.white, size: 20),
+                          ),
+                          customBody: Row(
+                            mainAxisAlignment: MainAxisAlignment.end, // Align contents to end (Left in RTL) or Start in LTR?
+                            // In refactored card: Row -> [Checkmark, Spacer, customBody, Gap, Icon]
+                            // The customBody is in the middle.
+                            // We want: [RawButton] ... [Text]
+                            // In RTL environment:
+                            // Row(children: [RawButton, Text]) -> Text is Right(Start), Button is Left(End).
+                            // Wait, if Directionality is RTL:
+                            // Row starts at Right.
+                            // children: [A, B] -> B is Left of A. A is at Right.
+                            // Ads Page Implementation:
+                            // Row(children: [RawButton, Gap, Column(Text), Gap, Icon])
+                            // Visual Result in Screenshot (assumed RTL): [Blue Icon (Left)] ... [Text] ... [Button] ... [Checkmark (Right)]
+                            // My Refactored Card forces: [Checkmark (Start/Right), Spacer, CustomBody, Gap, Icon (End/Left)]
+                            // So CustomBody sits in the middle.
+                            // Inside CustomBody, we want the Text to be near the Icon (Left) or near the Spacer (Right)?
+                            // Screenshot: [Blue Icon] [Text] ....... [Pay Button] [Checkmark] ??
+                            // No, Screenshot:
+                            // Left Side: [Blue Icon] [Text "Apple Pay"]
+                            // Right Side: [Pay Button Icon] [Checkmark]
+                            //
+                            // Wait, let's re-examine the screenshot.
+                            // https://c.top4top.io/p_3294ue1y01.png
+                            // 
+                            // It looks like:
+                            // Far Right: Checkmark (Circle)
+                            // Right-ish: "Pay" button (white box with apple logo and Pay)
+                            // Center/Left: Text "Apple Pay"
+                            // Far Left: Blue Square with Apple Logo.
+                            //
+                            // So from Right to Left:
+                            // 1. Checkmark
+                            // 2. Pay Button (RawApplePayButton)
+                            // 3. Text Column
+                            // 4. Blue Icon
+                            //
+                            // My Refactored Card Structure (RTL):
+                            // [Checkmark (Start/Right)] ... [Spacer] ... [CustomBody] ... [Icon (End/Left)]
+                            //
+                            // So CustomBody needs to contain: [Pay Button] ... [Text] ?
+                            // If CustomBody is a Row:
+                            // children: [PayButton, Gap, Text]
+                            // In RTL: PayButton (Right), Text (Left).
+                            // So: Checkmark -> PayButton -> Text -> Icon.
+                            // This matches the screenshot flow (Right to Left).
+                            //
+                            // So `customBody` should be:
+                            // Row(children: [RawApplePayButton, SizedBox(width:12), Column(Text)])
+                            children: [
+                                SizedBox(
+                                  height: 32,
+                                  width: 48, // Constrain width or let it size itself? RawButton might be wide.
+                                  child: RawApplePayButton(
+                                    style: ApplePayButtonStyle.whiteOutline,
+                                    type: ApplePayButtonType.plain,
+                                    onPressed: () {}, // Visual only
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      "Apple Pay",
+                                      style: GoogleFonts.cairo(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF364A62),
+                                      ),
+                                    ),
+                                    Text(
+                                      "ادفع بسهولة وأمان",
+                                      style: GoogleFonts.cairo(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
                           onTap: () {
                             setState(() {
                               selectedPaymentMethod = 'apple_pay';

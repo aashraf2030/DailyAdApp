@@ -3,23 +3,25 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Reusable widget for payment method card
 class PaymentMethodCard extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
   final String title;
   final String description;
   final bool isSelected;
   final VoidCallback onTap;
   final Color? color;
   final Widget? customIcon;
+  final Widget? customBody;
 
   const PaymentMethodCard({
     super.key,
-    required this.icon,
+    this.icon,
     required this.title,
     required this.description,
     required this.isSelected,
     required this.onTap,
     this.color,
     this.customIcon,
+    this.customBody,
   });
 
   @override
@@ -29,20 +31,20 @@ class PaymentMethodCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
           color: isSelected ? Color(0xFF2596FA).withOpacity(0.1) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? Color(0xFF2596FA) : Colors.grey.shade300,
-            width: isSelected ? 2.5 : 1.5,
+            width: isSelected ? 2 : 1.5,
           ),
           boxShadow: [
             if (isSelected)
-              BoxShadow(
-                color: Color(0xFF2596FA).withOpacity(0.3),
-                blurRadius: 15,
-                offset: Offset(0, 5),
+               BoxShadow(
+                color: Color(0xFF2596FA).withOpacity(0.1), 
+                blurRadius: 10,
+                offset: Offset(0, 4),
               )
             else
               BoxShadow(
@@ -54,51 +56,7 @@ class PaymentMethodCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-
-            // Icon Section
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: isSelected 
-                    ? Color(0xFF2596FA) 
-                    : color ?? Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: customIcon ?? Icon(
-                icon,
-                color: isSelected ? Colors.white : Colors.grey.shade700,
-                size: 28,
-              ),
-            ),
-            SizedBox(width: 16),
-            
-            // Text Section
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.cairo(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? Color(0xFF2596FA) : Colors.black87,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: GoogleFonts.cairo(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Selection Indicator
+            // Selection Indicator (Right side in RTL, Start in Row)
             AnimatedContainer(
               duration: Duration(milliseconds: 300),
               width: 24,
@@ -114,6 +72,55 @@ class PaymentMethodCard extends StatelessWidget {
               child: isSelected
                   ? Icon(Icons.check, size: 16, color: Colors.white)
                   : null,
+            ),
+            
+            Spacer(),
+
+            // Content Section
+            if (customBody != null)
+              customBody!
+            else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end, // Align text to right (Start in RTL) ? No, typically text in Arabic is Right aligned.
+                // But here we want the text block to naturally sit.
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.cairo(
+                      fontSize: 16,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, // Match Ads page boldness logic
+                      color: Color(0xFF364A62), // Match Ads page color
+                    ),
+                  ),
+                  if (description.isNotEmpty)
+                    Text(
+                      description,
+                      style: GoogleFonts.cairo(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                ],
+              ),
+            
+            SizedBox(width: 16),
+            
+            // Icon Section (Left side in RTL, End in Row)
+            Container(
+              padding: EdgeInsets.all(8), // Match Ads page padding
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? (icon != null ? color?.withOpacity(0.1) ?? Color(0xFF2596FA).withOpacity(0.1) : Colors.transparent) // Match Ads page logic
+                    : color?.withOpacity(0.1) ?? Colors.grey.shade200,
+                 borderRadius: BorderRadius.circular(8),
+              ),
+              // Use customIcon if provided (for Apple Pay blue box), else standard Icon
+              child: customIcon ?? Icon(
+                icon,
+                color: isSelected ? (color ?? Color(0xFF2596FA)) : (color ?? Colors.grey.shade700),
+                size: 20,
+              ),
             ),
           ],
         ),
