@@ -463,10 +463,11 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
           _selectedMethod = index;
         });
       },
-      child: Container(
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isSelected ? Color(0xFF2596FA).withOpacity(0.1) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? Color(0xFF2596FA) : Colors.transparent,
@@ -489,10 +490,54 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              
              Spacer(),
 
-                 if (isApplePay)
-                   CustomApplePayIcon(height: 32)
-                 else ...[
-                   Text(
+             if (isApplePay) ...[
+                // Pay Button (Visual only)
+                SizedBox(
+                  height: 32,
+                  child: RawApplePayButton(
+                    style: ApplePayButtonStyle.whiteOutline,
+                    type: ApplePayButtonType.plain,
+                    onPressed: () {}, // Visual only
+                  ),
+                ),
+                SizedBox(width: 12),
+                
+                // Text Column
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      "Apple Pay",
+                      style: GoogleFonts.cairo(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF364A62),
+                      ),
+                    ),
+                    Text(
+                      "ادفع بسهولة وأمان",
+                      style: GoogleFonts.cairo(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                SizedBox(width: 12),
+                
+                // Blue Icon
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF2596FA),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(FontAwesomeIcons.apple, color: Colors.white, size: 20),
+                ),
+
+             ] else ...[
+                 Text(
                    title,
                    style: GoogleFonts.cairo(
                      fontSize: 16,
@@ -510,7 +555,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                      ),
                      child: Icon(icon, color: color, size: 20),
                    ),
-                 ],
+             ],
           ],
         ),
       ),
