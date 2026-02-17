@@ -274,7 +274,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                   color: Color(0xFF2596FA),
                 ),
                 
-                if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+                if (true) ...[ // Temporarily showing on all platforms for preview (was: defaultTargetPlatform == TargetPlatform.iOS)
                   SizedBox(height: 12),
                   _buildPaymentOption(
                     index: 3,
@@ -290,7 +290,8 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                 
                 // Pay Button
                 if (_selectedMethod == 3)
-                   FutureBuilder<PaymentConfiguration>(
+                  (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
+                   ? FutureBuilder<PaymentConfiguration>(
                     future: _paymentConfigFuture,
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
@@ -328,6 +329,22 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                       );
                     }
                   )
+                   : Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(FontAwesomeIcons.apple, color: Colors.white, size: 24),
+                          SizedBox(width: 8),
+                          Text("Pay", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    )
                 else
                   Container(
                     width: double.infinity,
@@ -491,17 +508,6 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              Spacer(),
 
              if (isApplePay) ...[
-                // Pay Button (Visual only)
-                SizedBox(
-                  height: 32,
-                  child: RawApplePayButton(
-                    style: ApplePayButtonStyle.whiteOutline,
-                    type: ApplePayButtonType.plain,
-                    onPressed: () {}, // Visual only
-                  ),
-                ),
-                SizedBox(width: 12),
-                
                 // Text Column
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -526,14 +532,31 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                 
                 SizedBox(width: 12),
                 
-                // Blue Icon
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Color(0xFF2596FA),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(FontAwesomeIcons.apple, color: Colors.white, size: 20),
+                // Apple Pay Icon (replaces blue icon)
+                SizedBox(
+                  height: 32,
+                  child: (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
+                    ? RawApplePayButton(
+                        style: ApplePayButtonStyle.whiteOutline,
+                        type: ApplePayButtonType.plain,
+                        onPressed: () {},
+                      )
+                    : Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.grey.shade400, width: 1),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(FontAwesomeIcons.apple, size: 16, color: Colors.black),
+                            SizedBox(width: 4),
+                            Text("Pay", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black)),
+                          ],
+                        ),
+                      ),
                 ),
 
              ] else ...[

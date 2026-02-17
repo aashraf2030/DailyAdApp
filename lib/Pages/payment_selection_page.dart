@@ -162,7 +162,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                 const SizedBox(height: 15),
                 
                 // Apple Pay Selection
-                if (defaultTargetPlatform == TargetPlatform.iOS) ...[ // Only show on iOS
+                if (true) ...[ // Temporarily showing on all platforms for preview (was: defaultTargetPlatform == TargetPlatform.iOS)
                    _buildPaymentOption(
                     id: 'apple_pay', 
                     icon: FontAwesomeIcons.apple, 
@@ -182,36 +182,56 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                     
                     // NEW LOGIC: Swap button based on selection (Guideline 4.9)
                     if (selectedMethod == 'apple_pay') {
-                      return FutureBuilder<PaymentConfiguration>(
-                        future: _googlePayConfigFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return ApplePayButton(
-                              paymentConfiguration: snapshot.data!,
-                              paymentItems: [
-                                PaymentItem(
-                                  label: 'Total',
-                                  amount: '1.00', // You should ideally calculate total here or pass it
-                                  status: PaymentItemStatus.final_price,
-                                )
-                              ],
-                              style: ApplePayButtonStyle.black,
-                              type: ApplePayButtonType.buy,
-                              width: double.infinity,
-                              height: 50,
-                              onPaymentResult: onApplePayResult,
-                              loadingIndicator: const Center(child: CircularProgressIndicator()),
-                              onError: (e) {
-                                debugPrint("Apple Pay Error: $e");
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Error loading Apple Pay')),
-                                );
-                              },
-                            );
+                      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+                        return FutureBuilder<PaymentConfiguration>(
+                          future: _googlePayConfigFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return ApplePayButton(
+                                paymentConfiguration: snapshot.data!,
+                                paymentItems: [
+                                  PaymentItem(
+                                    label: 'Total',
+                                    amount: '1.00',
+                                    status: PaymentItemStatus.final_price,
+                                  )
+                                ],
+                                style: ApplePayButtonStyle.black,
+                                type: ApplePayButtonType.buy,
+                                width: double.infinity,
+                                height: 50,
+                                onPaymentResult: onApplePayResult,
+                                loadingIndicator: const Center(child: CircularProgressIndicator()),
+                                onError: (e) {
+                                  debugPrint("Apple Pay Error: $e");
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Error loading Apple Pay')),
+                                  );
+                                },
+                              );
+                            }
+                            return const Center(child: CircularProgressIndicator());
                           }
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                      );
+                        );
+                      } else {
+                        // Fake Apple Pay button for web/desktop preview
+                        return Container(
+                          width: double.infinity,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(FontAwesomeIcons.apple, color: Colors.white, size: 22),
+                              SizedBox(width: 8),
+                              Text("Pay", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        );
+                      }
                     }
 
                     // Default Confirm Button for Cash/Card
@@ -265,16 +285,19 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
         ),
         child: Row(
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.blueAccent.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+            if (customIcon != null)
+              customIcon
+            else
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.blueAccent.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: Icon(icon, color: isSelected ? Colors.blueAccent : Colors.grey, size: 28),
               ),
-              alignment: Alignment.center,
-              child: customIcon ?? Icon(icon, color: isSelected ? Colors.blueAccent : Colors.grey, size: 28),
-            ),
             const SizedBox(width: 20),
             Text(
               title,

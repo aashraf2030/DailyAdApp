@@ -862,12 +862,15 @@ class _HomeLandingState extends State<HomeLanding> {
   }
 
   Widget allAdsBuilder(BuildContext context) {
+    // Filter strictly dynamic ads to pass to AllAdsArea
+    final dynamicAds = widget.ads.where((ad) => !ad.isFixed).toList();
+    
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: BlocProvider.of<AdCubit>(context)),
         BlocProvider.value(value: BlocProvider.of<OperationalCubit>(context)),
       ],
-      child: AllAdsArea(),
+      child: AllAdsArea(ads: dynamicAds),
     );
   }
 }

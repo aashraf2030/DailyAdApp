@@ -385,97 +385,36 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       SizedBox(height: 16),
                       
                       // Apple Pay (iOS only)
-                      if (defaultTargetPlatform == TargetPlatform.iOS)
+                      if (true) // Temporarily showing on all platforms for preview (was: defaultTargetPlatform == TargetPlatform.iOS)
                         PaymentMethodCard(
                           title: "Apple Pay",
-                          description: "", // handled by customBody
+                          description: "ادفع بسهولة وأمان",
                           isSelected: selectedPaymentMethod == 'apple_pay',
-                          color: Color(0xFF2596FA), // Blue color for icon bg
-                          customIcon: Container(
-                             padding: EdgeInsets.all(4), // Inner padding for Apple icon
-                             child: Icon(FontAwesomeIcons.apple, color: Colors.white, size: 20),
-                          ),
-                          customBody: Row(
-                            mainAxisAlignment: MainAxisAlignment.end, // Align contents to end (Left in RTL) or Start in LTR?
-                            // In refactored card: Row -> [Checkmark, Spacer, customBody, Gap, Icon]
-                            // The customBody is in the middle.
-                            // We want: [RawButton] ... [Text]
-                            // In RTL environment:
-                            // Row(children: [RawButton, Text]) -> Text is Right(Start), Button is Left(End).
-                            // Wait, if Directionality is RTL:
-                            // Row starts at Right.
-                            // children: [A, B] -> B is Left of A. A is at Right.
-                            // Ads Page Implementation:
-                            // Row(children: [RawButton, Gap, Column(Text), Gap, Icon])
-                            // Visual Result in Screenshot (assumed RTL): [Blue Icon (Left)] ... [Text] ... [Button] ... [Checkmark (Right)]
-                            // My Refactored Card forces: [Checkmark (Start/Right), Spacer, CustomBody, Gap, Icon (End/Left)]
-                            // So CustomBody sits in the middle.
-                            // Inside CustomBody, we want the Text to be near the Icon (Left) or near the Spacer (Right)?
-                            // Screenshot: [Blue Icon] [Text] ....... [Pay Button] [Checkmark] ??
-                            // No, Screenshot:
-                            // Left Side: [Blue Icon] [Text "Apple Pay"]
-                            // Right Side: [Pay Button Icon] [Checkmark]
-                            //
-                            // Wait, let's re-examine the screenshot.
-                            // https://c.top4top.io/p_3294ue1y01.png
-                            // 
-                            // It looks like:
-                            // Far Right: Checkmark (Circle)
-                            // Right-ish: "Pay" button (white box with apple logo and Pay)
-                            // Center/Left: Text "Apple Pay"
-                            // Far Left: Blue Square with Apple Logo.
-                            //
-                            // So from Right to Left:
-                            // 1. Checkmark
-                            // 2. Pay Button (RawApplePayButton)
-                            // 3. Text Column
-                            // 4. Blue Icon
-                            //
-                            // My Refactored Card Structure (RTL):
-                            // [Checkmark (Start/Right)] ... [Spacer] ... [CustomBody] ... [Icon (End/Left)]
-                            //
-                            // So CustomBody needs to contain: [Pay Button] ... [Text] ?
-                            // If CustomBody is a Row:
-                            // children: [PayButton, Gap, Text]
-                            // In RTL: PayButton (Right), Text (Left).
-                            // So: Checkmark -> PayButton -> Text -> Icon.
-                            // This matches the screenshot flow (Right to Left).
-                            //
-                            // So `customBody` should be:
-                            // Row(children: [RawApplePayButton, SizedBox(width:12), Column(Text)])
-                            children: [
-                                SizedBox(
-                                  height: 32,
-                                  width: 48, // Constrain width or let it size itself? RawButton might be wide.
-                                  child: RawApplePayButton(
-                                    style: ApplePayButtonStyle.whiteOutline,
-                                    type: ApplePayButtonType.plain,
-                                    onPressed: () {}, // Visual only
+                          color: Colors.transparent,
+                          customIcon: SizedBox(
+                            height: 32,
+                            child: (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
+                              ? RawApplePayButton(
+                                  style: ApplePayButtonStyle.whiteOutline,
+                                  type: ApplePayButtonType.plain,
+                                  onPressed: () {},
+                                )
+                              : Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(color: Colors.grey.shade400, width: 1),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(FontAwesomeIcons.apple, size: 16, color: Colors.black),
+                                      SizedBox(width: 4),
+                                      Text("Pay", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black)),
+                                    ],
                                   ),
                                 ),
-                                SizedBox(width: 12),
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      "Apple Pay",
-                                      style: GoogleFonts.cairo(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF364A62),
-                                      ),
-                                    ),
-                                    Text(
-                                      "ادفع بسهولة وأمان",
-                                      style: GoogleFonts.cairo(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                            ],
                           ),
                           onTap: () {
                             setState(() {
@@ -602,45 +541,63 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         
         // Apple Pay Button (iOS only)
         if (selectedPaymentMethod == 'apple_pay') {
-          return FutureBuilder<PaymentConfiguration>(
-            future: _applePayConfigFuture,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Column(
-                  children: [
-                    ApplePayButton(
-                      paymentConfiguration: snapshot.data!,
-                      paymentItems: _paymentItems,
-                      style: ApplePayButtonStyle.black,
-                      width: double.infinity,
-                      height: 55,
-                      type: ApplePayButtonType.buy,
-                      onPaymentResult: onApplePayResult,
-                      loadingIndicator: const Center(
-                        child: CircularProgressIndicator(),
+          if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+            return FutureBuilder<PaymentConfiguration>(
+              future: _applePayConfigFuture,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Column(
+                    children: [
+                      ApplePayButton(
+                        paymentConfiguration: snapshot.data!,
+                        paymentItems: _paymentItems,
+                        style: ApplePayButtonStyle.black,
+                        width: double.infinity,
+                        height: 55,
+                        type: ApplePayButtonType.buy,
+                        onPaymentResult: onApplePayResult,
+                        loadingIndicator: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        onError: (e) {
+                          debugPrint("Apple Pay Error: $e");
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('حدث خطأ في تحميل Apple Pay')),
+                          );
+                        },
                       ),
-                      onError: (e) {
-                        // Handle error if button fails to load or payment fails
-                        debugPrint("Apple Pay Error: $e");
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('حدث خطأ في تحميل Apple Pay')),
-                        );
-                      },
-                    ),
-                    // Helper text if button doesn't appear
-                     const SizedBox(height: 8),
-                     Text(
-                       "إذا لم يظهر الزر، تأكد من إعدادات الـ Merchant ID",
-                       style: GoogleFonts.cairo(fontSize: 10, color: Colors.grey),
-                     ),
-                  ],
-                );
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error loading Apple Pay config'));
+                      const SizedBox(height: 8),
+                      Text(
+                        "إذا لم يظهر الزر، تأكد من إعدادات الـ Merchant ID",
+                        style: GoogleFonts.cairo(fontSize: 10, color: Colors.grey),
+                      ),
+                    ],
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error loading Apple Pay config'));
+                }
+                return Center(child: CircularProgressIndicator());
               }
-              return Center(child: CircularProgressIndicator());
-            }
-          );
+            );
+          } else {
+            // Fake Apple Pay button for web/desktop preview
+            return Container(
+              width: double.infinity,
+              height: 55,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(FontAwesomeIcons.apple, color: Colors.white, size: 22),
+                  SizedBox(width: 8),
+                  Text("Pay", style: GoogleFonts.cairo(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            );
+          }
         } 
         // Card Payment Button
         else if (selectedPaymentMethod == 'card') {

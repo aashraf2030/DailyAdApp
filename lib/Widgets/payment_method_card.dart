@@ -107,21 +107,23 @@ class PaymentMethodCard extends StatelessWidget {
             SizedBox(width: 16),
             
             // Icon Section (Left side in RTL, End in Row)
-            Container(
-              padding: EdgeInsets.all(8), // Match Ads page padding
-              decoration: BoxDecoration(
-                color: isSelected 
-                    ? (icon != null ? color?.withOpacity(0.1) ?? Color(0xFF2596FA).withOpacity(0.1) : Colors.transparent) // Match Ads page logic
-                    : color?.withOpacity(0.1) ?? Colors.grey.shade200,
-                 borderRadius: BorderRadius.circular(8),
+            if (customIcon != null)
+              customIcon!
+            else
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? (color?.withOpacity(0.1) ?? Color(0xFF2596FA).withOpacity(0.1))
+                      : color?.withOpacity(0.1) ?? Colors.grey.shade200,
+                   borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected ? (color ?? Color(0xFF2596FA)) : (color ?? Colors.grey.shade700),
+                  size: 20,
+                ),
               ),
-              // Use customIcon if provided (for Apple Pay blue box), else standard Icon
-              child: customIcon ?? Icon(
-                icon,
-                color: isSelected ? (color ?? Color(0xFF2596FA)) : (color ?? Colors.grey.shade700),
-                size: 20,
-              ),
-            ),
           ],
         ),
       ),

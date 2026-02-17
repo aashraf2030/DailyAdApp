@@ -1,7 +1,6 @@
 import 'package:ads_app/Bloc/Ad/ad_cubit.dart';
 import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
 import 'package:ads_app/Models/ad_models.dart';
-import 'package:ads_app/Widgets/ad_loading_card.dart';
 import 'package:ads_app/Widgets/ad_watch_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,14 +8,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AllAdsArea extends StatefulWidget {
-  const AllAdsArea({super.key});
+  final List<AdData> ads;
+  const AllAdsArea({super.key, required this.ads});
 
   @override
   AllAdsAreaState createState() => AllAdsAreaState();
 }
 
 class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMixin {
-  List<AdData> ads = [];
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -34,11 +33,6 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
     );
     
     _animationController.forward();
-
-    // Fetch only Dynamic ads (category -1 means all categories)
-    // This works for both guests and logged-in users
-    // AuthInterceptor will automatically add token if user is logged in
-    BlocProvider.of<AdCubit>(context).fetchAds(-1, full: true, adType: 'Dynamic');
   }
 
   @override
@@ -47,63 +41,55 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
     super.dispose();
   }
 
-  Widget buildByBloc(context, state) {
-    if (state is AdLoadingState || state is AdInitialState) {
-      return GridView.builder(
-        itemBuilder: buildLoadingCards,
-        itemCount: 6,
-        scrollDirection: Axis.vertical,
-        padding: EdgeInsets.all(12),
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.75,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Container(
+        width: MediaQuery.sizeOf(context).width,
+        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              spreadRadius: 0,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
-      );
-    } else if (state is AdDoneState) {
-      ads = state.data;
-      
-      if (ads.isEmpty) {
-        return _buildEmptyState();
-      }
-      
-      return GridView.builder(
-        cacheExtent: 1000,
-        itemBuilder: buildCards,
-        itemCount: ads.length,
-        scrollDirection: Axis.vertical,
-        padding: EdgeInsets.all(12),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.75,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+        child: Column(
+          children: [
+            _buildHeader(),
+            _buildGrid(),
+          ],
         ),
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-      );
-    } else if (state is AdErrorState) {
-      return _buildErrorState();
-    } else {
-      // Default: show loading
-      return GridView.builder(
-        itemBuilder: buildLoadingCards,
-        itemCount: 6,
-        scrollDirection: Axis.vertical,
-        padding: EdgeInsets.all(12),
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.75,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-        ),
-      );
+      ),
+    );
+  }
+
+  Widget _buildGrid() {
+    if (widget.ads.isEmpty) {
+      return _buildEmptyState();
     }
+    
+    return GridView.builder(
+      cacheExtent: 1000,
+      itemBuilder: buildCards,
+      itemCount: widget.ads.length,
+      scrollDirection: Axis.vertical,
+      padding: EdgeInsets.all(12),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.75,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+    );
   }
 
   Widget _buildEmptyState() {
@@ -130,68 +116,11 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
     );
   }
 
-  Widget _buildErrorState() {
-    return Padding(
-      padding: EdgeInsets.all(32),
-      child: Column(
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red.shade300,
-          ),
-          SizedBox(height: 16),
-          Text(
-            "حدث خطأ في التحميل",
-            style: GoogleFonts.cairo(
-              fontSize: 16,
-              color: Colors.red.shade600,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildLoadingCards(context, int i) {
-    return AdLoadingCard();
-  }
-
   Widget buildCards(context, int i) {
     final cubit = BlocProvider.of<OperationalCubit>(context);
     return BlocProvider.value(
       value: cubit,
-      child: AdWatchCard(ad: ads[i]),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Container(
-        width: MediaQuery.sizeOf(context).width,
-        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 12,
-              spreadRadius: 0,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            BlocBuilder<AdCubit, AdState>(builder: buildByBloc),
-          ],
-        ),
-      ),
+      child: AdWatchCard(ad: widget.ads[i]),
     );
   }
 
@@ -261,9 +190,9 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
                       color: Color(0xFF2C3E50),
                     ),
                   ),
-                  if (ads.isNotEmpty)
+                  if (widget.ads.isNotEmpty)
                     Text(
-                      "${ads.length} إعلان متاح",
+                      "${widget.ads.length} إعلان متاح",
                       style: GoogleFonts.cairo(
                         fontSize: 10,
                         color: Colors.grey.shade600,
@@ -275,7 +204,7 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
           ),
           
 
-          if (ads.isNotEmpty)
+          if (widget.ads.isNotEmpty)
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
@@ -296,4 +225,3 @@ class AllAdsAreaState extends State<AllAdsArea> with SingleTickerProviderStateMi
     );
   }
 }
-
