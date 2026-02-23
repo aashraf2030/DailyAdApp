@@ -38,11 +38,30 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
   // Apple Pay Configuration
   final String _paymentConfigurationAsset = 'payment_configs/apple_pay_config.json';
   late Future<PaymentConfiguration> _googlePayConfigFuture;
+  bool _applePayAvailable = false;
   
    @override
   void initState() {
     super.initState();
     _googlePayConfigFuture = PaymentConfiguration.fromAsset(_paymentConfigurationAsset);
+    _checkApplePayAvailability();
+  }
+
+  Future<void> _checkApplePayAvailability() async {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      try {
+        final config = await PaymentConfiguration.fromAsset(_paymentConfigurationAsset);
+        final available = await Pay({PayProvider.apple_pay: config})
+            .userCanPay(PayProvider.apple_pay);
+        if (mounted) {
+          setState(() {
+            _applePayAvailable = available;
+          });
+        }
+      } catch (e) {
+        debugPrint("Apple Pay availability check failed: $e");
+      }
+    }
   }
 
   void onApplePayResult(paymentResult) {
@@ -60,20 +79,6 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
       address: widget.address,
       phone: widget.phone,
       paymentMethod: 'apple_pay',
-      // We might need to pass the token here if the backend expects it directly
-      // But looking at previous code in payment_method_page.dart:
-      // context.read<StoreCubit>().placeOrder(..., paymentToken: paymentResult);
-      // It seems StoreCubit can handle it.
-      // However, looking at the previous file content of payment_selection_page.dart, 
-      // placeOrder didn't take a token for 'apple_pay' because it was just selecting the method.
-      // But in payment_method_page.dart it DOES take a token.
-      // Let's assume placeOrder supports it or we need to update it.
-      // Wait, let's check StoreCubit signature if possible, but for now I will pass it as an extra argument 
-      // or assume the Cubit handles the "Success" state from Apple Pay.
-      
-      // Actually, looking at payment_method_page.dart (Step 12), onApplePayResult calls:
-      // context.read<StoreCubit>().placeOrder(..., paymentMethod: 'apple_pay', paymentToken: paymentResult);
-      // So I should do the same here.
       paymentToken: paymentResult, 
     );
   }
@@ -99,7 +104,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
           });
         } else if (state is StoreOrderSuccess) {
           // Cash/ApplePay order success - navigate directly to Store
-          print("✅ [PAYMENT] Order success - navigating to Store");
+          print("[PAYMENT] Order success - navigating to Store");
           
           try {
             final authCubit = context.read<AuthCubit>();
@@ -162,7 +167,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                 const SizedBox(height: 15),
                 
                 // Apple Pay Selection
-                if (true) ...[ // Temporarily showing on all platforms for preview (was: defaultTargetPlatform == TargetPlatform.iOS)
+                if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) ...[
                    _buildPaymentOption(
                     id: 'apple_pay', 
                     icon: FontAwesomeIcons.apple, 
@@ -182,7 +187,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                     
                     // NEW LOGIC: Swap button based on selection (Guideline 4.9)
                     if (selectedMethod == 'apple_pay') {
-                      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+                      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) {
                         return FutureBuilder<PaymentConfiguration>(
                           future: _googlePayConfigFuture,
                           builder: (context, snapshot) {

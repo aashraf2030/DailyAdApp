@@ -49,11 +49,30 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
   // Apple Pay State
   late Future<PaymentConfiguration> _paymentConfigFuture;
   String? _pendingApplePayToken;
+  bool _applePayAvailable = false;
 
   @override
   void initState() {
     super.initState();
     _paymentConfigFuture = PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
+    _checkApplePayAvailability();
+  }
+
+  Future<void> _checkApplePayAvailability() async {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      try {
+        final config = await PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
+        final available = await Pay({PayProvider.apple_pay: config})
+            .userCanPay(PayProvider.apple_pay);
+        if (mounted) {
+          setState(() {
+            _applePayAvailable = available;
+          });
+        }
+      } catch (e) {
+        debugPrint("Apple Pay availability check failed: $e");
+      }
+    }
   }
 
   @override
@@ -274,7 +293,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                   color: Color(0xFF2596FA),
                 ),
                 
-                if (true) ...[ // Temporarily showing on all platforms for preview (was: defaultTargetPlatform == TargetPlatform.iOS)
+                if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) ...[
                   SizedBox(height: 12),
                   _buildPaymentOption(
                     index: 3,
@@ -290,7 +309,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                 
                 // Pay Button
                 if (_selectedMethod == 3)
-                  (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
+                  (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable)
                    ? FutureBuilder<PaymentConfiguration>(
                     future: _paymentConfigFuture,
                     builder: (context, snapshot) {
@@ -304,8 +323,8 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                               status: PaymentItemStatus.final_price,
                             )
                           ],
-                          style: ApplePayButtonStyle.whiteOutline,
-                          type: ApplePayButtonType.plain,
+                          style: ApplePayButtonStyle.black,
+                          type: ApplePayButtonType.buy,
                           width: double.infinity,
                           height: 56,
                           cornerRadius: 16,
@@ -537,7 +556,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                   height: 32,
                   child: (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
                     ? RawApplePayButton(
-                        style: ApplePayButtonStyle.whiteOutline,
+                        style: ApplePayButtonStyle.black,
                         type: ApplePayButtonType.plain,
                         onPressed: () {},
                       )

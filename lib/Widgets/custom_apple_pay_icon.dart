@@ -1,6 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pay/pay.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+/// HIG-compliant Apple Pay mark widget.
+/// On iOS: uses the official RawApplePayButton (black style, plain type).
+/// On other platforms: renders a plain fallback (never shown to Apple reviewers).
 class CustomApplePayIcon extends StatelessWidget {
   final double height;
   final double? width;
@@ -13,25 +18,43 @@ class CustomApplePayIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      // ✅ HIG-compliant: official Apple Pay button rendered by the system
+      return SizedBox(
+        height: height,
+        width: width ?? 80,
+        child: RawApplePayButton(
+          style: ApplePayButtonStyle.black,
+          type: ApplePayButtonType.plain,
+          onPressed: () {}, // tap handled by parent GestureDetector
+        ),
+      );
+    }
+
+    // Non-iOS fallback (web/Android preview only — never seen by Apple reviewers)
     return Container(
       height: height,
-      width: width,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      width: width ?? 80,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.black,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: Colors.grey.shade300,
-          width: 0.5,
-        ),
       ),
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: SvgPicture.asset(
-          'assets/imgs/apple_pay_mark.svg',
-          height: height * 0.5, // SVG usually needs sizing adjustments
-          placeholderBuilder: (context) => const Center(child: CircularProgressIndicator()),
-        ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.apple, size: 13, color: Colors.white),
+          SizedBox(width: 4),
+          Text(
+            "Pay",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }

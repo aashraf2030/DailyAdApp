@@ -38,6 +38,7 @@ class PaymentMethodPage extends StatefulWidget {
 class _PaymentMethodPageState extends State<PaymentMethodPage> {
   String selectedPaymentMethod = 'cash'; // Default to cash
   late Future<PaymentConfiguration> _applePayConfigFuture;
+  bool _applePayAvailable = false;
   
   final List<PaymentItem> _paymentItems = [];
 
@@ -48,6 +49,20 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     _applePayConfigFuture = PaymentConfiguration.fromAsset(
       'payment_configs/apple_pay_config.json',
     );
+    _checkApplePayAvailability();
+  }
+
+  Future<void> _checkApplePayAvailability() async {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      try {
+        final config = await PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
+        final available = await Pay({PayProvider.apple_pay: config})
+            .userCanPay(PayProvider.apple_pay);
+        if (mounted) setState(() => _applePayAvailable = available);
+      } catch (e) {
+        debugPrint("Apple Pay availability check failed: $e");
+      }
+    }
   }
 
   void _calculateTotal() {
@@ -384,38 +399,15 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       
                       SizedBox(height: 16),
                       
-                      // Apple Pay (iOS only)
-                      if (true) // Temporarily showing on all platforms for preview (was: defaultTargetPlatform == TargetPlatform.iOS)
+                      // Apple Pay (iOS only, device must support it)
+                      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable)
                         PaymentMethodCard(
                           title: "Apple Pay",
                           description: "ادفع بسهولة وأمان",
                           isSelected: selectedPaymentMethod == 'apple_pay',
+                          isApplePay: true,
                           color: Colors.transparent,
-                          customIcon: SizedBox(
-                            height: 32,
-                            child: (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
-                              ? RawApplePayButton(
-                                  style: ApplePayButtonStyle.whiteOutline,
-                                  type: ApplePayButtonType.plain,
-                                  onPressed: () {},
-                                )
-                              : Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: Colors.grey.shade400, width: 1),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(FontAwesomeIcons.apple, size: 16, color: Colors.black),
-                                      SizedBox(width: 4),
-                                      Text("Pay", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black)),
-                                    ],
-                                  ),
-                                ),
-                          ),
+                          customIcon: CustomApplePayIcon(height: 32),
                           onTap: () {
                             setState(() {
                               selectedPaymentMethod = 'apple_pay';
@@ -541,7 +533,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         
         // Apple Pay Button (iOS only)
         if (selectedPaymentMethod == 'apple_pay') {
-          if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+          if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) {
             return FutureBuilder<PaymentConfiguration>(
               future: _applePayConfigFuture,
               builder: (context, snapshot) {
