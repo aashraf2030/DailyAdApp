@@ -538,9 +538,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               future: _applePayConfigFuture,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return Column(
-                    children: [
-                      ApplePayButton(
+                  return ApplePayButton(
                         paymentConfiguration: snapshot.data!,
                         paymentItems: _paymentItems,
                         style: ApplePayButtonStyle.black,
@@ -557,14 +555,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                             const SnackBar(content: Text('حدث خطأ في تحميل Apple Pay')),
                           );
                         },
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "إذا لم يظهر الزر، تأكد من إعدادات الـ Merchant ID",
-                        style: GoogleFonts.cairo(fontSize: 10, color: Colors.grey),
-                      ),
-                    ],
-                  );
+                      );
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error loading Apple Pay config'));
                 }

@@ -19,12 +19,15 @@ class CustomApplePayIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-      // ✅ HIG-compliant: official Apple Pay button rendered by the system
+      // ✅ HIG-compliant: official Apple Pay mark rendered by the system.
+      // Using ApplePayButtonStyle.automatic so the mark renders natively
+      // without adding its own black/white background box — it adapts to
+      // whatever background it sits on (white card in our case).
       return SizedBox(
         height: height,
         width: width ?? 80,
         child: RawApplePayButton(
-          style: ApplePayButtonStyle.black,
+          style: ApplePayButtonStyle.automatic,
           type: ApplePayButtonType.plain,
           onPressed: () {}, // tap handled by parent GestureDetector
         ),
