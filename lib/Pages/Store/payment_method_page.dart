@@ -400,20 +400,39 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       SizedBox(height: 16),
                       
                       // Apple Pay (iOS only, device must support it)
-                      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable)
-                        PaymentMethodCard(
-                          title: "Apple Pay",
-                          description: "ادفع بسهولة وأمان",
-                          isSelected: selectedPaymentMethod == 'apple_pay',
-                          isApplePay: true,
-                          color: Colors.transparent,
-                          customIcon: CustomApplePayIcon(height: 32),
-                          onTap: () {
-                            setState(() {
-                              selectedPaymentMethod = 'apple_pay';
-                            });
-                          },
+                      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) ...[
+                        SizedBox(height: 24),
+                        _buildDividerWithOr(),
+                        SizedBox(height: 24),
+                        FutureBuilder<PaymentConfiguration>(
+                          future: _applePayConfigFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return ApplePayButton(
+                                paymentConfiguration: snapshot.data!,
+                                paymentItems: _paymentItems,
+                                style: ApplePayButtonStyle.black,
+                                width: double.infinity,
+                                height: 55,
+                                type: ApplePayButtonType.buy,
+                                onPaymentResult: onApplePayResult,
+                                loadingIndicator: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                                onError: (e) {
+                                  debugPrint("Apple Pay Error: $e");
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('حدث خطأ في تحميل Apple Pay')),
+                                  );
+                                },
+                              );
+                            } else if (snapshot.hasError) {
+                              return Center(child: Text('Error loading Apple Pay config'));
+                            }
+                            return Center(child: CircularProgressIndicator());
+                          }
                         ),
+                      ],
                       
                       SizedBox(height: 30),
                     ],
@@ -427,6 +446,25 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDividerWithOr() {
+    return Row(
+      children: [
+        Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            "أو",
+            style: GoogleFonts.cairo(
+              color: Colors.grey.shade500,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
+      ],
     );
   }
 
@@ -531,56 +569,9 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           return Center(child: CircularProgressIndicator());
         }
         
-        // Apple Pay Button (iOS only)
+        // Apple Pay Button is now direct action above the confirm area
         if (selectedPaymentMethod == 'apple_pay') {
-          if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) {
-            return FutureBuilder<PaymentConfiguration>(
-              future: _applePayConfigFuture,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return ApplePayButton(
-                        paymentConfiguration: snapshot.data!,
-                        paymentItems: _paymentItems,
-                        style: ApplePayButtonStyle.black,
-                        width: double.infinity,
-                        height: 55,
-                        type: ApplePayButtonType.buy,
-                        onPaymentResult: onApplePayResult,
-                        loadingIndicator: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                        onError: (e) {
-                          debugPrint("Apple Pay Error: $e");
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('حدث خطأ في تحميل Apple Pay')),
-                          );
-                        },
-                      );
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error loading Apple Pay config'));
-                }
-                return Center(child: CircularProgressIndicator());
-              }
-            );
-          } else {
-            // Fake Apple Pay button for web/desktop preview
-            return Container(
-              width: double.infinity,
-              height: 55,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(FontAwesomeIcons.apple, color: Colors.white, size: 22),
-                  SizedBox(width: 8),
-                  Text("Pay", style: GoogleFonts.cairo(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            );
-          }
+           return const SizedBox.shrink(); // Hide if somehow selected
         } 
         // Card Payment Button
         else if (selectedPaymentMethod == 'card') {

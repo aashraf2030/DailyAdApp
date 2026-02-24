@@ -294,23 +294,10 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                 ),
                 
                 if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) ...[
-                  SizedBox(height: 12),
-                  _buildPaymentOption(
-                    index: 3,
-                    title: "Apple Pay",
-                    icon: FontAwesomeIcons.apple,
-                    color: Colors.black,
-                  ),
-                ],
-                
-                SizedBox(height: 40),
-                
-                SizedBox(height: 40),
-                
-                // Pay Button
-                if (_selectedMethod == 3)
-                  (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable)
-                   ? FutureBuilder<PaymentConfiguration>(
+                  SizedBox(height: 24),
+                  _buildDividerWithOr(),
+                  SizedBox(height: 24),
+                  FutureBuilder<PaymentConfiguration>(
                     future: _paymentConfigFuture,
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
@@ -334,7 +321,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                               _pendingApplePayToken = jsonEncode(result);
                             });
                             // 2. Start Backend Flow (Initialize)
-                            _submitPayment(totalPrice); 
+                            _submitApplePay(totalPrice); 
                           },
                           loadingIndicator: const Center(child: CircularProgressIndicator()),
                           onError: (e) {
@@ -347,43 +334,30 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                         child: Center(child: CircularProgressIndicator())
                       );
                     }
-                  )
-                   : Container(
-                      width: double.infinity,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(FontAwesomeIcons.apple, color: Colors.white, size: 24),
-                          SizedBox(width: 8),
-                          Text("Pay", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
-                        ],
-                      ),
-                    )
-                else
+                  ),
+                ],
+                
+                SizedBox(height: 40),
+                
+                SizedBox(height: 40),
+                
+                // Pay Button
+                if (_selectedMethod != 0 && _selectedMethod != 3)
                   Container(
                     width: double.infinity,
                     height: 56,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       gradient: LinearGradient(
-                        colors: _selectedMethod != 0 
-                            ? [Color(0xFF2596FA), Color(0xFF364A62)]
-                            : [Colors.grey, Colors.grey.shade600],
+                        colors: [Color(0xFF2596FA), Color(0xFF364A62)],
                       ),
-                      boxShadow: _selectedMethod != 0 
-                          ? [BoxShadow(color: Color(0xFF2596FA).withOpacity(0.4), blurRadius: 15, offset: Offset(0, 8))]
-                          : [],
+                      boxShadow: [BoxShadow(color: Color(0xFF2596FA).withOpacity(0.4), blurRadius: 15, offset: Offset(0, 8))],
                     ),
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(16),
-                        onTap: _selectedMethod != 0 ? () => _submitPayment(totalPrice) : null,
+                        onTap: () => _submitPayment(totalPrice),
                         child: Center(
                           child: Text(
                             _selectedMethod == 1 ? "تأكيد الإعلان" : "دفع ${totalPrice.toStringAsFixed(2)} ريال سعودي",
@@ -402,6 +376,25 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
             ),
           ),
         ),
+    );
+  }
+
+  Widget _buildDividerWithOr() {
+    return Row(
+      children: [
+        Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            "أو",
+            style: GoogleFonts.cairo(
+              color: Colors.grey.shade500,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
+      ],
     );
   }
 
@@ -699,6 +692,30 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
     );
   }
 
+  void _submitApplePay(double totalPrice) {
+    final cubit = BlocProvider.of<OperationalCubit>(context);
+    
+    String platform = "web";
+    if (!kIsWeb) {
+        if (defaultTargetPlatform == TargetPlatform.iOS) platform = "ios";
+        if (defaultTargetPlatform == TargetPlatform.android) platform = "android";
+    }
+    
+    cubit.initializeAdPayment(
+      name: widget.name,
+      imagePath: widget.imagePath,
+      imageName: widget.imageName,
+      adLink: widget.adLink,
+      type: widget.type,
+      targetViews: widget.targetViews,
+      category: widget.category,
+      keywords: widget.keywords,
+      paymentMethod: "apple_pay",
+      platform: platform,
+      couponCode: _appliedCouponCode,
+    );
+  }
+
   void _submitPayment(double currentTotal) {
     // We don't really use currentTotal here because we use state variables, but good for logs
     final cubit = BlocProvider.of<OperationalCubit>(context);
@@ -724,11 +741,8 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
         widget.category,
         widget.keywords,
       );
-    } else {
-      // Card Or Apple Pay
-      String method = "card";
-      if (_selectedMethod == 3) method = "apple_pay";
-      
+    } else if (_selectedMethod == 2) {
+      // Card
       String platform = "web";
       if (!kIsWeb) {
          if (defaultTargetPlatform == TargetPlatform.iOS) platform = "ios";
@@ -744,7 +758,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
         targetViews: widget.targetViews,
         category: widget.category,
         keywords: widget.keywords,
-        paymentMethod: method,
+        paymentMethod: "card",
         platform: platform,
         couponCode: _appliedCouponCode,
       );

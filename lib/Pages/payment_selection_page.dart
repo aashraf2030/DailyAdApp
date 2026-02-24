@@ -168,27 +168,10 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                 
                 // Apple Pay Selection
                 if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) ...[
-                   _buildPaymentOption(
-                    id: 'apple_pay', 
-                    icon: FontAwesomeIcons.apple, 
-                    title: 'Apple Pay',
-                    customIcon: const CustomApplePayIcon(height: 28),
-                  ),
-                   const SizedBox(height: 30),
-                ],
-                
-                const SizedBox(height: 40), // Spacer replaced with SizedBox for SingleChildScrollView
-                
-                BlocBuilder<StoreCubit, StoreState>(
-                  builder: (context, state) {
-                    if (state is StoreLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    
-                    // NEW LOGIC: Swap button based on selection (Guideline 4.9)
-                    if (selectedMethod == 'apple_pay') {
-                      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) {
-                        return FutureBuilder<PaymentConfiguration>(
+                   const SizedBox(height: 24),
+                   _buildDividerWithOr(),
+                   const SizedBox(height: 24),
+                   FutureBuilder<PaymentConfiguration>(
                           future: _googlePayConfigFuture,
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
@@ -217,26 +200,21 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                             }
                             return const Center(child: CircularProgressIndicator());
                           }
-                        );
-                      } else {
-                        // Fake Apple Pay button for web/desktop preview
-                        return Container(
-                          width: double.infinity,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(FontAwesomeIcons.apple, color: Colors.white, size: 22),
-                              SizedBox(width: 8),
-                              Text("Pay", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        );
-                      }
+                        ),
+                   const SizedBox(height: 30),
+                ],
+                
+                const SizedBox(height: 40), // Spacer replaced with SizedBox for SingleChildScrollView
+                
+                BlocBuilder<StoreCubit, StoreState>(
+                  builder: (context, state) {
+                    if (state is StoreLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    
+                    // NEW LOGIC: Swap button based on selection (Guideline 4.9)
+                    if (selectedMethod == 'apple_pay') {
+                      return const SizedBox.shrink();
                     }
 
                     // Default Confirm Button for Cash/Card
@@ -266,6 +244,25 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDividerWithOr() {
+    return Row(
+      children: [
+        Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            "OR",
+            style: TextStyle(
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
+      ],
     );
   }
 
