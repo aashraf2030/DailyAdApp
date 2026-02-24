@@ -48,19 +48,11 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
   }
 
   Future<void> _checkApplePayAvailability() async {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-      try {
-        final config = await PaymentConfiguration.fromAsset(_paymentConfigurationAsset);
-        final available = await Pay({PayProvider.apple_pay: config})
-            .userCanPay(PayProvider.apple_pay);
-        if (mounted) {
-          setState(() {
-            _applePayAvailable = available;
-          });
-        }
-      } catch (e) {
-        debugPrint("Apple Pay availability check failed: $e");
-      }
+    // ALWAYS SHOW FOR WEB PREVIEW - DO NOT DEPLOY THIS TO PRODUCTION
+    if (mounted) {
+      setState(() {
+        _applePayAvailable = true;
+      });
     }
   }
 
@@ -167,7 +159,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                 const SizedBox(height: 15),
                 
                 // Apple Pay Selection
-                if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) ...[
+                if (_applePayAvailable) ...[
                    const SizedBox(height: 24),
                    _buildDividerWithOr(),
                    const SizedBox(height: 24),
@@ -175,7 +167,29 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                           future: _googlePayConfigFuture,
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
-                              return ApplePayButton(
+                              return kIsWeb || defaultTargetPlatform != TargetPlatform.iOS
+                                ? Container(
+                                    width: double.infinity,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Center(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(FontAwesomeIcons.apple, color: Colors.white, size: 20),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            "Pay",
+                                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                : ApplePayButton(
                                 paymentConfiguration: snapshot.data!,
                                 paymentItems: [
                                   PaymentItem(
@@ -193,7 +207,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                                 onError: (e) {
                                   debugPrint("Apple Pay Error: $e");
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Error loading Apple Pay')),
+                                    const SnackBar(content: Text('عفواً، لا يمكن إتمام الدفع عبر Apple Pay على هذا الجهاز.')),
                                   );
                                 },
                               );

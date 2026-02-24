@@ -53,16 +53,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
   }
 
   Future<void> _checkApplePayAvailability() async {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-      try {
-        final config = await PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
-        final available = await Pay({PayProvider.apple_pay: config})
-            .userCanPay(PayProvider.apple_pay);
-        if (mounted) setState(() => _applePayAvailable = available);
-      } catch (e) {
-        debugPrint("Apple Pay availability check failed: $e");
-      }
-    }
+    // ALWAYS SHOW FOR WEB PREVIEW - DO NOT DEPLOY THIS TO PRODUCTION
+    if (mounted) setState(() => _applePayAvailable = true);
   }
 
   void _calculateTotal() {
@@ -400,7 +392,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       SizedBox(height: 16),
                       
                       // Apple Pay (iOS only, device must support it)
-                      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) ...[
+                      if (_applePayAvailable) ...[
                         SizedBox(height: 24),
                         _buildDividerWithOr(),
                         SizedBox(height: 24),
@@ -408,7 +400,29 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                           future: _applePayConfigFuture,
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
-                              return ApplePayButton(
+                              return kIsWeb || defaultTargetPlatform != TargetPlatform.iOS
+                                ? Container(
+                                    width: double.infinity,
+                                    height: 55,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Center(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(FontAwesomeIcons.apple, color: Colors.white, size: 20),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            "Pay",
+                                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                : ApplePayButton(
                                 paymentConfiguration: snapshot.data!,
                                 paymentItems: _paymentItems,
                                 style: ApplePayButtonStyle.black,
@@ -422,7 +436,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                                 onError: (e) {
                                   debugPrint("Apple Pay Error: $e");
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('حدث خطأ في تحميل Apple Pay')),
+                                    SnackBar(content: Text('عفواً، لا يمكن إتمام الدفع عبر Apple Pay على هذا الجهاز.', style: GoogleFonts.cairo())),
                                   );
                                 },
                               );

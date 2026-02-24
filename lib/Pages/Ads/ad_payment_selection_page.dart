@@ -59,19 +59,11 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
   }
 
   Future<void> _checkApplePayAvailability() async {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-      try {
-        final config = await PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
-        final available = await Pay({PayProvider.apple_pay: config})
-            .userCanPay(PayProvider.apple_pay);
-        if (mounted) {
-          setState(() {
-            _applePayAvailable = available;
-          });
-        }
-      } catch (e) {
-        debugPrint("Apple Pay availability check failed: $e");
-      }
+    // ALWAYS SHOW FOR WEB PREVIEW - DO NOT DEPLOY THIS TO PRODUCTION
+    if (mounted) {
+      setState(() {
+        _applePayAvailable = true;
+      });
     }
   }
 
@@ -293,7 +285,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                   color: Color(0xFF2596FA),
                 ),
                 
-                if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS && _applePayAvailable) ...[
+                if (_applePayAvailable) ...[
                   SizedBox(height: 24),
                   _buildDividerWithOr(),
                   SizedBox(height: 24),
@@ -301,7 +293,29 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                     future: _paymentConfigFuture,
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
-                        return ApplePayButton(
+                        return kIsWeb || defaultTargetPlatform != TargetPlatform.iOS
+                          ? Container(
+                              width: double.infinity,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Center(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(FontAwesomeIcons.apple, color: Colors.white, size: 20),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      "Pay",
+                                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : ApplePayButton(
                           paymentConfiguration: snapshot.data!,
                           paymentItems: [
                             PaymentItem(
@@ -658,24 +672,24 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
   }
 
   void _showErrorDialog(BuildContext context, dynamic error) {
-    if (error is PlatformException && error.code == 'paymentCanceled') {
+    if (error is PlatformException && 
+        (error.code == 'paymentCanceled' || error.code.toLowerCase().contains('cancel'))) {
       return;
     }
 
-    String title = "حدث خطأ";
-    String content = "خطأ غير معروف";
+    String title = "تنبيه الدفع";
+    String content = "تعذر إتمام العملية";
 
     if (error is PlatformException) {
-       title = "خطأ في النظام (Platform Exception)";
-       content = "Code: ${error.code}\nMessage: ${error.message}\nDetails: ${error.details}";
+       content = "عفواً، لم نتمكن من إكمال الدفع عبر Apple Pay. يرجى التأكد من إعدادات الدفع في جهازك والمحاولة لاحقاً.";
     } else {
-      content = error.toString();
+      content = "حدث خطأ أثناء معالجة الدفع: ${error.toString()}";
     }
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title, style: GoogleFonts.cairo(fontWeight: FontWeight.bold, color: Colors.red)),
+        title: Text(title, style: GoogleFonts.cairo(fontWeight: FontWeight.bold, color: Colors.orange)),
         content: SingleChildScrollView(
           child: SelectableText(
             content,
@@ -685,7 +699,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("إغلاق", style: GoogleFonts.cairo(fontWeight: FontWeight.bold)),
+            child: Text("حسناً", style: GoogleFonts.cairo(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
