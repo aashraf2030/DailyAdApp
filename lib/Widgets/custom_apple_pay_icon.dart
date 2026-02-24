@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pay/pay.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-/// HIG-compliant Apple Pay mark widget.
-/// On iOS: uses the official RawApplePayButton (black style, plain type).
-/// On other platforms: renders a plain fallback (never shown to Apple reviewers).
+/// HIG-compliant Apple Pay inline mark for use inside payment selection rows.
+///
+/// Apple HIG prohibits using the Apple Pay button (RawApplePayButton) as a
+/// decorative icon inside list rows — that button is only for triggering payment.
+/// For inline display, the correct approach is to render the  Pay text mark
+/// using the system font, on a plain white or black background pill.
+///
+/// Reference: https://developer.apple.com/design/human-interface-guidelines/apple-pay
 class CustomApplePayIcon extends StatelessWidget {
   final double height;
   final double? width;
@@ -18,46 +21,28 @@ class CustomApplePayIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-      // ✅ HIG-compliant: official Apple Pay mark rendered by the system.
-      // Using ApplePayButtonStyle.automatic so the mark renders natively
-      // without adding its own black/white background box — it adapts to
-      // whatever background it sits on (white card in our case).
-      return SizedBox(
-        height: height,
-        width: width ?? 80,
-        child: RawApplePayButton(
-          style: ApplePayButtonStyle.automatic,
-          type: ApplePayButtonType.plain,
-          onPressed: () {}, // tap handled by parent GestureDetector
-        ),
-      );
-    }
-
-    // Non-iOS fallback (web/Android preview only — never seen by Apple reviewers)
+    // ✅ Render the Apple Pay text mark as a black pill.
+    // This mirrors how Apple displays the mark in their own HIG examples
+    // for payment method selection lists.
+    // The Apple logo character () is part of the iOS system font (SF Pro).
     return Container(
       height: height,
-      width: width ?? 80,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.black,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(6),
       ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.apple, size: 13, color: Colors.white),
-          SizedBox(width: 4),
-          Text(
-            "Pay",
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
+      child: Center(
+        child: Text(
+          ' Pay',
+          style: TextStyle(
+            fontFamily: '.SF Pro Display', // iOS system font — renders  correctly
+            fontSize: height * 0.45,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            letterSpacing: 0.3,
           ),
-        ],
+        ),
       ),
     );
   }
