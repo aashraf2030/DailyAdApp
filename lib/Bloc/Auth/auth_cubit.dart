@@ -464,35 +464,32 @@ class AuthCubit extends Cubit<AuthState>{
   }
 
   Future<bool> verifyCheck() async {
-
-    if (isGuestMode()) {
-      return true;
-    }
-
-    final id = prefs.getString("id");
-    final session = prefs.getString("session");
-
-    final x = await repo.verifyCheck(id?? "", session?? "");
-
-    if (x.status == "Success")
-    {
-      emit(AuthDone());
-      return true;
-    }
-    else if (x.status == "Invalid Request")
-    {
-      emit(AuthInvalid());
-      return false;
-    }
-    else
-    {
-       // Silent failure or specific message if needed, usually verification check is background or init
-       // But if explicit:
-      String msg = x.status;
-      if (msg == "Error" || msg.toLowerCase().contains("exception")) {
-         msg = "فشل التحقق من الحساب";
+    try {
+      if (isGuestMode()) {
+        return true;
       }
-      emit(AuthError(msg));
+
+      final id = prefs.getString("id");
+      final session = prefs.getString("session");
+
+      final x = await repo.verifyCheck(id ?? "", session ?? "");
+
+      if (x.status == "Success") {
+        emit(AuthDone());
+        return true;
+      } else if (x.status == "Invalid Request") {
+        emit(AuthInvalid());
+        return false;
+      } else {
+        String msg = x.status;
+        if (msg == "Error" || msg.toLowerCase().contains("exception")) {
+          msg = "فشل التحقق من الحساب";
+        }
+        emit(AuthError(msg));
+        return false;
+      }
+    } catch (e) {
+      print("🔴 [AUTH] verifyCheck Error: $e");
       return false;
     }
   }
