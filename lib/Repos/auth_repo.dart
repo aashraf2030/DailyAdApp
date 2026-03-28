@@ -29,12 +29,12 @@ class AuthRepo {
   Future<UserProfile> profile(String id, String session) async{
     final res = await web.getProfile(session, id);
 
-    // Check if response is an error
+    
     if (res is Map && res.containsKey("status") && res["status"] != "Success") {
       throw Exception(res["message"] ?? "Can't Retrieve Data");
     }
 
-    // Check if name exists
+    
     if (res["name"] == null || res["name"] == "Invalid") {
       throw Exception("Can't Retrieve Data");
     }
@@ -59,7 +59,7 @@ class AuthRepo {
     return AuthResult.fromJson(res);
   }
   
-  // Get raw response for isAdmin to access isAdmin field
+  
   Future<Map<String, dynamic>> isAdminRaw(String id, String session) async {
     final res = await web.isAdmin(id, session);
     

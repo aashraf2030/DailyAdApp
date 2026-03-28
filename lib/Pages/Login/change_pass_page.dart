@@ -71,17 +71,17 @@ class _ChangePassPageState extends State<ChangePassPage> with SingleTickerProvid
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Header
+                          
                           _buildHeader(),
                           
                           SizedBox(height: 40),
                           
-                          // Form Card
+                          
                           _buildFormCard(context),
                           
                           SizedBox(height: 30),
                           
-                          // Back Button
+                          
                           _buildBackButton(context),
                         ],
                       ),
@@ -307,7 +307,7 @@ class _ChangePassPageState extends State<ChangePassPage> with SingleTickerProvid
       return;
     }
 
-    // Show loading
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -350,7 +350,7 @@ class _ChangePassPageState extends State<ChangePassPage> with SingleTickerProvid
     final cubit = BlocProvider.of<AuthCubit>(context);
     final res = await cubit.changePass(pass.data);
 
-    // Close loading
+    
     Navigator.of(context).pop();
 
     if (res) {

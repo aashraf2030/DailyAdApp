@@ -79,17 +79,17 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                         children: [
                           SizedBox(height: 10),
                           
-                          // Header
+                          
                           _buildHeader(),
                           
                           SizedBox(height: 15),
                           
-                          // Registration Card
+                          
                           _buildRegistrationCard(context),
                           
                           SizedBox(height: 15),
                           
-                          // Login Button
+                          
                           _buildLoginButton(context),
                           
                           SizedBox(height: 10),
@@ -108,7 +108,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   Widget _buildHeader() {
     return Column(
       children: [
-        // Icon
+        
         Container(
           width: 60,
           height: 60,
@@ -176,7 +176,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
           children: [
-            // Title
+            
             Text(
               "تسجيل",
               style: GoogleFonts.cairo(
@@ -188,7 +188,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             
             SizedBox(height: 15),
             
-            // Form Fields
+            
             name,
             user,
             email,
@@ -198,7 +198,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             
             SizedBox(height: 15),
             
-            // Register Button
+            
             Container(
               width: double.infinity,
               height: 48,
@@ -298,7 +298,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   void tryRegister(context) async {
-    // Validation
+    
     if (user.data.isEmpty || pass.data.isEmpty ||
         passConfirm.data.isEmpty || name.data.isEmpty ||
         email.data.isEmpty) {
@@ -311,7 +311,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
       return;
     }
 
-    // Show loading
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -342,11 +342,11 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
       phoneData,
     );
 
-    // Close loading
+    
     Navigator.of(context).pop();
 
     if (x) {
-      // Show success dialog
+      
       showDialog(
         context: context,
         builder: (_) {
@@ -367,7 +367,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Success Icon
+                  
                   Container(
                     width: 80,
                     height: 80,
@@ -480,7 +480,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Error Icon
+                
                 Container(
                   width: 80,
                   height: 80,
@@ -497,7 +497,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                 
                 SizedBox(height: 20),
                 
-                // Error Title
+                
                 Text(
                   "خطأ في التسجيل",
                   style: GoogleFonts.cairo(
@@ -510,7 +510,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                 
                 SizedBox(height: 12),
                 
-                // Error Message
+                
                 Text(
                   errorMessage,
                   style: GoogleFonts.cairo(
@@ -524,7 +524,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                 
                 SizedBox(height: 30),
                 
-                // OK Button
+                
                 Container(
                   width: double.infinity,
                   height: 50,

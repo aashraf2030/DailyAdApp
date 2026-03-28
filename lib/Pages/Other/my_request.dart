@@ -38,7 +38,7 @@ class MyRequestPageState extends State<MyRequestPage> with TickerProviderStateMi
     
     _animationController.forward();
 
-    // بعد 3 ثواني، إذا لم يتم تحميل البيانات، نعرض "لا توجد طلبات"
+    
     Future.delayed(Duration(seconds: 3), () {
       if (mounted && _isLoading && requests.isEmpty) {
         setState(() {
@@ -346,9 +346,9 @@ class MyRequestPageState extends State<MyRequestPage> with TickerProviderStateMi
   }
 
   List<UserRequest> _getFilteredRequests() {
-    // Tab 0: All requests
-    // Tab 1: Pending requests (Create, Renew)
-    // Tab 2: Active/Money requests
+    
+    
+    
     
     if (_tabController.index == 0) {
       return requests;
@@ -562,7 +562,7 @@ class MyRequestPageState extends State<MyRequestPage> with TickerProviderStateMi
                     Row(
                       textDirection: TextDirection.rtl,
                       children: [
-                        // Icon placeholder
+                        
                         Container(
                           width: 48,
                           height: 48,
@@ -576,7 +576,7 @@ class MyRequestPageState extends State<MyRequestPage> with TickerProviderStateMi
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Title placeholder
+                              
                               Container(
                                 width: double.infinity,
                                 height: 16,
@@ -586,7 +586,7 @@ class MyRequestPageState extends State<MyRequestPage> with TickerProviderStateMi
                                 ),
                               ),
                               SizedBox(height: 8),
-                              // Subtitle placeholder
+                              
                               Container(
                                 width: 120,
                                 height: 12,
@@ -599,7 +599,7 @@ class MyRequestPageState extends State<MyRequestPage> with TickerProviderStateMi
                           ),
                         ),
                         SizedBox(width: 12),
-                        // Button placeholder
+                        
                         Container(
                           width: 40,
                           height: 40,
@@ -611,7 +611,7 @@ class MyRequestPageState extends State<MyRequestPage> with TickerProviderStateMi
                       ],
                     ),
                     SizedBox(height: 12),
-                    // Info box placeholder
+                    
                     Container(
                       width: double.infinity,
                       height: 80,
@@ -626,7 +626,7 @@ class MyRequestPageState extends State<MyRequestPage> with TickerProviderStateMi
             ),
           );
         },
-        childCount: 4, // عرض 4 skeleton cards
+        childCount: 4, 
       ),
     );
   }

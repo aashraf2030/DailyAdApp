@@ -39,7 +39,7 @@ class RouteGenerator {
     switch (settings.name) {
       case "/":
         print("🟢 [ROUTER] / (root) route - redirecting to home");
-        // Redirect to home
+        
         home.changeRoute(0);
         return generateRoute(RouteSettings(name: "/home"));
         
@@ -82,7 +82,7 @@ class RouteGenerator {
                           }
                         } else if (res.hasError) {
                           print("🔴 [ROUTER] verifyCheck ERROR: ${res.error}");
-                          // If verification check fails, stay in app (allow guest browsing)
+                          
                           return MultiBlocProvider(
                             providers: [
                               BlocProvider.value(value: home),
@@ -104,7 +104,7 @@ class RouteGenerator {
                         }
                       });
                 } else {
-                  // User not logged in - allow guest browsing (go to HomePage)
+                  
                   print("🟢 [ROUTER] User not logged in - showing HomePage for guest browsing");
                   return MultiBlocProvider(
                     providers: [
@@ -120,7 +120,7 @@ class RouteGenerator {
                 }
               } else if (res.hasError) {
                 print("🔴 [ROUTER] isLoggedIn ERROR: ${res.error}");
-                // If login check fails, stay in app (allow guest browsing)
+                
                 return MultiBlocProvider(
                   providers: [
                     BlocProvider.value(value: home),
@@ -205,7 +205,7 @@ class RouteGenerator {
               );
             }
             
-            // فحص لو المستخدم مسجل دخول ومش في وضع الزائر
+            
             final isGuest = operational.prefs.getBool("guest") ?? false;
             
             if (snapshot.hasData && snapshot.data == true && !isGuest) {
@@ -286,7 +286,7 @@ class RouteGenerator {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // أيقونة القفل
+                  
                   Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
@@ -309,7 +309,7 @@ class RouteGenerator {
                   
                   const SizedBox(height: 40),
                   
-                  // العنوان
+                  
                   const Text(
                     'تسجيل الدخول مطلوب',
                     style: TextStyle(
@@ -322,7 +322,7 @@ class RouteGenerator {
                   
                   const SizedBox(height: 16),
                   
-                  // الرسالة
+                  
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -347,7 +347,7 @@ class RouteGenerator {
                   
                   const SizedBox(height: 40),
                   
-                  // زر تسجيل الدخول
+                  
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, '/login');
@@ -382,7 +382,7 @@ class RouteGenerator {
                   
                   const SizedBox(height: 16),
                   
-                  // زر العودة
+                  
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -461,7 +461,7 @@ class ErrorRoute extends StatelessWidget {
             ),
             SizedBox(height: 20),
             
-            // Error Message
+            
             if (errorMessage != null) ...[
               Container(
                 padding: EdgeInsets.all(12),
@@ -491,7 +491,7 @@ class ErrorRoute extends StatelessWidget {
               SizedBox(height: 16),
             ],
             
-            // Error Object
+            
             if (error != null) ...[
               Container(
                 padding: EdgeInsets.all(12),
@@ -524,7 +524,7 @@ class ErrorRoute extends StatelessWidget {
               SizedBox(height: 16),
             ],
             
-            // Stack Trace (collapsed by default)
+            
             if (stackTrace != null) ...[
               ExpansionTile(
                 title: Text("Stack Trace (للمطورين)"),
@@ -547,7 +547,7 @@ class ErrorRoute extends StatelessWidget {
               SizedBox(height: 16),
             ],
             
-            // Actions
+            
             SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {

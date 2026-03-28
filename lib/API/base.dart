@@ -1,16 +1,16 @@
 class BackendAPI{
-  // Production URL (Active)
+  
   static const domain = "https://hitech-wp.com/";
   static const base = "${domain}api/";
   
-  // Local Development URL (Commented for now)
-  // static const base = "http://127.0.0.1:8000/api/";  // Android Emulator
   
-  // Other local options:
-  // static const base = "http://127.0.0.1:8000/api/";  // Desktop/Web
-  // static const base = "http://192.168.1.X:8000/api/";  // Real Device (replace X with your IP)
-  // static const base = "http://localhost:8000/api/";  // iOS Simulator
-  // static const base = "https://adsapp-abu-sultan.com/api/";
+  
+  
+  
+  
+  
+  
+  
 
   static const auth = "auth/";
   static const login = "$base${auth}login";
@@ -43,8 +43,8 @@ class BackendAPI{
 
   static const view = "view/";
   static const watch = "${base}${view}watch";
-  static const view_ad = "${base}${view}ad"; // Track ad views and award points
-  static const view_history = "${base}${view}history"; // Get viewing history
+  static const view_ad = "${base}${view}ad"; 
+  static const view_history = "${base}${view}history"; 
 
   static const authority = "authority/";
   static const defaultReq = "$base${authority}default_req";

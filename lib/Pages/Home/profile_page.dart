@@ -61,14 +61,14 @@ class ProfilePageState extends State<HomeProfile> {
       print("   Username: ${fetchedProfile.username}");
       print("   Points: ${fetchedProfile.points}");
       
-      // تحديث حالة الزائر بعد جلب البيانات
+      
       final isGuestMode = operationalCubit.isGuest();
       print("   Is Guest: $isGuestMode");
       
       if (mounted) {
         setState(() {
           profile = fetchedProfile;
-          isGuest = isGuestMode;  // تحديث حالة الزائر
+          isGuest = isGuestMode;  
           isLoading = false;
         });
       }
@@ -103,7 +103,7 @@ class ProfilePageState extends State<HomeProfile> {
     try {
       final authCubit = BlocProvider.of<AuthCubit>(context);
       
-      // Show loading
+      
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -125,14 +125,14 @@ class ProfilePageState extends State<HomeProfile> {
 
       final success = await authCubit.switchAccount(account);
       
-      Navigator.of(context).pop(); // Close loading
+      Navigator.of(context).pop(); 
       
       if (success) {
-        // Reload profile and accounts
+        
         await _loadProfile(forceRefresh: true);
         await _loadSavedAccounts();
         
-        // Show success message
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -145,7 +145,7 @@ class ProfilePageState extends State<HomeProfile> {
           ),
         );
       } else {
-        // Show error
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -159,7 +159,7 @@ class ProfilePageState extends State<HomeProfile> {
         );
       }
     } catch (e) {
-      Navigator.of(context).pop(); // Close loading if still open
+      Navigator.of(context).pop(); 
       print('Error switching account: $e');
     }
   }
@@ -313,7 +313,7 @@ class ProfilePageState extends State<HomeProfile> {
 
         const SizedBox(height: 24),
 
-        // Saved Accounts Section
+        
         if (!isGuest && savedAccounts.isNotEmpty) ...[
           AccountSwitcherWidget(
             accounts: savedAccounts,
@@ -721,8 +721,8 @@ class ProfilePageState extends State<HomeProfile> {
   }
 
   String _formatPoints(double points) {
-    // If points is a whole number, show without decimals
-    // Otherwise show with 1 decimal place
+    
+    
     if (points == points.truncateToDouble()) {
       return points.toInt().toString();
     } else {

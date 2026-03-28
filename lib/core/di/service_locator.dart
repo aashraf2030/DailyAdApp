@@ -24,15 +24,15 @@ import '../../Repos/store_repo.dart';
 import '../../Web/store_web.dart';
 import '../../Services/account_manager_service.dart';
 
-/// Global service locator instance
+
 final sl = GetIt.instance;
 
-/// Initialize all dependencies
-/// This should be called once in main() before runApp()
+
+
 Future<void> initializeDependencies() async {
-  // ============================================
-  // External Dependencies
-  // ============================================
+  
+  
+  
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
   
@@ -46,9 +46,9 @@ Future<void> initializeDependencies() async {
   );
   sl.registerLazySingleton<FlutterSecureStorage>(() => secureStorage);
 
-  // ============================================
-  // Dio Configuration
-  // ============================================
+  
+  
+  
   sl.registerLazySingleton<Dio>(() {
     final options = BaseOptions(
       connectTimeout: Duration(seconds: AppConstants.connectionTimeout),
@@ -65,27 +65,27 @@ Future<void> initializeDependencies() async {
     return dio;
   });
 
-  // ============================================
-  // Web Services (Data Sources)
-  // ============================================
+  
+  
+  
   sl.registerLazySingleton<AuthServices>(() => AuthServices(sl<Dio>()));
   sl.registerLazySingleton<AdsWebServices>(() => AdsWebServices(sl<Dio>()));
   sl.registerLazySingleton<AuthorityWebServices>(
       () => AuthorityWebServices(sl<Dio>()));
   sl.registerLazySingleton<ChatWebServices>(() => ChatWebServices(sl<Dio>()));
 
-  // ============================================
-  // Repositories
-  // ============================================
+  
+  
+  
   sl.registerLazySingleton<AuthRepo>(() => AuthRepo(sl<AuthServices>()));
   sl.registerLazySingleton<AdsRepo>(() => AdsRepo(sl<AdsWebServices>()));
   sl.registerLazySingleton<AuthorityRepo>(
       () => AuthorityRepo(sl<AuthorityWebServices>()));
   sl.registerLazySingleton<ChatRepo>(() => ChatRepo(sl<ChatWebServices>()));
 
-  // ============================================
-  // Blocs/Cubits (Factories for new instances)
-  // ============================================
+  
+  
+  
   sl.registerFactory<AuthCubit>(
     () => AuthCubit(
       AuthInitial(),
@@ -134,16 +134,16 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // ============================================
-  // Store System
-  // ============================================
+  
+  
+  
   sl.registerLazySingleton<StoreServices>(() => StoreServices(sl<Dio>()));
   sl.registerLazySingleton<StoreRepo>(() => StoreRepo(sl<StoreServices>()));
   sl.registerFactory<StoreCubit>(() => StoreCubit(sl<StoreRepo>()));
 
-  // ============================================
-  // Account Manager Service
-  // ============================================
+  
+  
+  
   sl.registerLazySingleton<AccountManagerService>(
     () => AccountManagerService(
       sl<SharedPreferences>(),
@@ -152,7 +152,7 @@ Future<void> initializeDependencies() async {
   );
 }
 
-/// Reset all dependencies (useful for testing)
+
 Future<void> resetDependencies() async {
   await sl.reset();
 }

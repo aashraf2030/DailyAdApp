@@ -41,14 +41,14 @@ class StoreApplePayRequired extends StoreState {
   final int orderId;
   final double amount;
   final String currency;
-  final String merchantId; // Add if needed specifically
+  final String merchantId; 
   
   StoreApplePayRequired({
     required this.clientSecret,
     required this.orderId,
     required this.amount,
     required this.currency,
-    this.merchantId = "merchant.com.dailyAd.app", // Default or config
+    this.merchantId = "merchant.com.dailyAd.app", 
   });
 }
 

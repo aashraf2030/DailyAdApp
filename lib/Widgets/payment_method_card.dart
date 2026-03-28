@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Reusable widget for payment method card.
-/// When [isApplePay] is true, the card background is ALWAYS white and uses
-/// a plain Container (not AnimatedContainer) so Flutter never interpolates
-/// a blue tint over the Apple Pay mark — required by Apple HIG (Guideline 4.9).
+
+
+
+
 class PaymentMethodCard extends StatelessWidget {
   final IconData? icon;
   final String title;
@@ -32,7 +32,7 @@ class PaymentMethodCard extends StatelessWidget {
   Widget _buildContent() {
     return Row(
       children: [
-        // Selection indicator
+        
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           width: 24,
@@ -52,7 +52,7 @@ class PaymentMethodCard extends StatelessWidget {
 
         const Spacer(),
 
-        // Text content
+        
         if (customBody != null)
           customBody!
         else
@@ -81,11 +81,11 @@ class PaymentMethodCard extends StatelessWidget {
 
         const SizedBox(width: 16),
 
-        // Icon section
-        // ✅ HIG: Apple Pay mark must have NO colored container around it.
+        
+        
         if (customIcon != null)
           isApplePay
-              ? customIcon! // bare RawApplePayButton — no wrapping whatsoever
+              ? customIcon! 
               : Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -125,11 +125,11 @@ class PaymentMethodCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: isApplePay
-          // ✅ HIG compliance: static white Container — never animated/tinted.
+          
           ? Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
-                color: Colors.white, // Always white — no exceptions
+                color: Colors.white, 
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: borderColor, width: isSelected ? 2 : 1.5),
                 boxShadow: [
@@ -142,7 +142,7 @@ class PaymentMethodCard extends StatelessWidget {
               ),
               child: _buildContent(),
             )
-          // Regular animated card for non-Apple Pay options
+          
           : AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,

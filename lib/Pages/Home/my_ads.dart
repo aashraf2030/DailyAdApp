@@ -28,7 +28,7 @@ class MyAdsState extends State<MyAds>
 
     BlocProvider.of<AdCubit>(context).getUserAds();
     
-    // بعد 3 ثواني لو لسه بيحمل، نعتبر مافيش داتا
+    
     _timer = Timer(Duration(seconds: 3), () {
       if (mounted && ads.isEmpty) {
         setState(() {
@@ -59,7 +59,7 @@ class MyAdsState extends State<MyAds>
       ),
       child: Column(
         children: [
-          // Header مع زرار إنشاء إعلان
+          
           Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -120,7 +120,7 @@ class MyAdsState extends State<MyAds>
             ),
           ),
 
-          // محتوى الإعلانات
+          
           Expanded(
             child: BlocBuilder<AdCubit, AdState>(
               builder: dataBuilder,
@@ -135,20 +135,20 @@ class MyAdsState extends State<MyAds>
   {
     if (state is AdLoadingState || (ads.isEmpty && !_showNoData))
       {
-        // Skeleton UI بدلاً من Spinner
+        
         return _buildSkeletonLoader();
       }
     else if (state is AdDoneState)
       {
         ads = state.data;
-        _timer?.cancel(); // إلغاء التايمر لما الداتا توصل
+        _timer?.cancel(); 
         
         if (ads.isNotEmpty)
           {
             return GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.68, // عشان Progress Bar والمحتوى الجديد
+                childAspectRatio: 0.68, 
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
               ),
@@ -176,12 +176,12 @@ class MyAdsState extends State<MyAds>
       }
   }
   
-  // Skeleton Loading UI
+  
   Widget _buildSkeletonLoader() {
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.68, // نفس قيمة الكروت الحقيقية
+        childAspectRatio: 0.68, 
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
@@ -194,14 +194,14 @@ class MyAdsState extends State<MyAds>
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20), // نفس الـ border radius
+              borderRadius: BorderRadius.circular(20), 
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image placeholder
+                
                 Container(
-                  height: 140, // نفس ارتفاع الصورة في الكارت الحقيقي
+                  height: 140, 
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
@@ -215,7 +215,7 @@ class MyAdsState extends State<MyAds>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Title placeholder
+                      
                       Container(
                         width: double.infinity,
                         height: 16,
@@ -234,7 +234,7 @@ class MyAdsState extends State<MyAds>
                         ),
                       ),
                       SizedBox(height: 12),
-                      // Progress bar placeholder
+                      
                       Container(
                         width: double.infinity,
                         height: 6,
@@ -254,7 +254,7 @@ class MyAdsState extends State<MyAds>
     );
   }
   
-  // Empty State
+  
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -352,7 +352,7 @@ class MyAdsState extends State<MyAds>
     );
   }
   
-  // Error State
+  
   Widget _buildErrorState() {
     return Center(
       child: Column(

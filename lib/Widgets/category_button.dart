@@ -35,19 +35,19 @@ class _CategoryButtonState extends State<CategoryButton> with SingleTickerProvid
     super.dispose();
   }
 
-  // ألوان gradient مختلفة لكل فئة
+  
   List<Color> _getGradientColors() {
     final gradients = [
-      [Color(0xFF667eea), Color(0xFF764ba2)], // بنفسجي
-      [Color(0xFFf093fb), Color(0xFFf5576c)], // وردي
-      [Color(0xFF4facfe), Color(0xFF00f2fe)], // أزرق فاتح
-      [Color(0xFF43e97b), Color(0xFF38f9d7)], // أخضر
-      [Color(0xFFfa709a), Color(0xFFfee140)], // وردي-أصفر
-      [Color(0xFF30cfd0), Color(0xFF330867)], // أزرق-بنفسجي
-      [Color(0xFFa8edea), Color(0xFFfed6e3)], // أزرق فاتح-وردي
-      [Color(0xFFff9a9e), Color(0xFFfecfef)], // وردي فاتح
-      [Color(0xFFffecd2), Color(0xFFfcb69f)], // برتقالي فاتح
-      [Color(0xFFff6e7f), Color(0xFFbfe9ff)], // أحمر-أزرق
+      [Color(0xFF667eea), Color(0xFF764ba2)], 
+      [Color(0xFFf093fb), Color(0xFFf5576c)], 
+      [Color(0xFF4facfe), Color(0xFF00f2fe)], 
+      [Color(0xFF43e97b), Color(0xFF38f9d7)], 
+      [Color(0xFFfa709a), Color(0xFFfee140)], 
+      [Color(0xFF30cfd0), Color(0xFF330867)], 
+      [Color(0xFFa8edea), Color(0xFFfed6e3)], 
+      [Color(0xFFff9a9e), Color(0xFFfecfef)], 
+      [Color(0xFFffecd2), Color(0xFFfcb69f)], 
+      [Color(0xFFff6e7f), Color(0xFFbfe9ff)], 
     ];
     return gradients[widget.id % gradients.length];
   }
@@ -95,7 +95,7 @@ class _CategoryButtonState extends State<CategoryButton> with SingleTickerProvid
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    // أيقونة دائرية
+                    
                     Container(
                       width: 40,
                       height: 40,
@@ -112,7 +112,7 @@ class _CategoryButtonState extends State<CategoryButton> with SingleTickerProvid
                     
                     SizedBox(height: 8),
                     
-                    // اسم الفئة
+                    
                     Flexible(
                       child: Text(
                         category.name,
@@ -130,7 +130,7 @@ class _CategoryButtonState extends State<CategoryButton> with SingleTickerProvid
                     
                     SizedBox(height: 4),
                     
-                    // أيقونة سهم
+                    
                     Icon(
                       Icons.arrow_forward_ios,
                       size: 10,

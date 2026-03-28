@@ -15,11 +15,11 @@ class CreateAdPage extends StatefulWidget {
   CreateAdPage({super.key});
 
   InputTextForm name = InputTextForm("اسم الاعلان", FontAwesomeIcons.rectangleAd);
-  // InputTextForm target removed in favor of dropdown in state
+  
   InputTextForm keys = InputTextForm("كلمات مفتاحية", FontAwesomeIcons.key);
   InputTextForm link = InputTextForm("رابط الاعلان", FontAwesomeIcons.link);
-  int category = 11; // متنوع (Other) كقيمة افتراضية
-  int type = 0; // Dynamic للمستخدمين العاديين
+  int category = 11; 
+  int type = 0; 
 
   ImagePickerButton picker = ImagePickerButton("اختار الصورة", FontAwesomeIcons.image);
 
@@ -40,7 +40,7 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
   void initState() {
     super.initState();
 
-    // Fetch pricing when page loads
+    
     context.read<OperationalCubit>().repo.fetchPricing().then((_) {
       if(mounted) setState(() {});
     });
@@ -78,7 +78,7 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
   @override
   void dispose() {
     _animationController.dispose();
-    _viewsController.dispose(); // Dispose the controller
+    _viewsController.dispose(); 
     super.dispose();
   }
 
@@ -123,12 +123,12 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
 
   List<Widget> buildMenu(BuildContext context) {
     List<Widget> res = [
-      // Header Section
+      
       _buildHeader(),
       
       SizedBox(height: 24),
 
-      // معلومات الإعلان الأساسية
+      
       _buildSectionTitle("معلومات الإعلان", FontAwesomeIcons.rectangleAd),
       SizedBox(height: 12),
       _buildCard([
@@ -139,20 +139,20 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
 
       SizedBox(height: 24),
 
-      // صورة الإعلان
+      
       _buildSectionTitle("صورة الإعلان", FontAwesomeIcons.image),
       SizedBox(height: 12),
       _buildCard([widget.picker]),
 
       SizedBox(height: 24),
 
-      // التفاصيل
+      
       _buildSectionTitle("التفاصيل", FontAwesomeIcons.circleInfo),
       SizedBox(height: 12),
       _buildCard([
         SizedBox(height: 16),
                       
-        // Target Views Input
+        
         Text(
           "عدد المشاهدات المستهدفة (أقل عدد ${AdPricingConfig.minViews})",
           style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
@@ -192,7 +192,7 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
 
       SizedBox(height: 24),
 
-      // فئة الإعلان
+      
       _buildSectionTitle("فئة الإعلان", FontAwesomeIcons.layerGroup),
       SizedBox(height: 12),
       _buildCard([
@@ -200,7 +200,7 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
       ]),
     ];
 
-    // عرض اختيار نوع الإعلان للأدمن فقط
+    
     if (isAdmin) {
       res.addAll([
         SizedBox(height: 24),
@@ -215,14 +215,14 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
     res.addAll([
       SizedBox(height: 24),
 
-      // كلمات مفتاحية
+      
       _buildSectionTitle("تحسين الظهور", FontAwesomeIcons.hashtag),
       SizedBox(height: 12),
       _buildCard([widget.keys]),
 
       SizedBox(height: 32),
 
-      // Submit Button
+      
       buildSubmitButton(),
       
       SizedBox(height: 24),
@@ -429,8 +429,8 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
           borderRadius: BorderRadius.circular(12),
 
 
-  // This method is no longer used as a TextFormField is used instead
-  // Dropdown removed
+  
+  
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
@@ -561,7 +561,7 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
         !widget.picker.imageIsSelected ||
         widget.link.out.isEmpty ||
         widget.keys.out.isEmpty ||
-        _viewsController.text.isEmpty) { // Added check for views controller
+        _viewsController.text.isEmpty) { 
       showErrorMessage(context, "بيانات الإعلان غير مكتملة", "برجاء ملء جميع الحقول المطلوبة");
       setState(() {
         isSending = false;
@@ -581,7 +581,7 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
         return;
       }
 
-      // Map Type
+      
       String adType = "Dynamic";
       if (widget.type == 1) {
         adType = "Fixed";
@@ -683,11 +683,11 @@ class CreateAdPageState extends State<CreateAdPage> with SingleTickerProviderSta
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () {
-                        // The provided snippet for onTap was syntactically incorrect.
-                        // Assuming the intent was to add a check before navigating,
-                        // but placing it here in a success dialog's "Awesome!" button
-                        // doesn't make logical sense.
-                        // Reverting to original onTap logic for success message.
+                        
+                        
+                        
+                        
+                        
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                       },

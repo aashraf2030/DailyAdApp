@@ -203,7 +203,7 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
           Row(
             textDirection: TextDirection.rtl,
             children: [
-              // أيقونة الفئة
+              
               Container(
                 padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -233,7 +233,7 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
               
               SizedBox(width: 12),
               
-              // اسم الفئة
+              
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -258,7 +258,7 @@ class CategoryAreaState extends State<CategoryArea> with SingleTickerProviderSta
             ],
           ),
           
-          // Badge
+          
           if (ads.length > 4)
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),

@@ -39,7 +39,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> with Sing
     
     _animationController.forward();
     
-    // Send verification code automatically when page loads
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _sendVerificationCodeAutomatically();
     });
@@ -50,7 +50,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> with Sing
     final res = await cubit.sendCode();
     
     if (res && mounted) {
-      // Show success snackbar
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -101,22 +101,22 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> with Sing
                 children: [
                           SizedBox(height: 30),
                           
-                          // Header
+                          
                           _buildHeader(),
                           
                           SizedBox(height: 30),
                           
-                          // Verification Card
+                          
                           _buildVerificationCard(context),
                           
                           SizedBox(height: 20),
                           
-                          // Resend Button
+                          
                           _buildResendButton(context),
                           
                           SizedBox(height: 20),
                           
-                          // Back Button
+                          
                           _buildBackButton(context),
                           
                           SizedBox(height: 20),
@@ -405,7 +405,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> with Sing
       return;
     }
 
-    // Show loading
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -428,11 +428,11 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> with Sing
     final cubit = BlocProvider.of<AuthCubit>(context);
     final res = await cubit.verify(code.data);
 
-    // Close loading
+    
     Navigator.of(context).pop();
 
     if (res) {
-      // Show success dialog
+      
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -547,7 +547,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> with Sing
   }
 
   void resendCode(context) async {
-    // Show loading
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -570,7 +570,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> with Sing
     final cubit = BlocProvider.of<AuthCubit>(context);
     final res = await cubit.sendCode();
 
-    // Close loading
+    
     Navigator.of(context).pop();
 
     if (res) {

@@ -24,13 +24,13 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Lock Orientation Early
+  
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // 2. Setup Global Error Handling
+  
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
     debugPrint("🔴 [FLUTTER ERROR] ${details.exception}");
@@ -44,7 +44,7 @@ void main() async {
   };
 
   try {
-    // 3. Initialize dependency injection
+    
     await initializeDependencies();
 
     runApp(MyApp(RouteGenerator(
@@ -56,7 +56,7 @@ void main() async {
     )));
   } catch (e) {
     debugPrint("🔴 [INIT ERROR] Failed to initialize app: $e");
-    // Run app with error UI if initialization fails
+    
     runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SafeFallbackUI(

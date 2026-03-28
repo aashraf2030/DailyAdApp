@@ -1,12 +1,12 @@
 import '../exceptions/app_exceptions.dart';
 
-/// Result pattern for better error handling
-/// Instead of throwing exceptions, we return Result<T>
+
+
 sealed class Result<T> {
   const Result();
 }
 
-/// Success result with data
+
 class Success<T> extends Result<T> {
   final T data;
   const Success(this.data);
@@ -25,7 +25,7 @@ class Success<T> extends Result<T> {
   String toString() => 'Success(data: $data)';
 }
 
-/// Failure result with exception
+
 class Failure<T> extends Result<T> {
   final AppException exception;
   const Failure(this.exception);
@@ -44,15 +44,15 @@ class Failure<T> extends Result<T> {
   String toString() => 'Failure(exception: $exception)';
 }
 
-/// Extensions for easier result handling
+
 extension ResultExtensions<T> on Result<T> {
-  /// Check if result is success
+  
   bool get isSuccess => this is Success<T>;
 
-  /// Check if result is failure
+  
   bool get isFailure => this is Failure<T>;
 
-  /// Get data or null
+  
   T? get dataOrNull {
     return switch (this) {
       Success(data: final data) => data,
@@ -60,7 +60,7 @@ extension ResultExtensions<T> on Result<T> {
     };
   }
 
-  /// Get exception or null
+  
   AppException? get exceptionOrNull {
     return switch (this) {
       Success() => null,
@@ -68,7 +68,7 @@ extension ResultExtensions<T> on Result<T> {
     };
   }
 
-  /// Execute function based on result
+  
   R when<R>({
     required R Function(T data) success,
     required R Function(AppException exception) failure,
@@ -79,7 +79,7 @@ extension ResultExtensions<T> on Result<T> {
     };
   }
 
-  /// Execute function only on success
+  
   Result<R> map<R>(R Function(T data) transform) {
     return switch (this) {
       Success(data: final data) => Success(transform(data)),
@@ -87,7 +87,7 @@ extension ResultExtensions<T> on Result<T> {
     };
   }
 
-  /// Execute async function only on success
+  
   Future<Result<R>> mapAsync<R>(Future<R> Function(T data) transform) async {
     return switch (this) {
       Success(data: final data) => Success(await transform(data)),
@@ -95,7 +95,7 @@ extension ResultExtensions<T> on Result<T> {
     };
   }
 
-  /// Chain results
+  
   Result<R> flatMap<R>(Result<R> Function(T data) transform) {
     return switch (this) {
       Success(data: final data) => transform(data),
@@ -103,7 +103,7 @@ extension ResultExtensions<T> on Result<T> {
     };
   }
 
-  /// Get data or throw exception
+  
   T getOrThrow() {
     return switch (this) {
       Success(data: final data) => data,
@@ -111,7 +111,7 @@ extension ResultExtensions<T> on Result<T> {
     };
   }
 
-  /// Get data or default value
+  
   T getOrElse(T defaultValue) {
     return switch (this) {
       Success(data: final data) => data,
@@ -119,7 +119,7 @@ extension ResultExtensions<T> on Result<T> {
     };
   }
 
-  /// Get data or compute default value
+  
   T getOrElseCompute(T Function() defaultValue) {
     return switch (this) {
       Success(data: final data) => data,

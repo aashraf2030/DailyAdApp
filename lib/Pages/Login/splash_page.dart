@@ -20,7 +20,7 @@ class _SplashPageState extends State<SplashPage> {
     try {
       final authCubit = BlocProvider.of<AuthCubit>(context);
       
-      // Add timeout to prevent hanging on Splash
+      
       final isLoggedIn = await authCubit.isLoggedIn().timeout(
         const Duration(seconds: 10),
         onTimeout: () {
@@ -48,7 +48,7 @@ class _SplashPageState extends State<SplashPage> {
       }
     } catch (e) {
       print("🔴 [SPLASH] Error during initialization: $e");
-      // Fallback to login on any error
+      
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/login');
       }
@@ -74,7 +74,7 @@ class _SplashPageState extends State<SplashPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo Container with Decoration
+            
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
@@ -104,14 +104,14 @@ class _SplashPageState extends State<SplashPage> {
             ),
             const SizedBox(height: 48),
             
-            // Loading Indicator
+            
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               strokeWidth: 3,
             ),
             const SizedBox(height: 24),
             
-            // Loading Text
+            
             Text(
               "جاري التحضير... فضلاً انتظر قليلاً",
               style: TextStyle(

@@ -20,7 +20,7 @@ class OperationalCubit extends Cubit<OperationalState>{
     return prefs.getBool("guest") ?? false;
   }
 
-  /// Check if an ad belongs to the current user
+  
   bool isMyAd(String? adUserId) {
     if (isGuest() || adUserId == null) {
       return false;
@@ -95,15 +95,15 @@ class OperationalCubit extends Cubit<OperationalState>{
       return response == "Success";
   }
 
-  // ==========================================
-  // Ad Prevention Logic (Local 10 views / 3 hours)
-  // ==========================================
+  
+  
+  
 
-  /// Checks if the user can watch the ad based on local limits.
-  /// Returns:
-  /// 0 -> Allowed, Need to call API (First time in window)
-  /// 1 -> Allowed, DO NOT call API (Views 2-10)
-  /// 2 -> Blocked (Limit exceeded)
+  
+  
+  
+  
+  
   Future<int> checkAdViewAvailability(String adId) async {
     const String prefsKey = "ad_view_limits";
     final int now = DateTime.now().millisecondsSinceEpoch;
@@ -120,7 +120,7 @@ class OperationalCubit extends Cubit<OperationalState>{
       }
     }
 
-    // Get current ad data or initialize
+    
     Map<String, dynamic> adData = limitsMap[adId] ?? {
       "count": 0,
       "start_time": now
@@ -129,47 +129,47 @@ class OperationalCubit extends Cubit<OperationalState>{
     int count = adData["count"];
     int startTime = adData["start_time"];
 
-    // Check if 3 hours passed
+    
     if (now - startTime > oneHourMs) {
-      // Reset window
+      
       count = 1;
       startTime = now;
       
-      // Update data
+      
       adData["count"] = count;
       adData["start_time"] = startTime;
       limitsMap[adId] = adData;
       await prefs.setString(prefsKey, jsonEncode(limitsMap));
       
-      return 0; // New window start -> Call API
+      return 0; 
     } else {
-      // Within window
+      
       if (count < 10) {
-        // Increment count
+        
         count++;
         adData["count"] = count;
         limitsMap[adId] = adData;
         await prefs.setString(prefsKey, jsonEncode(limitsMap));
         
-        // If it was the first count (1), we returned 0 previously.
-        // If we are here, it means count is incremented.
-        // Wait, if it's the very first time ever (count was 0), we set count=1 and return 0.
-        // If count was 1, now becomes 2 -> return 1 (No API).
         
-        // Let's correct specific logic:
-        // If entry didn't exist -> count 0 -> set to 1 -> return 0. 
-        // If entry existed and reset -> count set to 1 -> return 0.
         
-        // If we just mutated adData above without checking if it was new:
-        // Let's re-structure slightly for clarity.
-        return 0; // Allow points for all valid views
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        return 0; 
       } else {
-        return 2; // Blocked
+        return 2; 
       }
     }
   }
 
-  /// Helper to handle the logic cleanly
+  
   Future<int> recordLocalView(String adId) async {
     const String prefsKey = "ad_view_limits";
     final int now = DateTime.now().millisecondsSinceEpoch;
@@ -185,12 +185,12 @@ class OperationalCubit extends Cubit<OperationalState>{
       }
     }
 
-    // Check existing
+    
     if (!limitsMap.containsKey(adId)) {
-      // First time viewing this ad
+      
       limitsMap[adId] = {"count": 1, "start_time": now};
       await prefs.setString(prefsKey, jsonEncode(limitsMap));
-      return 0; // Call API
+      return 0; 
     }
 
     Map<String, dynamic> adData = limitsMap[adId];
@@ -198,28 +198,28 @@ class OperationalCubit extends Cubit<OperationalState>{
     int startTime = adData["start_time"];
 
     if (now - startTime > oneHourMs) {
-      // Time expired, reset
+      
       limitsMap[adId] = {"count": 1, "start_time": now};
       await prefs.setString(prefsKey, jsonEncode(limitsMap));
-      return 0; // Call API (New Session)
+      return 0; 
     } else {
-      // Within time
+      
       if (count >= 10) {
-        return 2; // Blocked
+        return 2; 
       } else {
-        // Valid local view
+        
         adData["count"] = count + 1;
         limitsMap[adId] = adData;
         await prefs.setString(prefsKey, jsonEncode(limitsMap));
-        return 0; // Call API (Always award points if within limit)
+        return 0; 
       }
     }
   }
 
-  // ==========================================
-  // Ad Payment Flow
+  
+  
 
-  // ==========================================
+  
 
   Future<void> initializeAdPayment({
     required String name,
@@ -263,15 +263,15 @@ class OperationalCubit extends Cubit<OperationalState>{
             currency: data['currency'],
           ));
         } else if (paymentMethod == 'card') {
-          // Changed paymentId to orderId for consistency with store flow if needed, 
-          // but AdPaymentRequired expects orderId.
+          
+          
           emit(AdPaymentRequired(
             data['payment_url'],
             data['order_id'],
           ));
         } else {
-            // Cash or other methods that auto-complete (if supported in future)
-            // But currently backend handles card/apple_pay
+            
+            
              emit(AdPaymentSuccess("تم إنشاء الطلب بنجاح"));
         }
       } else {
@@ -294,9 +294,9 @@ class OperationalCubit extends Cubit<OperationalState>{
       
       if (response['status'] == 'Success') {
         final data = response['data'] ?? {};
-        // If pending, maybe we should poll or just show success?
-        // Typically Apple Pay is fast.
-        // Assuming success or verifyAdPayment can follow if pending.
+        
+        
+        
         
         emit(AdPaymentSuccess("تم الدفع وإنشاء الإعلان بنجاح"));
       } else {
@@ -308,9 +308,9 @@ class OperationalCubit extends Cubit<OperationalState>{
   }
 
   Future<void> verifyAdPayment(String paymentId) async {
-    // Poll loop or single check? 
-    // Usually webview waits for return url or we poll.
-    // Let's polling for a few times.
+    
+    
+    
     
     int retries = 0;
     const maxRetries = 10;
@@ -324,7 +324,7 @@ class OperationalCubit extends Cubit<OperationalState>{
            final data = response['data'];
            if (data['status'] == 'successful') {
              emit(AdPaymentSuccess("تم الدفع وإنشاء الإعلان بنجاح"));
-             return; // Initialized and verified
+             return; 
            } else if (data['status'] == 'failed') {
              emit(AdPaymentFailure("فشلت عملية الدفع"));
              return;
@@ -335,11 +335,11 @@ class OperationalCubit extends Cubit<OperationalState>{
       }
       retries++;
     }
-    // If loop finishes without success/fail
-    // Don't emit failure necessarily, maybe user is still paying?
-    // But usually webview is closed or user manually checks.
-    // Let's just stop polling.
-    // Let's just stop polling.
+    
+    
+    
+    
+    
   }
 
   Future<void> validateCoupon(String code, double amount) async {
@@ -349,7 +349,7 @@ class OperationalCubit extends Cubit<OperationalState>{
 
       if (response['status'] == 'Success') {
         final data = response['data'];
-         // Ensure we parse doubles correctly
+         
         double discount = double.tryParse(data['discount_amount'].toString()) ?? 0.0;
         double newTotal = double.tryParse(data['new_total'].toString()) ?? amount;
         

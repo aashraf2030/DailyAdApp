@@ -22,7 +22,7 @@ class AdminPanelState extends State<AdminPanel> {
   void initState() {
     super.initState();
     
-    // بعد 3 ثواني، إذا لم يتم تحميل البيانات
+    
     Future.delayed(Duration(seconds: 3), () {
       if (mounted && _isLoading && users.isEmpty) {
         setState(() {
@@ -199,7 +199,7 @@ class AdminPanelState extends State<AdminPanel> {
   }
 
   int _getTotalViews() {
-    // Views not available in leaderboard data
+    
     return 0;
   }
 
@@ -263,7 +263,7 @@ class AdminPanelState extends State<AdminPanel> {
                 children: [
                   Row(
                     children: [
-                      // Avatar
+                      
                       Container(
                         width: 60,
                         height: 60,
@@ -446,10 +446,10 @@ class AdminPanelState extends State<AdminPanel> {
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            // Header Row
+            
             Row(
               children: [
-                // Rank Badge
+                
                 Container(
                   width: 60,
                   height: 60,
@@ -486,7 +486,7 @@ class AdminPanelState extends State<AdminPanel> {
                 
                 SizedBox(width: 12),
                 
-                // User Info
+                
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,7 +514,7 @@ class AdminPanelState extends State<AdminPanel> {
                   ),
                 ),
                 
-                // Points Badge
+                
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
@@ -547,7 +547,7 @@ class AdminPanelState extends State<AdminPanel> {
             
             SizedBox(height: 12),
             
-            // Details Container
+            
             Container(
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -647,11 +647,11 @@ class AdminPanelState extends State<AdminPanel> {
   Color _getRankColor(int rank) {
     switch (rank) {
       case 1:
-        return Color(0xFFFFD700); // Gold
+        return Color(0xFFFFD700); 
       case 2:
-        return Color(0xFFC0C0C0); // Silver
+        return Color(0xFFC0C0C0); 
       case 3:
-        return Color(0xFFCD7F32); // Bronze
+        return Color(0xFFCD7F32); 
       default:
         return Color(0xFF2596FA);
     }

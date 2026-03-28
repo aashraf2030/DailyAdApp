@@ -54,7 +54,7 @@ class MessageModel {
   final String id;
   final String conversationId;
   final String senderId;
-  final String senderType; // 'user' or 'admin'
+  final String senderType; 
   final String senderName;
   final String content;
   final bool isRead;

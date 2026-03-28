@@ -6,31 +6,31 @@ import '../API/base.dart';
 class AdViewingHelper {
   static const int MAX_DAILY_VIEWS = 10;
   
-  /// Check if user can view ad today (daily limit not exceeded)
+  
   static Future<bool> canViewAd(int adId) async {
     final prefs = await SharedPreferences.getInstance();
     
     final today = DateTime.now();
     final todayStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
     
-    // Get last view date for this ad
+    
     final lastViewDate = prefs.getString('last_view_date_$adId');
     
-    // Get view count for this ad today
+    
     int viewCount = prefs.getInt('daily_view_count_$adId') ?? 0;
     
-    // If it's a new day, reset counter
+    
     if (lastViewDate != todayStr) {
       viewCount = 0;
       await prefs.setInt('daily_view_count_$adId', 0);
       await prefs.setString('last_view_date_$adId', todayStr);
     }
     
-    // Check if under limit
+    
     return viewCount < MAX_DAILY_VIEWS;
   }
   
-  /// Increment daily view count for ad
+  
   static Future<void> incrementViewCount(int adId) async {
     final prefs = await SharedPreferences.getInstance();
     
@@ -46,7 +46,7 @@ class AdViewingHelper {
     print("✅ [AD VIEW] Incremented view count for ad $adId: $viewCount/$MAX_DAILY_VIEWS");
   }
   
-  /// Get remaining views for ad today
+  
   static Future<int> getRemainingViews(int adId) async {
     final prefs = await SharedPreferences.getInstance();
     
@@ -56,7 +56,7 @@ class AdViewingHelper {
     final lastViewDate = prefs.getString('last_view_date_$adId');
     int viewCount = prefs.getInt('daily_view_count_$adId') ?? 0;
     
-    // If it's a new day, count is 0
+    
     if (lastViewDate != todayStr) {
       viewCount = 0;
     }
@@ -64,7 +64,7 @@ class AdViewingHelper {
     return MAX_DAILY_VIEWS - viewCount;
   }
   
-  /// Call backend API to record ad view and get points
+  
   static Future<Map<String, dynamic>> recordAdView(int adId, String userId, String session) async {
     try {
       print("📡 [API] Calling view_ad API for ad $adId...");

@@ -24,7 +24,7 @@ class DailyLimitDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Warning Icon
+            
             Container(
               width: 80,
               height: 80,
@@ -40,7 +40,7 @@ class DailyLimitDialog extends StatelessWidget {
             ),
             SizedBox(height: 20),
             
-            // Title
+            
             Text(
               'تنبيه',
               style: GoogleFonts.cairo(
@@ -52,7 +52,7 @@ class DailyLimitDialog extends StatelessWidget {
             ),
             SizedBox(height: 12),
             
-            // Message
+            
             Text(
               'لا يمكنك مشاهدة هذا الإعلان اليوم',
               style: GoogleFonts.cairo(
@@ -75,7 +75,7 @@ class DailyLimitDialog extends StatelessWidget {
             ),
             SizedBox(height: 8),
             
-            // Daily limit info
+            
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
@@ -105,7 +105,7 @@ class DailyLimitDialog extends StatelessWidget {
             ),
             SizedBox(height: 24),
             
-            // OK Button
+            
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

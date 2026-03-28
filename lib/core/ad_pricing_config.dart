@@ -3,7 +3,7 @@ class AdPricingConfig {
   static int minViews = 500;
   static String currency = "ر.س";
 
-  // Updates the configuration from backend response
+  
   static void updateConfig(Map<String, dynamic> data) {
     if (data.containsKey('price_per_view')) {
       pricePerView = double.tryParse(data['price_per_view'].toString()) ?? 0.025;

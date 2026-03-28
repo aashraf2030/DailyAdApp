@@ -351,7 +351,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image with Badge
+                
                 Stack(
                   children: [
                     Container(
@@ -386,7 +386,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                               child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
                             ),
                     ),
-                    // Category Icon Badge
+                    
                     Positioned(
                       top: 12,
                       right: 12,
@@ -410,7 +410,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                         ),
                       ),
                     ),
-                    // "جديد" Badge
+                    
                     Positioned(
                       top: 12,
                       left: 12,
@@ -440,14 +440,14 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                   ],
                 ),
                 
-                // Content
+                
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Ad Name
+                        
                         Text(
                           req.adName,
                           style: GoogleFonts.cairo(
@@ -461,7 +461,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                         ),
                         SizedBox(height: 8),
                         
-                        // User info
+                        
                         Row(
                           children: [
                             Icon(FontAwesomeIcons.user, size: 14, color: Colors.grey[600]),
@@ -482,7 +482,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                         ),
                         SizedBox(height: 6),
                         
-                        // Ad Type
+                        
                         Row(
                           children: [
                             Icon(FontAwesomeIcons.tag, size: 14, color: Colors.grey[600]),
@@ -499,7 +499,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                         ),
                         SizedBox(height: 6),
                         
-                        // Target views
+                        
                         Row(
                           children: [
                             Icon(FontAwesomeIcons.eye, size: 14, color: Colors.grey[600]),
@@ -518,7 +518,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                         
                         Spacer(),
                         
-                        // Action buttons
+                        
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -585,7 +585,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image with Badge
+                
                 Stack(
                   children: [
                     Container(
@@ -620,7 +620,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                               child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
                             ),
                     ),
-                    // Category Icon Badge
+                    
                     Positioned(
                       top: 12,
                       right: 12,
@@ -644,7 +644,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                         ),
                       ),
                     ),
-                    // "تجديد" Badge
+                    
                     Positioned(
                       top: 12,
                       left: 12,
@@ -674,7 +674,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                   ],
                 ),
                 
-                // Content
+                
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.all(12),
@@ -682,7 +682,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Ad Name
+                        
                         Text(
                           req.adName,
                           style: GoogleFonts.cairo(
@@ -696,12 +696,12 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                         ),
                         SizedBox(height: 8),
                         
-                        // User info
+                        
                         _buildInfoRow(FontAwesomeIcons.user, req.username),
                         _buildInfoRow(FontAwesomeIcons.phone, req.userPhone),
                         _buildInfoRow(FontAwesomeIcons.layerGroup, req.tier),
                         
-                        // Views
+                        
                         Row(
                           children: [
                             Icon(FontAwesomeIcons.eye, size: 12, color: Colors.grey[600]),
@@ -718,7 +718,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                         ),
                         SizedBox(height: 4),
                         
-                        // Progress bar
+                        
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
@@ -730,7 +730,7 @@ class AdminAdRequestPageState extends State<AdminAdRequestPage> with TickerProvi
                         ),
                         SizedBox(height: 12),
                         
-                        // Action buttons
+                        
                         Row(
                           children: [
                             Expanded(

@@ -29,7 +29,7 @@ class _AdPaymentWebViewPageState extends State<AdPaymentWebViewPage> {
   void initState() {
     super.initState();
     
-    // Start polling for payment status via OperationalCubit
+    
     context.read<OperationalCubit>().verifyAdPayment(widget.orderId.toString());
 
     controller = WebViewController()
@@ -38,7 +38,7 @@ class _AdPaymentWebViewPageState extends State<AdPaymentWebViewPage> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
-            // Update loading bar.
+            
           },
           onPageStarted: (String url) {},
           onPageFinished: (String url) {

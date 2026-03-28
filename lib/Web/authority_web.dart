@@ -7,7 +7,7 @@ class AuthorityWebServices {
 
   AuthorityWebServices(this.dio);
 
-  /// Handles Dio exceptions and converts them to meaningful responses
+  
   Map<String, dynamic> _handleError(Object error, StackTrace stackTrace) {
     if (error is DioException) {
       switch (error.type) {
@@ -48,13 +48,13 @@ class AuthorityWebServices {
 
     try
     {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.defaultReq, 
         data: fd,
       );
 
-      // التأكد من أن الـ response عبارة عن array
+      
       if (res.data is List) {
         return res.data;
       } else {
@@ -81,13 +81,13 @@ class AuthorityWebServices {
 
     try
     {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.renewReq, 
         data: fd,
       );
 
-      // التأكد من أن الـ response عبارة عن array
+      
       if (res.data is List) {
         return res.data;
       } else {
@@ -103,12 +103,12 @@ class AuthorityWebServices {
   {
     try
     {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.moneyReq,
       );
 
-      // التأكد من أن الـ response عبارة عن array
+      
       if (res.data is List) {
         return res.data;
       } else {
@@ -125,12 +125,12 @@ class AuthorityWebServices {
   {
     try
     {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.myReq,
       );
       
-      // التأكد من أن الـ response عبارة عن array
+      
       if (res.data is List) {
         return res.data;
       } else {
@@ -148,7 +148,7 @@ class AuthorityWebServices {
   {
     try
     {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.handleReq, 
         data: {"req": req, "state": state},
@@ -164,8 +164,8 @@ class AuthorityWebServices {
   {
     try
     {
-      // Token is automatically added by AuthInterceptor
-      // Use POST instead of DELETE because Laravel doesn't support body in DELETE
+      
+      
       final res = await dio.post(
         BackendAPI.deleteReq, 
         data: {"req": req},
@@ -182,7 +182,7 @@ class AuthorityWebServices {
   {
     try
     {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.pointExchange,
       );
@@ -197,13 +197,13 @@ class AuthorityWebServices {
   async
   {
     try{
-      // Token is automatically added by AuthInterceptor (if user is logged in)
-      // This endpoint supports optional authentication (guests can view leaderboard)
+      
+      
       final response = await dio.post(BackendAPI.leaderboard, data: {
         "id": user
       });
 
-      // التأكد من أن الـ response عبارة عن array
+      
       if (response.data is List) {
         return response.data;
       } else {

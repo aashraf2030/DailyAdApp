@@ -8,7 +8,7 @@ class AdsWebServices {
 
   AdsWebServices(this.dio);
 
-  /// Handles Dio exceptions and converts them to meaningful responses
+  
   Map<String, dynamic> _handleError(Object error, StackTrace stackTrace) {
     if (error is DioException) {
       switch (error.type) {
@@ -25,7 +25,7 @@ class AdsWebServices {
           if (statusCode != null && statusCode >= 500) {
             return {"status": AppConstants.statusError, "message": AppConstants.errorServer};
           }
-          // Handle validation errors (422)
+          
           if (statusCode == 422 && error.response?.data != null) {
             final errorData = error.response!.data;
             String errorMessage = "خطأ في التحقق من البيانات";
@@ -87,20 +87,20 @@ class AdsWebServices {
         "keywords": keywords,
       });
 
-      // Changed to POST because Laravel doesn't support multipart/form-data with PUT
-      // Token is automatically added by AuthInterceptor
+      
+      
       final response = await dio.post(
         BackendAPI.create_ad,
         data: imageObj,
         options: Options(
           validateStatus: (status) {
-            // Accept 200-299 and 422 (to read validation errors)
+            
             return status != null && (status >= 200 && status < 300) || status == 422;
           },
         ),
       );
       
-      // If validation error, throw DioException with response data
+      
       if (response.statusCode == 422) {
         throw DioException(
           requestOptions: response.requestOptions,
@@ -132,7 +132,7 @@ class AdsWebServices {
       
       final imageObj = FormData.fromMap({
         "file": file,
-        "session": session, // Keep in body for backward compatibility
+        "session": session, 
         "id": id,
         "name": name,
         "targetViews": targetViews,
@@ -142,8 +142,8 @@ class AdsWebServices {
         "keywords": keywords,
       });
 
-      // Add Authorization header for multipart requests
-      // Changed to POST because Laravel doesn't support multipart/form-data with PUT
+      
+      
       final response = await dio.post(
         BackendAPI.create_ad,
         data: imageObj,
@@ -152,13 +152,13 @@ class AdsWebServices {
             'Authorization': 'Bearer $session',
           },
           validateStatus: (status) {
-            // Accept 200-299 and 422 (to read validation errors)
+            
             return status != null && (status >= 200 && status < 300) || status == 422;
           },
         ),
       );
       
-      // If validation error, throw DioException with response data
+      
       if (response.statusCode == 422) {
         throw DioException(
           requestOptions: response.requestOptions,
@@ -204,20 +204,20 @@ class AdsWebServices {
       }
 
       final imageObj = FormData.fromMap(formData);
-      // Changed to POST because Laravel doesn't support multipart/form-data with PUT
-      // Token is automatically added by AuthInterceptor
+      
+      
       final response = await dio.post(
         BackendAPI.edit_ad,
         data: imageObj,
         options: Options(
           validateStatus: (status) {
-            // Accept 200-299 and 422 (to read validation errors)
+            
             return status != null && (status >= 200 && status < 300) || status == 422;
           },
         ),
       );
       
-      // If validation error, throw DioException with response data
+      
       if (response.statusCode == 422) {
         throw DioException(
           requestOptions: response.requestOptions,
@@ -233,7 +233,7 @@ class AdsWebServices {
 
   Future<List<dynamic>> getUserAds(String session, String id) async {
     try {
-      // Token is automatically added by AuthInterceptor
+      
       final response = await dio.post(
         BackendAPI.get_user_ad,
         data: {"id": id},
@@ -252,15 +252,15 @@ class AdsWebServices {
     String? adType,
   }) async {
     try {
-      // Token is automatically added by AuthInterceptor (if user is logged in)
-      // This endpoint supports optional authentication
+      
+      
       final Map<String, dynamic> requestData = {
         "id": id,
         "category": category,
         "full": full,
       };
       
-      // Add adType if provided (e.g., 'Dynamic' to fetch only Dynamic ads)
+      
       if (adType != null) {
         requestData["adType"] = adType;
       }
@@ -282,7 +282,7 @@ class AdsWebServices {
     String tier,
   ) async {
     try {
-      // Token is automatically added by AuthInterceptor
+      
       final response = await dio.post(
         BackendAPI.renew_ad,
         data: {"id": id, "ad": ad, "tier": tier},
@@ -295,7 +295,7 @@ class AdsWebServices {
 
   Future<dynamic> watchAd(String session, String id, String ad) async {
     try {
-      // Token is automatically added by AuthInterceptor
+      
       final response = await dio.post(
         BackendAPI.watch,
         data: {"id": id, "ad": ad},
@@ -326,7 +326,7 @@ class AdsWebServices {
       final formDataMap = {
         "file": file,
         "name": name,
-        "path": adLink, // 'path' in backend represents the URL/Link
+        "path": adLink, 
         "type": type,
         "targetViews": targetViews,
         "category": category,

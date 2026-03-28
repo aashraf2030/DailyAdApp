@@ -44,7 +44,7 @@ class _AdminProductPageState extends State<AdminProductPage> {
     );
     price = LoginTextbox(
       padding: 10, 
-      icon: FontAwesomeIcons.moneyBill1, // Changed icon
+      icon: FontAwesomeIcons.moneyBill1, 
       hint: "السعر (ريال سعودي)", 
       initialValue: widget.product != null ? widget.product['price'].toString() : null
     );
@@ -111,7 +111,7 @@ class _AdminProductPageState extends State<AdminProductPage> {
               price,
               SizedBox(height: 15),
               
-              // Image Picker UI
+              
               GestureDetector(
                 onTap: _pickImage,
                 child: Container(
@@ -178,7 +178,7 @@ class _AdminProductPageState extends State<AdminProductPage> {
                             name.data,
                             desc.data,
                             double.tryParse(price.data) ?? 0,
-                            _selectedImage, // Pass File or null
+                            _selectedImage, 
                             int.tryParse(stock.data) ?? 0,
                           );
                         } else {

@@ -23,13 +23,13 @@ class AuthorityCubit extends Cubit<AuthorityState> {
     try {
       List<UserRequest> res = [];
       
-      // Get Create requests (default_req)
+      
       final res1 = await repo.getDefaultReq(session, id, tier);
       
-      // Get Renew requests (renew_req) - now filtered by backend
+      
       final res2 = await repo.getRenewReq(session, id, tier);
 
-      // Combine and remove duplicates based on reqid
+      
       final Map<String, UserRequest> uniqueRequests = {};
       
       for (var req in res1) {

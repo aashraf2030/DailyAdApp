@@ -70,17 +70,17 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Header
+                          
                           _buildHeader(),
                           
                           SizedBox(height: 40),
                           
-                          // Reset Card
+                          
                           _buildResetCard(context),
                           
                           SizedBox(height: 30),
                           
-                          // Back Button
+                          
                           _buildBackButton(context),
                         ],
                       ),
@@ -315,7 +315,7 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
       return;
     }
 
-    // Show loading
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -358,11 +358,11 @@ class _PassResetRequestPageState extends State<PassResetRequestPage> with Single
     final cubit = BlocProvider.of<AuthCubit>(context);
     final res = await cubit.resetPass(email.data);
 
-    // Close loading
+    
     Navigator.of(context).pop();
 
     if (res) {
-      // Show success dialog
+      
       showDialog(
         context: context,
         builder: (_) {

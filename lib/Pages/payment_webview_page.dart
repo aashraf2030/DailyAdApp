@@ -28,21 +28,21 @@ class _PaymentWebviewPageState extends State<PaymentWebviewPage> {
   void initState() {
     super.initState();
     
-    // Start polling for payment status
+    
     context.read<StoreCubit>().verifyPayment(widget.orderId);
 
     if (kIsWeb) {
-      // On Web, launch URL in new tab
+      
       _launchPaymentUrl();
     } else {
-      // On Mobile/Desktop, use WebView
+      
       controller = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setBackgroundColor(const Color(0x00000000))
         ..setNavigationDelegate(
           NavigationDelegate(
             onProgress: (int progress) {
-              // Update loading bar.
+              
             },
             onPageStarted: (String url) {},
             onPageFinished: (String url) {
@@ -82,7 +82,7 @@ class _PaymentWebviewPageState extends State<PaymentWebviewPage> {
       listener: (context, state) {
         if (state is StorePaymentSuccess) {
           if (state.orderId == widget.orderId) {
-             Navigator.of(context).pop(true); // Return true for success
+             Navigator.of(context).pop(true); 
           }
         }
       },

@@ -27,7 +27,7 @@ class TextboxState extends State<LoginTextbox> {
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialValue ?? "");
-    widget.data = widget.initialValue ?? ""; // Initialize data
+    widget.data = widget.initialValue ?? ""; 
     _focusNode.addListener(() {
       setState(() {
         _isFocused = _focusNode.hasFocus;
@@ -71,7 +71,7 @@ class TextboxState extends State<LoginTextbox> {
           child: Row(
             textDirection: TextDirection.rtl,
             children: [
-              // Icon
+              
               Container(
                 padding: EdgeInsets.all(6),
                 decoration: BoxDecoration(
@@ -91,7 +91,7 @@ class TextboxState extends State<LoginTextbox> {
               
               SizedBox(width: 12),
               
-              // Text Field
+              
               Expanded(
                 child: TextField(
                   controller: _controller,
@@ -120,7 +120,7 @@ class TextboxState extends State<LoginTextbox> {
                 ),
               ),
               
-              // Password visibility toggle
+              
               if (widget.isPassword)
                 IconButton(
                   padding: EdgeInsets.all(8),

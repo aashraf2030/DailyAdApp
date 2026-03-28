@@ -15,12 +15,12 @@ class AdsRepo {
         type, targetViews,
         category, keywords);
 
-    // Check if response is a Map (error from _handleError) or Response object
+    
     if (response is Map) {
       return response['status'] ?? 'Error';
     }
     
-    // Response object from successful request
+    
     if (response.data != null && response.data is Map) {
       return response.data['status'] ?? 'Error';
     }
@@ -36,12 +36,12 @@ class AdsRepo {
         type, targetViews,
         category, keywords);
 
-    // Check if response is a Map (error from _handleError) or Response object
+    
     if (response is Map) {
       return response['status'] ?? 'Error';
     }
     
-    // Response object from successful request
+    
     if (response.data != null && response.data is Map) {
       return response.data['status'] ?? 'Error';
     }
@@ -56,12 +56,12 @@ class AdsRepo {
     final response = await web.editAd(session, id, ad, name, image, imName, path,
         type, targetViews, category, keywords);
 
-    // Check if response is a Map (error from _handleError) or Response object
+    
     if (response is Map) {
       return response['status'] ?? 'Error';
     }
     
-    // Response object from successful request
+    
     if (response.data != null && response.data is Map) {
       return response.data['status'] ?? 'Error';
     }
@@ -74,12 +74,12 @@ class AdsRepo {
     try {
       final response = await web.watchAd(session, id, ad);
       
-      // Check if response is a Map (error from _handleError) or Response object
+      
       if (response is Map) {
         return response['status'] ?? 'Error';
       }
       
-      // Response object from successful request
+      
       if (response.data != null && response.data is Map) {
         return response.data['status'] ?? 'Error';
       }

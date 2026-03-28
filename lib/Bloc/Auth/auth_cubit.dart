@@ -31,7 +31,7 @@ class AuthCubit extends Cubit<AuthState>{
 
   void exitGuestMode()
   {
-    // Only clear guest-related data, not saved accounts
+    
     prefs.remove("guest");
     prefs.remove("id");
     prefs.remove("session");
@@ -56,32 +56,32 @@ class AuthCubit extends Cubit<AuthState>{
       {
         prefs.setString("id", x.id ?? "");
         prefs.setString("session", x.session ?? "");
-        prefs.remove("guest");  // إزالة وضع الزائر عند تسجيل الدخول ✅
-        clearProfileCache();  // مسح الـ cache القديم
+        prefs.remove("guest");  
+        clearProfileCache();  
         
-        // Fetch and cache admin status immediately after login
+        
         await isAdmin(forceRefresh: true);
         
-        // Check for welcome bonus
+        
         result['welcome_bonus'] = x.welcomeBonus ?? false;
         result['bonus_points'] = x.bonusPoints ?? 0;
         
-        // Save account if remember me is enabled
+        
         if (rememberMe && accountManager != null && x.id != null) {
-          // Use a delayed approach to avoid blocking login
-          // Get user name from profile after session is saved
+          
+          
           Future.microtask(() async {
             try {
               String userName = user;
               try {
-                // Wait a bit to ensure session is saved
+                
                 await Future.delayed(Duration(milliseconds: 100));
                 final profile = await getProfile(forceRefresh: true);
                 if (profile.name.isNotEmpty && profile.name != "Invalid") {
                   userName = profile.name;
                 }
               } catch (e) {
-                // If profile fetch fails, use username
+                
                 print('Could not fetch profile for account name, using username: $e');
               }
               
@@ -104,7 +104,7 @@ class AuthCubit extends Cubit<AuthState>{
       {
         prefs.setString("id", x.id ?? "");
         prefs.setString("session", x.session ?? "");
-        prefs.remove("guest");  // إزالة وضع الزائر ✅
+        prefs.remove("guest");  
         clearProfileCache();
         emit(AuthError("Unverified"));
         result['success'] = false;
@@ -134,7 +134,7 @@ class AuthCubit extends Cubit<AuthState>{
     print("   ID: ${id != null ? 'exists' : 'null'}");
     print("   Session: ${session != null ? 'exists' : 'null'}");
 
-    // Fix: إذا كان المستخدم عنده ID و Session، امسح الـ guest flag
+    
     if (id != null && session != null && prefs.getBool("guest") == true) {
       print("⚠️ AuthCubit: Fixing guest mode flag for logged-in user");
       prefs.remove("guest");
@@ -162,7 +162,7 @@ class AuthCubit extends Cubit<AuthState>{
         print("📡 AuthCubit: Fetching profile from backend...");
         final response = await repo.profile(id, session);
         
-        // Validate response
+        
         if (response.name.isEmpty || response.name == "Invalid") {
           throw Exception("Invalid profile response");
         }
@@ -253,14 +253,14 @@ class AuthCubit extends Cubit<AuthState>{
     final id = prefs.getString("id");
     final session = prefs.getString("session");
 
-    // If no session, definitely not admin
+    
     if (id == null || session == null) {
       print("🟣 [AUTH] No session - not admin");
       prefs.setBool("isAdmin", false);
       return false;
     }
 
-    // Use cached value unless force refresh requested
+    
     if (!forceRefresh) {
       final cachedIsAdmin = prefs.getBool("isAdmin");
       if (cachedIsAdmin != null) {
@@ -272,17 +272,17 @@ class AuthCubit extends Cubit<AuthState>{
       print("🟣 [AUTH] Force refresh requested, fetching from backend...");
     }
 
-    // Fetch from backend only if no cache or force refresh
+    
     bool res = false;
     try {
-      // Get raw response to access isAdmin field directly
+      
       final rawResponse = await repo.isAdminRaw(id, session);
       
-      // Backend returns: {status: 'Valid'/'Invalid', isAdmin: true/false}
-      // Check the isAdmin field directly - this is the source of truth
+      
+      
       if (rawResponse.containsKey("isAdmin")) {
         final isAdminValue = rawResponse["isAdmin"];
-        // Handle both boolean and int (0/1) from backend
+        
         if (isAdminValue is bool) {
           res = isAdminValue;
         } else if (isAdminValue is int) {
@@ -290,20 +290,20 @@ class AuthCubit extends Cubit<AuthState>{
         } else if (isAdminValue is String) {
           res = isAdminValue.toLowerCase() == "true" || isAdminValue == "1";
         } else {
-          // Fallback: check status
+          
           res = rawResponse["status"] == "Valid";
         }
       } else {
-        // Fallback: if no isAdmin field, check status
+        
         res = rawResponse["status"] == "Valid";
       }
       
-      // Save admin status to SharedPreferences for quick access
+      
       prefs.setBool("isAdmin", res);
       print("🟣 [AUTH] Fetched and cached isAdmin: $res");
     } catch (e) {
       print("🔴 [AUTH] isAdmin Error: $e");
-      // On error, use cached value if available, otherwise assume not admin
+      
       final cachedIsAdmin = prefs.getBool("isAdmin") ?? false;
       prefs.setBool("isAdmin", cachedIsAdmin);
       res = cachedIsAdmin;
@@ -333,7 +333,7 @@ class AuthCubit extends Cubit<AuthState>{
 
       if (response.status == "Valid")
       {
-        // Clear session and id from SharedPreferences
+        
         prefs.remove("id");
         prefs.remove("session");
         prefs.remove("isAdmin");
@@ -365,7 +365,7 @@ class AuthCubit extends Cubit<AuthState>{
 
       if (response.status == "Success")
       {
-        // Clear session and id from SharedPreferences
+        
         prefs.remove("id");
         prefs.remove("session");
         prefs.remove("isAdmin");
@@ -383,11 +383,11 @@ class AuthCubit extends Cubit<AuthState>{
     final x = await repo.register(name, user, pass, email, phone);
 
     if (x.status == "Success") {
-      // حفظ الـ session و id في SharedPreferences ✅
+      
       if (x.id != null && x.session != null) {
         prefs.setString("id", x.id!);
         prefs.setString("session", x.session!);
-        prefs.remove("guest");  // إزالة وضع الزائر
+        prefs.remove("guest");  
         clearProfileCache();
       }
       emit(AuthDone());
@@ -529,7 +529,7 @@ class AuthCubit extends Cubit<AuthState>{
     {
       prefs.setString("id", x.id?? "");
       prefs.setString("session", x.session?? "");
-      prefs.remove("guest");  // Remove guest mode flag
+      prefs.remove("guest");  
       emit(AuthDone());
       return true;
     }
@@ -578,17 +578,17 @@ class AuthCubit extends Cubit<AuthState>{
     }
   }
 
-  // ============================================
-  // Saved Accounts Management
-  // ============================================
+  
+  
+  
 
-  /// Get all saved accounts
+  
   Future<List<SavedAccount>> getSavedAccounts() async {
     if (accountManager == null) return [];
     return await accountManager!.getSavedAccounts();
   }
 
-  /// Get current account as SavedAccount
+  
   Future<SavedAccount?> getCurrentAccount() async {
     final id = prefs.getString("id");
     if (id == null) return null;
@@ -601,19 +601,19 @@ class AuthCubit extends Cubit<AuthState>{
     }
   }
 
-  /// Switch to a saved account
+  
   Future<bool> switchAccount(SavedAccount account) async {
     if (accountManager == null) return false;
     
     try {
-      // Get password from secure storage
+      
       final password = await accountManager!.getPassword(account.userId);
       if (password == null) {
         emit(AuthError("كلمة المرور غير موجودة"));
         return false;
       }
 
-      // Login with saved credentials (don't save again, already saved)
+      
       final loginResult = await login(account.username, password, rememberMe: false);
       
       if (loginResult['success'] == true) {
@@ -630,7 +630,7 @@ class AuthCubit extends Cubit<AuthState>{
     }
   }
 
-  /// Remove a saved account
+  
   Future<bool> removeSavedAccount(SavedAccount account) async {
     if (accountManager == null) return false;
     
@@ -646,7 +646,7 @@ class AuthCubit extends Cubit<AuthState>{
     }
   }
 
-  /// Save current account for remember me
+  
   Future<bool> saveAccountForRememberMe(String username, String password) async {
     if (accountManager == null) return false;
     

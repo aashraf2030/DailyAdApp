@@ -13,7 +13,7 @@ class SavedAccount {
     required this.savedAt,
   });
 
-  // Convert to JSON for SharedPreferences
+  
   Map<String, dynamic> toJson() {
     return {
       'username': username,
@@ -24,7 +24,7 @@ class SavedAccount {
     };
   }
 
-  // Create from JSON
+  
   factory SavedAccount.fromJson(Map<String, dynamic> json) {
     return SavedAccount(
       username: json['username'] ?? '',
@@ -35,7 +35,7 @@ class SavedAccount {
     );
   }
 
-  // Get avatar letter from name
+  
   static String getAvatarLetter(String name) {
     if (name.isEmpty) return 'U';
     return name[0].toUpperCase();

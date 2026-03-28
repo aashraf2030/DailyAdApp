@@ -37,7 +37,7 @@ class CheckoutPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Info Card
+            
             Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -110,7 +110,7 @@ class CheckoutPage extends StatelessWidget {
               height: 55,
               child: ElevatedButton(
                 onPressed: () {
-                  // Validate inputs
+                  
                   if (receiver.data.isEmpty || address.data.isEmpty || phone.data.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -121,7 +121,7 @@ class CheckoutPage extends StatelessWidget {
                     return;
                   }
                   
-                  // Navigate to payment method page
+                  
                   Navigator.push(
                     context,
                     MaterialPageRoute(

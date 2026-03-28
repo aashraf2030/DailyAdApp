@@ -11,15 +11,15 @@ class AdPaymentLoading extends OperationalState {}
 
 class AdPaymentRequired extends OperationalState {
   final String paymentUrl;
-  final int orderId; // Could be String or int depending on backend, backend sends order_id but payment_id usually string
-  // Backend initialize response returns 'order_id' as int inside data.
+  final int orderId; 
+  
   
   AdPaymentRequired(this.paymentUrl, this.orderId);
 }
 
 class AdApplePayRequired extends OperationalState {
   final int orderId;
-  final String paymentId; // Corresponds to backend ad_payment id
+  final String paymentId; 
   final String clientSecret;
   final double amount;
   final String currency;
@@ -35,7 +35,7 @@ class AdApplePayRequired extends OperationalState {
 
 class AdPaymentSuccess extends OperationalState {
   final String message;
-  AdPaymentSuccess(this.message); // e.g., "تم إنشاء الإعلان بنجاح"
+  AdPaymentSuccess(this.message); 
 }
 
 class AdPaymentFailure extends OperationalState {
@@ -43,7 +43,7 @@ class AdPaymentFailure extends OperationalState {
   AdPaymentFailure(this.error);
 }
 
-// Coupon States
+
 class AdCouponLoading extends OperationalState {}
 
 class AdCouponValid extends OperationalState {

@@ -50,10 +50,10 @@ class AdCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // الصورة مع Badge نوع الإعلان
+
               Stack(
                 children: [
-                  // الصورة
+
                   Container(
                     width: double.infinity,
                     height: 120,
@@ -74,7 +74,7 @@ class AdCard extends StatelessWidget {
                     ),
                   ),
                   
-                  // Gradient Overlay للصورة
+
                   Container(
                     width: double.infinity,
                     height: 120,
@@ -90,7 +90,7 @@ class AdCard extends StatelessWidget {
                     ),
                   ),
                   
-                  // Badge نوع الإعلان (Fixed/Dynamic)
+
                   Positioned(
                     top: 10,
                     right: 10,
@@ -131,7 +131,7 @@ class AdCard extends StatelessWidget {
                     ),
                   ),
                   
-                  // أيقونة التعديل
+
                   Positioned(
                     top: 10,
                     left: 10,
@@ -158,7 +158,7 @@ class AdCard extends StatelessWidget {
                 ],
               ),
               
-              // محتوى الكارت
+
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -166,7 +166,6 @@ class AdCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // اسم الإعلان
                       Row(
                         textDirection: TextDirection.rtl,
                         children: [
@@ -206,7 +205,7 @@ class AdCard extends StatelessWidget {
                       
                       SizedBox(height: 6),
                       
-                      // المشاهدات والتقدم
+
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -247,7 +246,7 @@ class AdCard extends StatelessWidget {
                           
                           SizedBox(height: 4),
                           
-                          // Progress Bar
+
                           ClipRRect(
                             borderRadius: BorderRadius.circular(10),
                             child: LinearProgressIndicator(
@@ -266,7 +265,7 @@ class AdCard extends StatelessWidget {
                           
                           SizedBox(height: 3),
                           
-                          // النسبة المئوية
+
                           Text(
                             "${((ad.targetViews > 0 ? (ad.views / ad.targetViews) : 0) * 100).toStringAsFixed(0)}٪ مكتمل",
                             style: GoogleFonts.cairo(
@@ -279,7 +278,7 @@ class AdCard extends StatelessWidget {
                         ],
                       ),
                       
-                      // زر التجديد (يظهر فقط للإعلانات المنتهية)
+
                       if (isCompleted) ...[
                         SizedBox(height: 8),
                         _buildRenewButton(context),
@@ -369,7 +368,7 @@ class AdCard extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // أيقونة
+
                 Container(
                   width: 70,
                   height: 70,
@@ -386,7 +385,7 @@ class AdCard extends StatelessWidget {
                 
                 SizedBox(height: 20),
                 
-                // العنوان
+
                 Text(
                   "تجديد الإعلان",
                   style: GoogleFonts.cairo(
@@ -398,7 +397,7 @@ class AdCard extends StatelessWidget {
                 
                 SizedBox(height: 8),
                 
-                // الوصف
+
                 Text(
                   "حدد عدد المشاهدات الجديدة للإعلان",
                   style: GoogleFonts.cairo(
@@ -410,7 +409,7 @@ class AdCard extends StatelessWidget {
                 
                 SizedBox(height: 24),
                 
-                // حقل إدخال العدد
+
                 TextField(
                   controller: viewsController,
                   keyboardType: TextInputType.number,
@@ -458,7 +457,7 @@ class AdCard extends StatelessWidget {
                 
                 SizedBox(height: 8),
                 
-                // ملاحظة
+
                 Container(
                   padding: EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -494,10 +493,10 @@ class AdCard extends StatelessWidget {
                 
                 SizedBox(height: 24),
                 
-                // الأزرار
+
                 Row(
                   children: [
-                    // زر الإلغاء
+
                     Expanded(
                       child: Container(
                         height: 50,
@@ -527,7 +526,7 @@ class AdCard extends StatelessWidget {
                     
                     SizedBox(width: 12),
                     
-                    // زر التأكيد
+
                     Expanded(
                       child: Container(
                         height: 50,
@@ -597,7 +596,7 @@ class AdCard extends StatelessWidget {
   void _sendRenewRequest(BuildContext context, int views) async {
     final cubit = BlocProvider.of<OperationalCubit>(context);
     
-    // عرض loading
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -630,10 +629,10 @@ class AdCard extends StatelessWidget {
     
     final result = await cubit.renewAd(ad.id, views.toString());
     
-    Navigator.pop(context); // إغلاق loading
+
     
     if (result) {
-      // نجح
+
       showDialog(
         context: context,
         builder: (context) => Dialog(
@@ -723,7 +722,7 @@ class AdCard extends StatelessWidget {
         ),
       );
     } else {
-      // فشل
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

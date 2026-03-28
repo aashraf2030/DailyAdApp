@@ -40,7 +40,7 @@ class _ChatPageState extends State<ChatPage> {
     _messageController.clear();
     context.read<ChatCubit>().sendMessage(text);
     
-    // Scroll to bottom after sending
+    
     Future.delayed(const Duration(milliseconds: 300), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -98,36 +98,36 @@ class _ChatPageState extends State<ChatPage> {
           }
         },
         builder: (context, state) {
-          // Show skeleton only during initial loading
+          
           if (state is ChatLoadingState) {
             return _buildSkeletonLoader();
           }
 
-          // For error state, still show input field so user can retry
+          
           if (state is ChatErrorState) {
             return Column(
               children: [
                 Expanded(
                   child: _buildErrorState(state.message),
                 ),
-                // Always show input field so user can send messages
+                
                 _buildInputField(false),
               ],
             );
           }
 
-          // ChatMessagesLoadedState - always show input field
+          
           if (state is ChatMessagesLoadedState) {
             return Column(
               children: [
-                // Messages List
+                
                 Expanded(
                   child: state.messages.isEmpty
                       ? _buildEmptyState()
                       : RefreshIndicator(
                           onRefresh: () async {
-                            // تحديث الرسائل يدوياً عند السحب للأسفل
-                            // إعادة تحميل المحادثة بالكامل
+                            
+                            
                             await _chatCubit?.loadConversation();
                           },
                           child: ListView.builder(
@@ -146,13 +146,13 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                 ),
 
-                // Input Field - ALWAYS visible
+                
                 _buildInputField(state.sending),
               ],
             );
           }
 
-          // Default: show empty state with input field
+          
           return Column(
             children: [
               Expanded(

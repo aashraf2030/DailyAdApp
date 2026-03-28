@@ -45,20 +45,20 @@ class AdViewState extends State<AdView> {
       )
       ..loadRequest(Uri.parse(widget.ad.path));
 
-    // timer = Timer(Duration(seconds: 15), () {setState(() {
-    //   showBackButton = true;
-    // });});
-    //
-    // timer = Timer.periodic(Duration(seconds: 1), (x) {
-    //   setState(() {
-    //     counterText--;
-    //
-    //   });
-    //
-    //   if (counterText == 0)
-    //     x.cancel();
-    //
-    // });
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
   }
 
   @override
@@ -83,10 +83,10 @@ class AdViewState extends State<AdView> {
         body: Column(
           children: [
 
-            // Text("الوقت المتبقي هو $counterText",
-            //   style: GoogleFonts.cairo(color: Colors.blueAccent, fontSize: 20),
-            //   textDirection: TextDirection.rtl,
-            // ),
+            
+            
+            
+            
             Expanded(child:
             Stack(
 

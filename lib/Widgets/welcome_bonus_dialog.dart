@@ -60,8 +60,8 @@ class _WelcomeBonusDialogState extends State<WelcomeBonusDialog>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFFFFD700), // Gold
-                    Color(0xFFFFAA00), // Orange Gold
+                    Color(0xFFFFD700), 
+                    Color(0xFFFFAA00), 
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20),
@@ -76,9 +76,9 @@ class _WelcomeBonusDialogState extends State<WelcomeBonusDialog>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Animated coin icon
+                  
                   Transform.rotate(
-                    angle: _rotationAnimation.value * 6.28, // 360 degrees
+                    angle: _rotationAnimation.value * 6.28, 
                     child: Icon(
                       Icons.stars_rounded,
                       size: 80,
@@ -87,7 +87,7 @@ class _WelcomeBonusDialogState extends State<WelcomeBonusDialog>
                   ),
                   SizedBox(height: 20),
                   
-                  // Congratulations text
+                  
                   Text(
                     '🎉 مبروك! 🎉',
                     style: GoogleFonts.cairo(
@@ -99,7 +99,7 @@ class _WelcomeBonusDialogState extends State<WelcomeBonusDialog>
                   ),
                   SizedBox(height: 12),
                   
-                  // Bonus message
+                  
                   Text(
                     'لقد حصلت على',
                     style: GoogleFonts.cairo(
@@ -110,7 +110,7 @@ class _WelcomeBonusDialogState extends State<WelcomeBonusDialog>
                   ),
                   SizedBox(height: 8),
                   
-                  // Points display
+                  
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
@@ -159,7 +159,7 @@ class _WelcomeBonusDialogState extends State<WelcomeBonusDialog>
                   ),
                   SizedBox(height: 24),
                   
-                  // OK Button
+                  
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

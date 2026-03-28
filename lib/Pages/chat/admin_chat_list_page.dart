@@ -17,8 +17,8 @@ class _AdminChatListPageState extends State<AdminChatListPage> {
   @override
   void initState() {
     super.initState();
-    // تحميل المحادثات - إذا كانت موجودة في cache، ستظهر فوراً
-    // وإلا سيتم تحميلها من السيرفر
+    
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ChatCubit>().loadAdminConversations();
     });
@@ -290,7 +290,7 @@ class _AdminChatListPageState extends State<AdminChatListPage> {
               },
             ),
           ).then((_) {
-            // عند العودة من صفحة المحادثة، إعادة تحميل المحادثات مرة واحدة
+            
             chatCubit.loadAdminConversations(forceRefresh: true);
           });
         },
@@ -314,7 +314,7 @@ class _AdminChatListPageState extends State<AdminChatListPage> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Avatar with gradient
+                
                 Container(
                   width: 56,
                   height: 56,
@@ -341,7 +341,7 @@ class _AdminChatListPageState extends State<AdminChatListPage> {
                 ),
                 const SizedBox(width: 16),
                 
-                // Content
+                
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,7 +412,7 @@ class _AdminChatListPageState extends State<AdminChatListPage> {
                 ),
                 
                 const SizedBox(width: 8),
-                // Arrow
+                
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
@@ -465,7 +465,7 @@ class _AdminChatDetailPageState extends State<AdminChatDetailPage> {
   void initState() {
     super.initState();
     _chatCubit = context.read<ChatCubit>();
-    // Assign conversation to current admin if not assigned
+    
     if (widget.conversation.adminId == null) {
       _chatCubit?.assignConversation(widget.conversation.id);
     }
@@ -514,7 +514,7 @@ class _AdminChatDetailPageState extends State<AdminChatDetailPage> {
       backgroundColor: const Color(0xFFF5F7FA),
       body: Column(
         children: [
-          // User Info Header (instead of AppBar)
+          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
@@ -556,7 +556,7 @@ class _AdminChatDetailPageState extends State<AdminChatDetailPage> {
               ],
             ),
           ),
-          // Body
+          
           Expanded(
             child: BlocConsumer<ChatCubit, ChatState>(
               listener: (context, state) {

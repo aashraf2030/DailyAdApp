@@ -77,27 +77,27 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         children: [
                           SizedBox(height: 10),
                           
-                          // Logo & Welcome Section
+                          
                           _buildHeader(),
                           
                           SizedBox(height: 20),
                           
-                          // Login Card
+                          
                           _buildLoginCard(context),
                           
                           SizedBox(height: 15),
                           
-                          // Guest Login Button
+                          
                           _buildGuestButton(context),
                           
                           SizedBox(height: 10),
                           
-                          // Forgot Password
+                          
                           _buildForgotPassword(context),
                           
                           SizedBox(height: 15),
                           
-                          // Register Button
+                          
                           _buildRegisterButton(context),
                           
                           SizedBox(height: 10),
@@ -116,7 +116,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   Widget _buildHeader() {
     return Column(
       children: [
-        // Logo Container with gradient and shadow
+        
         Container(
           width: 70,
           height: 70,
@@ -147,7 +147,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         
         SizedBox(height: 16),
         
-        // Welcome Text
+        
         Text(
           "مرحباً بك",
           style: GoogleFonts.cairo(
@@ -195,7 +195,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            // Title
+            
             Text(
               "تسجيل الدخول",
               style: GoogleFonts.cairo(
@@ -207,22 +207,22 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             
             SizedBox(height: 20),
             
-            // Username Field
+            
             user,
             
             SizedBox(height: 10),
             
-            // Password Field
+            
             pass,
             
             SizedBox(height: 12),
             
-            // Remember Me Checkbox
+            
             _buildRememberMeCheckbox(),
             
             SizedBox(height: 20),
             
-            // Login Button
+            
             Container(
               width: double.infinity,
               height: 48,
@@ -486,7 +486,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   void tryLogin(context) async {
   final cubit = BlocProvider.of<AuthCubit>(context);
 
-  // Show loading indicator
+  
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -508,14 +508,14 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
   final loginResult = await cubit.login(user.data, pass.data, rememberMe: _rememberMe);
 
-  // Close loading
+  
   Navigator.of(context).pop();
 
-  // Check if login was successful
+  
   if (loginResult['success'] == true) {
-    // Check if user received welcome bonus
+    
     if (loginResult['welcome_bonus'] == true && loginResult['bonus_points'] > 0) {
-      // Show welcome bonus dialog
+      
       await showDialog(
         context: context,
         barrierDismissible: false,
@@ -533,24 +533,24 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       Navigator.pushReplacementNamed(context, "/verify");
     }
   } else {
-      // Check if account is unverified
+      
       if (cubit.state is AuthError) {
         final errorState = cubit.state as AuthError;
         
         if (errorState.error == "Unverified") {
-          // حساب غير مؤكد - توجيه لصفحة التحقق
+          
           Navigator.pushReplacementNamed(context, "/verify");
           return;
         }
       }
       
-      // Get error message from cubit state
+      
       String errorMessage = "اسم المستخدم أو كلمة المرور غير صحيحة\nبرجاء المحاولة مرة أخرى";
       
       if (cubit.state is AuthError) {
         final errorState = cubit.state as AuthError;
         
-        // Translate backend error messages to Arabic
+        
         if (errorState.error == "Account has been deleted") {
           errorMessage = "هذا الحساب تم حذفه\nبرجاء التواصل مع الإدارة";
         } else if (errorState.error.isNotEmpty) {
@@ -558,7 +558,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         }
       }
       
-      // Show modern error dialog
+      
       showDialog(
         context: context,
         builder: (_) {
@@ -579,7 +579,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Error Icon with animation
+                  
                   Container(
                     width: 80,
                     height: 80,
@@ -596,7 +596,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   
                   SizedBox(height: 20),
                   
-                  // Error Title
+                  
                   Text(
                     "خطأ في تسجيل الدخول",
                     style: GoogleFonts.cairo(
@@ -609,7 +609,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   
                   SizedBox(height: 12),
                   
-                  // Error Message (Dynamic)
+                  
                   Text(
                     errorMessage,
                     style: GoogleFonts.cairo(
@@ -623,7 +623,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   
                   SizedBox(height: 30),
                   
-                  // Try Again Button
+                  
                   Container(
                     width: double.infinity,
                     height: 50,

@@ -26,7 +26,7 @@ class StoreCubit extends Cubit<StoreState> {
   }
 
   void addToCart(dynamic product, int quantity) {
-    // Check if product already in cart
+    
     int index = cart.indexWhere((item) => item['id'] == product['id']);
     
     if (index != -1) {
@@ -73,8 +73,8 @@ class StoreCubit extends Cubit<StoreState> {
     required String address,
     required String phone,
     required String receiverName,
-    required String paymentMethod, // 'cash', 'card', 'apple_pay', or 'google_pay'
-    Map<String, dynamic>? paymentToken, // optional for digital payments
+    required String paymentMethod, 
+    Map<String, dynamic>? paymentToken, 
   }) async {
     emit(StoreLoading());
     try {
@@ -92,12 +92,12 @@ class StoreCubit extends Cubit<StoreState> {
         'payment_method': paymentMethod,
       };
 
-      // Add payment token if available (though usually handled by backend for web/iframe)
+      
       if (paymentToken != null) {
         orderData['payment_token'] = jsonEncode(paymentToken);
       }
       
-      // Determine platform
+      
       if (defaultTargetPlatform == TargetPlatform.iOS) {
         orderData['platform'] = 'ios';
       } else if (defaultTargetPlatform == TargetPlatform.android) {
@@ -111,7 +111,7 @@ class StoreCubit extends Cubit<StoreState> {
       if (response['status'] == 'Success') {
         final data = response['data'] ?? {};
         
-        // Helper to extract value from data or root response
+        
         dynamic getValue(String key) {
           if (data is Map && data.containsKey(key)) return data[key];
           if (response.containsKey(key)) return response[key];
@@ -120,7 +120,7 @@ class StoreCubit extends Cubit<StoreState> {
 
         final int orderId = int.tryParse(getValue('order_id').toString()) ?? 0;
         
-        // Handle different payment methods
+        
         if (paymentMethod == 'cash') {
           cart.clear();
           emit(StoreOrderSuccess(response));
@@ -157,7 +157,7 @@ class StoreCubit extends Cubit<StoreState> {
            }
         }
 
-        // Fallback for success without specific payment flow
+        
         cart.clear();
         emit(StoreOrderSuccess(response));
         return true;
@@ -172,17 +172,17 @@ class StoreCubit extends Cubit<StoreState> {
     }
   }
 
-  // Poll for payment status
+  
   void verifyPayment(int orderId) async {
-    // Don't emit loading here to avoid disrupting the UI if the user is looking at something
-    // Or emit a subtle loading state if needed.
-    // For now, let's just check silently and emit success if done.
+    
+    
+    
     
     int retries = 0;
     const int maxRetries = 10;
     
     while (retries < maxRetries) {
-      await Future.delayed(Duration(seconds: 3)); // Poll every 3 seconds
+      await Future.delayed(Duration(seconds: 3)); 
       
       try {
         final response = await repo.checkOrderStatus(orderId);
@@ -198,7 +198,7 @@ class StoreCubit extends Cubit<StoreState> {
              emit(StoreOrderError("Payment was cancelled or failed."));
              return;
           }
-           // if pending_payment, continue polling
+           
         }
       } catch (e) {
         print("Polling error: $e");
@@ -206,8 +206,8 @@ class StoreCubit extends Cubit<StoreState> {
       retries++;
     }
     
-    // If we reach here, we timed out or stopped polling
-    // Don't necessarily emit error, user might verify manually later
+    
+    
   }
 
   Future<bool> addProduct(String name, String? desc, double price, dynamic imageFile, int stock) async {
@@ -233,7 +233,7 @@ class StoreCubit extends Cubit<StoreState> {
       
       final success = await repo.addProduct(formData);
       if (success) {
-        getProducts(); // Refresh list
+        getProducts(); 
         return true;
       } else {
         emit(StoreError("Failed to add product"));
@@ -269,7 +269,7 @@ class StoreCubit extends Cubit<StoreState> {
       
       final success = await repo.editProduct(formData);
       if (success) {
-        getProducts(); // Refresh list
+        getProducts(); 
         return true;
       } else {
         emit(StoreError("Failed to edit product"));
@@ -286,7 +286,7 @@ class StoreCubit extends Cubit<StoreState> {
     try {
       final success = await repo.deleteProduct(id);
       if (success) {
-        getProducts(); // Refresh list
+        getProducts(); 
         return true;
       } else {
         emit(StoreError("Failed to delete product"));

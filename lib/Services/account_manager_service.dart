@@ -12,7 +12,7 @@ class AccountManagerService {
 
   AccountManagerService(this.prefs, this.secureStorage);
 
-  /// Save an account with encrypted password
+  
   Future<bool> saveAccount({
     required String username,
     required String password,
@@ -20,16 +20,16 @@ class AccountManagerService {
     required String userId,
   }) async {
     try {
-      // Get existing accounts
+      
       final accounts = await getSavedAccounts();
       
-      // Check if account already exists
+      
       if (accounts.any((acc) => acc.userId == userId)) {
-        // Update existing account
+        
         await removeAccount(userId);
       }
 
-      // Create new account model
+      
       final account = SavedAccount(
         username: username,
         name: name,
@@ -38,14 +38,14 @@ class AccountManagerService {
         savedAt: DateTime.now(),
       );
 
-      // Add to list
+      
       accounts.add(account);
 
-      // Save accounts list to SharedPreferences
+      
       final accountsJson = accounts.map((acc) => acc.toJson()).toList();
       await prefs.setString(_savedAccountsKey, jsonEncode(accountsJson));
 
-      // Save password securely
+      
       await secureStorage.write(
         key: '$_passwordPrefix$userId',
         value: password,
@@ -58,7 +58,7 @@ class AccountManagerService {
     }
   }
 
-  /// Get all saved accounts
+  
   Future<List<SavedAccount>> getSavedAccounts() async {
     try {
       final accountsJson = prefs.getString(_savedAccountsKey);
@@ -76,7 +76,7 @@ class AccountManagerService {
     }
   }
 
-  /// Get password for a specific account
+  
   Future<String?> getPassword(String userId) async {
     try {
       return await secureStorage.read(key: '$_passwordPrefix$userId');
@@ -86,20 +86,20 @@ class AccountManagerService {
     }
   }
 
-  /// Remove an account
+  
   Future<bool> removeAccount(String userId) async {
     try {
-      // Get existing accounts
+      
       final accounts = await getSavedAccounts();
       
-      // Remove account from list
+      
       accounts.removeWhere((acc) => acc.userId == userId);
 
-      // Save updated list
+      
       final accountsJson = accounts.map((acc) => acc.toJson()).toList();
       await prefs.setString(_savedAccountsKey, jsonEncode(accountsJson));
 
-      // Remove password from secure storage
+      
       await secureStorage.delete(key: '$_passwordPrefix$userId');
 
       return true;
@@ -109,23 +109,23 @@ class AccountManagerService {
     }
   }
 
-  /// Check if an account is saved
+  
   Future<bool> isAccountSaved(String userId) async {
     final accounts = await getSavedAccounts();
     return accounts.any((acc) => acc.userId == userId);
   }
 
-  /// Clear all saved accounts
+  
   Future<bool> clearAllAccounts() async {
     try {
       final accounts = await getSavedAccounts();
       
-      // Delete all passwords
+      
       for (final account in accounts) {
         await secureStorage.delete(key: '$_passwordPrefix${account.userId}');
       }
 
-      // Clear accounts list
+      
       await prefs.remove(_savedAccountsKey);
       return true;
     } catch (e) {

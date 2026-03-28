@@ -1,4 +1,4 @@
-// import 'dart:io'; // Removed for Web compatibility
+
 import 'package:flutter/foundation.dart';
 
 import 'package:ads_app/API/base.dart';
@@ -36,7 +36,7 @@ class PaymentMethodPage extends StatefulWidget {
 }
 
 class _PaymentMethodPageState extends State<PaymentMethodPage> {
-  String selectedPaymentMethod = 'cash'; // Default to cash
+  String selectedPaymentMethod = 'cash'; 
   late Future<PaymentConfiguration> _applePayConfigFuture;
   bool _applePayAvailable = false;
   
@@ -53,7 +53,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
   }
 
   Future<void> _checkApplePayAvailability() async {
-    // ALWAYS SHOW FOR WEB PREVIEW - DO NOT DEPLOY THIS TO PRODUCTION
+    
     if (mounted) setState(() => _applePayAvailable = true);
   }
 
@@ -118,7 +118,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
       body: BlocListener<StoreCubit, StoreState>(
         listener: (context, state) {
           if (state is StoreOrderSuccess) {
-            // Show success dialog
+            
             showDialog(
               context: context,
               barrierDismissible: false,
@@ -183,7 +183,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               ),
             );
           } else if (state is StorePaymentRequired) {
-            // Navigate to Webview
+            
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -197,7 +197,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               ),
             ).then((success) {
               if (success == true) {
-                // Show success dialog
+                
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -237,7 +237,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                                 final authCubit = context.read<AuthCubit>();
                                 final nav = Navigator.of(context);
 
-                                // Direct navigation to Store, clearing all previous routes
+                                
                                 nav.pushAndRemoveUntil(
                                   MaterialPageRoute(
                                     builder: (_) => MultiBlocProvider(
@@ -251,7 +251,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                                       child: StorePage(),
                                     ),
                                   ),
-                                  (route) => false, // Remove all previous routes
+                                  (route) => false, 
                                 );
                               },
                               style: ElevatedButton.styleFrom(
@@ -274,8 +274,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               }
             });
           } else if (state is StoreApplePayRequired) {
-            // Payment initiated successfully, treat as success for now
-            // or navigate to a status page if needed.
+            
+            
             showDialog(
               context: context,
               barrierDismissible: false,
@@ -337,12 +337,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // Order Summary Section
+              
               _buildOrderSummary(context),
               
               SizedBox(height: 20),
               
-              // Payment Methods Section
+              
               Expanded(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(horizontal: 24),
@@ -359,7 +359,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       ),
                       SizedBox(height: 16),
                       
-                      // Cash Payment Option
+                      
                       PaymentMethodCard(
                         icon: FontAwesomeIcons.moneyBillWave,
                         title: "الدفع نقداً",
@@ -375,7 +375,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       
                       SizedBox(height: 16),
                       
-                      // Card/Visa Payment (All Platforms)
+                      
                       PaymentMethodCard(
                         icon: FontAwesomeIcons.creditCard,
                         title: "بطاقة ائتمان / مدى",
@@ -391,7 +391,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       
                       SizedBox(height: 16),
                       
-                      // Apple Pay (iOS only, device must support it)
+                      
                       if (_applePayAvailable) ...[
                         SizedBox(height: 24),
                         _buildDividerWithOr(),
@@ -454,7 +454,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 ),
               ),
               
-              // Confirm/Payment Button Area
+              
               _buildActionArea(context),
             ],
           ),
@@ -583,18 +583,18 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           return Center(child: CircularProgressIndicator());
         }
         
-        // Apple Pay Button is now direct action above the confirm area
+        
         if (selectedPaymentMethod == 'apple_pay') {
-           return const SizedBox.shrink(); // Hide if somehow selected
+           return const SizedBox.shrink(); 
         } 
-        // Card Payment Button
+        
         else if (selectedPaymentMethod == 'card') {
           return SizedBox(
             width: double.infinity,
             height: 55,
             child: ElevatedButton(
               onPressed: () {
-                // Place order with card payment
+                
                 context.read<StoreCubit>().placeOrder(
                   receiverName: widget.receiverName,
                   address: widget.address,
@@ -627,7 +627,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             ),
           );
         }
-        // Cash Payment Button
+        
         else {
           return SizedBox(
             width: double.infinity,

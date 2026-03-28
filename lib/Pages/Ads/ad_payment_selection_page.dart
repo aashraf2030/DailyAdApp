@@ -38,15 +38,15 @@ class AdPaymentSelectionPage extends StatefulWidget {
 }
 
 class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
-  int _selectedMethod = 0; // 0: None, 1: Cash, 2: Card, 3: Apple Pay
+  int _selectedMethod = 0; 
   
-  // Coupon State
+  
   final TextEditingController _couponController = TextEditingController();
   String? _appliedCouponCode;
   double? _discountAmount;
-  double? _finalPrice; // If null, use original price
+  double? _finalPrice; 
 
-  // Apple Pay State
+  
   late Future<PaymentConfiguration> _paymentConfigFuture;
   String? _pendingApplePayToken;
   bool _applePayAvailable = false;
@@ -59,7 +59,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
   }
 
   Future<void> _checkApplePayAvailability() async {
-    // ALWAYS SHOW FOR WEB PREVIEW - DO NOT DEPLOY THIS TO PRODUCTION
+    
     if (mounted) {
       setState(() {
         _applePayAvailable = true;
@@ -69,7 +69,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate price dynamically
+    
     double originalPrice = AdPricingConfig.calculatePrice(widget.targetViews);
     double totalPrice = _finalPrice ?? originalPrice;
 
@@ -109,8 +109,8 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
               builder: (context) => Center(child: CircularProgressIndicator()),
             );
           } else if (state is AdPaymentSuccess) {
-            Navigator.popUntil(context, (route) => route.isFirst); // Clear dialogs
-            // Show Success Dialog
+            Navigator.popUntil(context, (route) => route.isFirst); 
+            
              showDialog(
               context: context,
               barrierDismissible: false,
@@ -127,9 +127,9 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                       SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.pop(context); // Close dialog
-                           Navigator.pop(context); // Close Payment Page
-                           Navigator.pop(context); // Close Create Ad Page (handled by navigation stack usually)
+                          Navigator.pop(context); 
+                           Navigator.pop(context); 
+                           Navigator.pop(context); 
                            Navigator.pushReplacementNamed(context, "/home");
                         },
                         child: Text("حسناً"),
@@ -140,8 +140,8 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
               ),
             );
           } else if (state is AdPaymentRequired) {
-            Navigator.pop(context); // Close loading
-            // Navigate to WebView
+            Navigator.pop(context); 
+            
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -151,14 +151,14 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                     url: state.paymentUrl,
                     orderId: state.orderId,
                     onSuccess: () {
-                     // Payment Success from webview
-                     Navigator.pop(context); // Close webview
-                     // Verification is handled inside page or here?
-                     // Verify again just in case or trust the callback?
-                     // AdPaymentWebViewPage calls onSuccess when verifyAdPayment emits Success.
-                     // So we don't need to do anything here except maybe nothing because the listener above (AdPaymentSuccess) will fire globally?
-                     // Yes, OperationalCubit is global (or scoped above). AdPaymentWebViewPage uses the SAME cubit instance.
-                     // So when verifyAdPayment emits AdPaymentSuccess, THIS listener will catch it too!
+                     
+                     Navigator.pop(context); 
+                     
+                     
+                     
+                     
+                     
+                     
                     },
                     onFailure: () {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("فشل الدفع")));
@@ -169,15 +169,15 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
               ),
             );
           } else if (state is AdApplePayRequired) {
-             Navigator.pop(context); // Close loading
+             Navigator.pop(context); 
              
              if (_pendingApplePayToken != null) {
-                // Token already captured from Native Button
+                
                 final cubit = BlocProvider.of<OperationalCubit>(context);
                 cubit.confirmAdApplePay(state.paymentId, _pendingApplePayToken!);
-                _pendingApplePayToken = null; // Clear token
+                _pendingApplePayToken = null; 
              } else {
-                // Fallback: Trigger Apple Pay Sheet manually (if for some reason native button wasn't used)
+                
                 try {
                   final config = await PaymentConfiguration.fromAsset('payment_configs/apple_pay_config.json');
                   final payClient = Pay({PayProvider.apple_pay: config});
@@ -212,15 +212,15 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              }
 
           } else if (state is AdPaymentFailure) {
-            Navigator.pop(context); // Close loading
+            Navigator.pop(context); 
             _showErrorDialog(context, state.error);
           } else if (state is DoneOperational) {
-             // For Cash flow (old flow)
+             
              Navigator.popUntil(context, (route) => route.isFirst);
              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("تم إنشاء الإعلان بنجاح")));
              Navigator.pushReplacementNamed(context, "/home");
 
-          // Coupon Listeners
+          
           } else if (state is AdCouponLoading) {
             showDialog(
               context: context,
@@ -228,7 +228,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
               builder: (ctx) => Center(child: CircularProgressIndicator()),
             );
           } else if (state is AdCouponValid) {
-             Navigator.pop(context); // Close loading
+             Navigator.pop(context); 
              setState(() {
                _appliedCouponCode = state.code;
                _discountAmount = state.discountAmount;
@@ -236,7 +236,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              });
              ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.green, content: Text("تم تفعيل الكود بنجاح")));
           } else if (state is AdCouponInvalid) {
-             Navigator.pop(context); // Close loading
+             Navigator.pop(context); 
              ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(state.error)));
           }
         },
@@ -246,12 +246,12 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Summary Card
+                
                 _buildSummaryCard(originalPrice),
                 
                 SizedBox(height: 24),
                 
-                // Coupon Code Section
+                
                 _buildCouponSection(originalPrice),
                 
                 SizedBox(height: 24),
@@ -268,7 +268,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                 
                 SizedBox(height: 12),
                 
-                // Payment Methods
+                
                 _buildPaymentOption(
                   index: 1,
                   title: "دفع نقدي (عند التفعيل)",
@@ -330,11 +330,11 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                           height: 56,
                           cornerRadius: 16,
                           onPaymentResult: (result) {
-                            // 1. Capture Token
+                            
                             setState(() {
                               _pendingApplePayToken = jsonEncode(result);
                             });
-                            // 2. Start Backend Flow (Initialize)
+                            
                             _submitApplePay(totalPrice); 
                           },
                           loadingIndicator: const Center(child: CircularProgressIndicator()),
@@ -355,7 +355,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                 
                 SizedBox(height: 40),
                 
-                // Pay Button
+                
                 if (_selectedMethod != 0 && _selectedMethod != 3)
                   Container(
                     width: double.infinity,
@@ -534,7 +534,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
              Spacer(),
 
              if (isApplePay) ...[
-                // Text Column
+                
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -558,7 +558,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
                 
                 SizedBox(width: 12),
                 
-                // Apple Pay Icon (replaces blue icon)
+                
                 SizedBox(
                   height: 32,
                   child: (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
@@ -731,18 +731,18 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
   }
 
   void _submitPayment(double currentTotal) {
-    // We don't really use currentTotal here because we use state variables, but good for logs
+    
     final cubit = BlocProvider.of<OperationalCubit>(context);
     
     if (_selectedMethod == 1) {
-      // Cash - Use Old Method
+      
       String adType = "Dynamic";
       if (widget.type == "1") {
         adType = "Fixed";
       } else if (widget.type == "2") {
         adType = "Premium";
       } else {
-         adType = widget.type; // Passthrough if already string
+         adType = widget.type; 
       }
       
       cubit.createNewAd(
@@ -756,7 +756,7 @@ class _AdPaymentSelectionPageState extends State<AdPaymentSelectionPage> {
         widget.keywords,
       );
     } else if (_selectedMethod == 2) {
-      // Card
+      
       String platform = "web";
       if (!kIsWeb) {
          if (defaultTargetPlatform == TargetPlatform.iOS) platform = "ios";

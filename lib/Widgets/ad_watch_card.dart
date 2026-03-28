@@ -69,7 +69,7 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image Section
+              
               Stack(
                 children: [
                   Container(
@@ -100,7 +100,7 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
                     ),
                   ),
                   
-                  // Gradient Overlay
+                  
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
@@ -118,7 +118,7 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
                     ),
                   ),
                   
-                  // Play Icon Badge (Glassmorphism)
+                  
                   Positioned(
                     top: 12,
                     left: 12,
@@ -140,7 +140,7 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
                     ),
                   ),
 
-                  // Views Badge
+                  
                   Positioned(
                     top: 12,
                     right: 12,
@@ -172,7 +172,7 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
                     ),
                   ),
                   
-                  // Title overlay on image
+                  
                   Positioned(
                     bottom: 12,
                     right: 12,
@@ -200,13 +200,13 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
                 ],
               ),
               
-              // Action Section
+              
               Padding(
                 padding: EdgeInsets.all(12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Watch Button
+                    
                     Expanded(
                       child: Container(
                         padding: EdgeInsets.symmetric(vertical: 8),
@@ -239,54 +239,45 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
   Future<void> show(context) async {
     final cubit = BlocProvider.of<OperationalCubit>(context);
     
-    // فحص 1: إذا كان المستخدم في وضع الزائر - منع الضغط على الإعلانات
+    
     if (cubit.isGuest()) {
-      if (context.mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text(
-                "تنبيه",
-                style: GoogleFonts.cairo(
-                  color: Color(0xFF2596FA),
-                  fontWeight: FontWeight.bold,
+      final url = widget.ad.path;
+      try {
+        final Uri uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'عذراً، لا يمكن فتح هذا الرابط',
+                  textDirection: TextDirection.rtl,
+                  style: GoogleFonts.cairo(),
                 ),
+                backgroundColor: Colors.red,
               ),
-              content: Text(
-                "يجب تسجيل الدخول لمشاهدة الإعلانات",
-                style: GoogleFonts.cairo(
-                  color: Color(0xFF2C3E50),
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              backgroundColor: Colors.white,
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    "حسناً",
-                    style: GoogleFonts.cairo(
-                      color: Color(0xFF2596FA),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
             );
-          },
-        );
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'خطأ في فتح الرابط',
+                textDirection: TextDirection.rtl,
+                style: GoogleFonts.cairo(),
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
-      return;
+      return; 
     }
     
-    // فحص 2: إذا كان الإعلان خاص بالمستخدم - منع المشاهدة
+    
     if (cubit.isMyAd(widget.ad.userid)) {
       if (context.mounted) {
         showDialog(
@@ -333,10 +324,10 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
       return;
     }
 
-    // فحص 3: التحقق من الحد المسموح للمشاهدات محلياً
-    // 0 = مسموح + طلب API
-    // 1 = مسموح فقط (بدون طلب)
-    // 2 = ممنوع
+    
+    
+    
+    
     final int availability = await cubit.recordLocalView(widget.ad.id);
 
     if (availability == 2) {
@@ -356,7 +347,7 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
       return;
     }
     
-    // إذا كل شيء تمام، نفتح الإعلان
+    
     final url = widget.ad.path;
     
     try {
@@ -368,38 +359,29 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
           mode: LaunchMode.externalApplication,
         );
         
-        // إذا كان الفحص المحلي يطلب تسجيل المشاهدة في السيرفر (0)
+        
         if (availability == 0) {
           final res = await cubit.watchAd(widget.ad.id);
 
           if (!res) {
-            // معالجة الأخطاء من Laravel (مثل المشاهدة المسبقة)
-            // هنا ممكن نتجاهل الخطأ لأنه كده كده المستخدم فتح الرابط
-            // بس لو عايزين ننبه المستخدم إنه مش هياخد نقط:
-            /*
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('تمت مشاهدة الإعلان مسبقاً (لن يتم احتساب نقاط)', style: GoogleFonts.cairo()),
-                  backgroundColor: Colors.grey,
-                )
-              );
-            }
-            */
+            
+            
+            
+            
           } else {
-            // نجحت المشاهدة - تحديث العداد
+            
             setState(() {
               views++;
             });
             
-            // تحديث بيانات المستخدم (النقاط) فوراً
+            
             if (context.mounted) {
               context.read<AuthCubit>().getProfile(forceRefresh: true);
             }
           }
         }
       } else {
-        // لو الرابط مش قادر يتفتح
+        
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -413,7 +395,7 @@ class WatchCardState extends State<AdWatchCard> with SingleTickerProviderStateMi
         }
       }
     } catch (e) {
-      // لو حصل خطأ
+      
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -63,14 +63,14 @@ class _StorePageState extends State<StorePage> {
                     child: Center(child: Text(state.message, style: GoogleFonts.cairo(color: Colors.red))),
                   );
                 }
-                // Fallback
+                
                 final products = context.read<StoreCubit>().products;
                 if (products.isEmpty) return _buildSkeletonSliverGrid();
                 return _buildProductsSliverGrid(products);
               },
             ),
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 80)), // Bottom padding
+          SliverToBoxAdapter(child: SizedBox(height: 80)), 
         ],
       ),
       floatingActionButton: FutureBuilder<bool>(
@@ -230,7 +230,7 @@ class _StorePageState extends State<StorePage> {
         padding: EdgeInsets.symmetric(horizontal: 16),
         itemCount: categories.length,
         itemBuilder: (context, index) {
-          final isSelected = index == 0; // Dummy selection
+          final isSelected = index == 0; 
           return Container(
             margin: EdgeInsets.only(left: 10),
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -286,7 +286,7 @@ class _StorePageState extends State<StorePage> {
     return SliverGrid(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.65, // Adjusted for better card height to prevent overflow
+        childAspectRatio: 0.65, 
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
@@ -323,7 +323,7 @@ class _StorePageState extends State<StorePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Image Section
+                  
                   Expanded(
                     flex: 3,
                     child: Stack(
@@ -333,12 +333,12 @@ class _StorePageState extends State<StorePage> {
                           child: Container(
                             width: double.infinity,
                             height: double.infinity,
-                            color: Colors.grey.shade50, // خلفية فاتحة للصورة
+                            color: Colors.grey.shade50, 
                             child: Image.network(
                               product['image'] != null 
                                   ? "${BackendAPI.base}store/image/${product['image']}" 
                                   : 'https://via.placeholder.com/150',
-                              fit: BoxFit.cover, // يملأ المساحة
+                              fit: BoxFit.cover, 
                               errorBuilder: (context, error, stackTrace) {
                                 return Center(
                                   child: Icon(Icons.image_not_supported, color: Colors.grey.shade300, size: 40),
@@ -358,7 +358,7 @@ class _StorePageState extends State<StorePage> {
                             ),
                           ),
                         ),
-                        // Favorite Icon (Dummy)
+                        
                         Positioned(
                           top: 8,
                           right: 8,
@@ -375,7 +375,7 @@ class _StorePageState extends State<StorePage> {
                     ),
                   ),
                   
-                  // Details Section
+                  
                   Expanded(
                     flex: 2,
                     child: Padding(
@@ -409,10 +409,10 @@ class _StorePageState extends State<StorePage> {
                             ],
                           ),
                           
-                          // Add to Cart Button (Small)
+                          
                           SizedBox(
                             width: double.infinity,
-                            height: 38, // Increased height
+                            height: 38, 
                             child: ElevatedButton(
                               onPressed: () {
                                 context.read<StoreCubit>().addToCart(product, 1);
@@ -427,7 +427,7 @@ class _StorePageState extends State<StorePage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0xFF2596FA),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                padding: EdgeInsets.symmetric(vertical: 0), // Removed vertical padding
+                                padding: EdgeInsets.symmetric(vertical: 0), 
                                 elevation: 0,
                               ),
                               child: Text("إضافة للسلة", style: GoogleFonts.cairo(fontSize: 12, fontWeight: FontWeight.bold)),

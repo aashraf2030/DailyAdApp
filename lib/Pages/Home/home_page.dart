@@ -65,7 +65,7 @@ class HomePageState extends State<HomePage> {
       builder: (context, state) {
         return Scaffold(
           appBar: state is HomeStoreState
-              ? null // Hide AppBar in Store page (it has its own)
+              ? null 
               : GradientAppBar(
                   automaticallyImplyLeading: false,
                   leading: IconButton(
@@ -124,7 +124,7 @@ class HomePageState extends State<HomePage> {
           bottomNavigationBar: buildNavbar(context, state),
           floatingActionButton: Builder(
             builder: (context) {
-              // Hide FAB in Chat or Store (Store has its own)
+              
               if (state is HomeChatState || state is HomeStoreState) {
                 return const SizedBox.shrink();
               }
@@ -180,7 +180,7 @@ class HomePageState extends State<HomePage> {
     }
 
     if (state is HomeLandingState) {
-      // جلب الإعلانات الثابتة فقط للعرض في الـ Slider
+      
       final fixedAds = BlocProvider.of<HomeCubit>(context).getFixedAds();
       return BlocProvider.value(
         value: BlocProvider.of<AdCubit>(context),
@@ -189,7 +189,7 @@ class HomePageState extends State<HomePage> {
     }
 
     if (state is HomeSearchState) {
-      // جلب الإعلانات الثابتة فقط للعرض في الـ Slider
+      
       final fixedAds = BlocProvider.of<HomeCubit>(context).getFixedAds();
       return BlocProvider.value(
         value: BlocProvider.of<AdCubit>(context),
@@ -221,14 +221,14 @@ class HomePageState extends State<HomePage> {
             );
           }
           
-          // فحص لو المستخدم مسؤول
+          
           if (snapshot.hasData && snapshot.data == true) {
             return BlocProvider.value(
               value: BlocProvider.of<AuthorityCubit>(context),
               child: AdminPanel(),
             );
           } else {
-            // المستخدم ليس مسؤول - عرض رسالة خطأ
+            
             return _buildAccessDeniedPage(context);
           }
         },
@@ -245,14 +245,14 @@ class HomePageState extends State<HomePage> {
             );
           }
           
-          // فحص لو المستخدم مسؤول
+          
           if (snapshot.hasData && snapshot.data == true) {
             return BlocProvider.value(
               value: BlocProvider.of<AuthorityCubit>(context),
               child: AdminAdRequestPage(),
             );
           } else {
-            // المستخدم ليس مسؤول - عرض رسالة خطأ
+            
             return _buildAccessDeniedPage(context);
           }
         },
@@ -269,14 +269,14 @@ class HomePageState extends State<HomePage> {
             );
           }
           
-          // فحص لو المستخدم مسؤول
+          
           if (snapshot.hasData && snapshot.data == true) {
             return BlocProvider.value(
               value: BlocProvider.of<AuthorityCubit>(context),
               child: MoneyRequestPage(),
             );
           } else {
-            // المستخدم ليس مسؤول - عرض رسالة خطأ
+            
             return _buildAccessDeniedPage(context);
           }
         },
@@ -294,7 +294,7 @@ class HomePageState extends State<HomePage> {
     }
 
     if (state is HomeChatState) {
-      // للمسؤول: عرض قائمة المحادثات مباشرة
+      
       if (isAdmin) {
         return BlocProvider(
           create: (_) => sl<ChatCubit>(),
@@ -302,8 +302,8 @@ class HomePageState extends State<HomePage> {
         );
       }
       
-      // للمستخدم العادي: عرض صفحة الدردشة مباشرة
-      // بدون أي تحقق - فقط فحص بسيط لتسجيل الدخول
+      
+      
       return FutureBuilder<bool>(
         future: BlocProvider.of<AuthCubit>(context).isLoggedIn(),
         builder: (context, snapshot) {
@@ -313,17 +313,17 @@ class HomePageState extends State<HomePage> {
             );
           }
           
-          // فحص لو المستخدم مسجل دخول
+          
           final isGuest = BlocProvider.of<OperationalCubit>(context).prefs.getBool("guest") ?? false;
           
           if (snapshot.hasData && snapshot.data == true && !isGuest) {
-            // المستخدم مسجل دخول - عرض ChatPage مباشرة
+            
             return BlocProvider(
               create: (_) => sl<ChatCubit>(),
               child: const ChatPage(),
             );
           } else {
-            // المستخدم غير مسجل دخول - عرض رسالة تسجيل الدخول
+            
             return _buildChatLoginRequiredPage(context);
           }
         },
@@ -457,7 +457,7 @@ class HomePageState extends State<HomePage> {
           icon: FaIcon(FontAwesomeIcons.bagShopping), label: "المتجر"),
       ];
     } else {
-      // المستخدم العادي: أيقونة مخصصة للدردشة (message icon)
+      
       return const [
         BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.house), label: "الرئيسية"),
@@ -484,8 +484,8 @@ class HomeLanding extends StatefulWidget {
   const HomeLanding({super.key, this.type, required this.ads, this.fixedAds});
 
   final type;
-  final List<AdData> ads;  // كل الإعلانات
-  final List<AdData>? fixedAds;  // الإعلانات الثابتة فقط
+  final List<AdData> ads;  
+  final List<AdData>? fixedAds;  
 
   @override
   State<HomeLanding> createState() => _HomeLandingState();
@@ -862,7 +862,7 @@ class _HomeLandingState extends State<HomeLanding> {
   }
 
   Widget allAdsBuilder(BuildContext context) {
-    // Filter strictly dynamic ads to pass to AllAdsArea
+    
     final dynamicAds = widget.ads.where((ad) => !ad.isFixed).toList();
     
     return MultiBlocProvider(
@@ -892,7 +892,7 @@ Widget _buildAccessDeniedPage(BuildContext context) {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // أيقونة القفل
+                  
                   Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
@@ -915,7 +915,7 @@ Widget _buildAccessDeniedPage(BuildContext context) {
                   
                   const SizedBox(height: 40),
                   
-                  // العنوان
+                  
                   Text(
                     'غير مصرح بالوصول',
                     style: GoogleFonts.cairo(
@@ -928,7 +928,7 @@ Widget _buildAccessDeniedPage(BuildContext context) {
                   
                   const SizedBox(height: 16),
                   
-                  // الرسالة
+                  
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -953,7 +953,7 @@ Widget _buildAccessDeniedPage(BuildContext context) {
                   
                   const SizedBox(height: 40),
                   
-                  // زر العودة
+                  
                   ElevatedButton(
                     onPressed: () {
                       BlocProvider.of<HomeCubit>(context).changeRoute(0);
@@ -1011,7 +1011,7 @@ Widget _buildChatLoginRequiredPage(BuildContext context) {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // أيقونة القفل
+                
                 Container(
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
@@ -1034,7 +1034,7 @@ Widget _buildChatLoginRequiredPage(BuildContext context) {
                 
                 const SizedBox(height: 40),
                 
-                // العنوان
+                
                 Text(
                   'تسجيل الدخول مطلوب',
                   style: GoogleFonts.cairo(
@@ -1047,7 +1047,7 @@ Widget _buildChatLoginRequiredPage(BuildContext context) {
                 
                 const SizedBox(height: 16),
                 
-                // الرسالة
+                
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -1072,7 +1072,7 @@ Widget _buildChatLoginRequiredPage(BuildContext context) {
                 
                 const SizedBox(height: 40),
                 
-                // زر تسجيل الدخول
+                
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/login');

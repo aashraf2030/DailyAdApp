@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Auth Interceptor - Automatically adds JWT token to all requests
+
 class AuthInterceptor extends Interceptor {
   final SharedPreferences prefs;
 
@@ -10,15 +10,15 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    // Get session token from SharedPreferences
+    
     final session = prefs.getString("session") ?? "";
     
-    // Add Authorization header if token exists and not empty
+    
     if (session.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $session';
     }
     
-    // Always continue with the request
+    
     handler.next(options);
   }
 }
@@ -31,7 +31,7 @@ class LoggerInterceptor extends Interceptor {
     final options = err.requestOptions;
     final requestPath = '${options.baseUrl}${options.path}';
     
-    // Log error details including response body for validation errors
+    
     String errorDetails = 'Error type: ${err.error} \n Error message: ${err.message}';
     
     if (err.response != null) {
@@ -39,7 +39,7 @@ class LoggerInterceptor extends Interceptor {
       errorDetails += '\n STATUSMESSAGE: ${err.response?.statusMessage}';
       errorDetails += '\n HEADERS: ${err.response?.headers}';
       
-      // Log response data for debugging
+      
       if (err.response?.data != null) {
         try {
           final responseData = err.response!.data;

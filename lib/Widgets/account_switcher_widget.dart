@@ -87,7 +87,7 @@ class AccountSwitcherWidget extends StatelessWidget {
             child: Row(
               textDirection: TextDirection.rtl,
               children: [
-                // Avatar
+                
                 Container(
                   width: 50,
                   height: 50,
@@ -121,7 +121,7 @@ class AccountSwitcherWidget extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Account Info
+                
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,7 +174,7 @@ class AccountSwitcherWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Delete Button
+                
                 IconButton(
                   icon: FaIcon(
                     FontAwesomeIcons.trash,

@@ -12,12 +12,12 @@ class AuthServices {
 
   AuthServices(this.dio);
 
-  /// Hashes password using SHA-256
+  
   String _hashPassword(String password) {
     return base64.encode(sha256.convert(utf8.encode(password)).bytes);
   }
 
-  /// Handles Dio exceptions and converts them to meaningful responses
+  
   Map<String, dynamic> _handleError(Object error, StackTrace stackTrace) {
     if (error is DioException) {
       switch (error.type) {
@@ -51,8 +51,8 @@ class AuthServices {
         data: {"user": user, "pass": hash},
         options: Options(
           validateStatus: (status) {
-            // Accept 200 (success), 201 (created), and 403 (Unverified users)
-            // This allows us to read the response body even for 403 status
+            
+            
             return status != null && ((status >= 200 && status < 300) || status == 403);
           },
         ),
@@ -65,7 +65,7 @@ class AuthServices {
 
   Future<dynamic> getProfile(String session, String id) async {
     try {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.profile,
         data: {"id": id},
@@ -106,7 +106,7 @@ class AuthServices {
 
   Future<dynamic> isAdmin(String id, String session) async {
     try {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.is_admin,
         data: {"id": id},
@@ -119,7 +119,7 @@ class AuthServices {
 
   Future<dynamic> isLoggedIn(String id, String session) async {
     try {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.is_loggedin,
         data: {"id": id},
@@ -132,7 +132,7 @@ class AuthServices {
 
   Future<dynamic> logout(String id, String session) async {
     try {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.logout,
         data: {"id": id},
@@ -145,8 +145,8 @@ class AuthServices {
 
   Future<dynamic> delete(String id, String session) async {
     try {
-      // Token is automatically added by AuthInterceptor
-      // Use POST instead of DELETE because Laravel doesn't support body in DELETE
+      
+      
       final res = await dio.post(
         BackendAPI.delete_user,
         data: {"id": id},
@@ -159,7 +159,7 @@ class AuthServices {
 
   Future<dynamic> tryVerify(String id, String session, String code) async {
     try {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.verify,
         data: {"code": code},
@@ -172,8 +172,8 @@ class AuthServices {
 
   Future<dynamic> sendCode(String id, String session, bool passReset) async {
     try {
-      // Token is automatically added by AuthInterceptor
-      // For password reset, send email in body; otherwise, user is authenticated via token
+      
+      
       final idName = passReset ? "email" : "id";
       final res = await dio.post(
         BackendAPI.send_code,
@@ -187,7 +187,7 @@ class AuthServices {
 
   Future<dynamic> tryVerifyCheck(String id, String session) async {
     try {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.verify_check,
       );
@@ -200,7 +200,7 @@ class AuthServices {
   Future<dynamic> changePass(String session, String pass) async {
     try {
       final hash = _hashPassword(pass);
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.change_pass,
         data: {"pass": hash},
@@ -228,7 +228,7 @@ class AuthServices {
     String code,
   ) async {
     try {
-      // Token is automatically added by AuthInterceptor
+      
       final res = await dio.post(
         BackendAPI.validate_reset,
         data: {"code": code},

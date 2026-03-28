@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import '../constants/app_constants.dart';
 import '../exceptions/app_exceptions.dart';
 
-/// Failure class for UI consumption
+
 class AppFailure {
   final String message;
   final String? details;
@@ -55,13 +55,13 @@ class ErrorMapper {
     final int statusCode = response.statusCode ?? 500;
     final dynamic data = response.data;
     
-    // Custom backend error messages if available
+    
     String? backendMessage;
     if (data is Map<String, dynamic>) {
        backendMessage = data['message'] ?? data['error'];
     }
 
-    // You can customize this switch based on backend status codes
+    
     switch (statusCode) {
       case 400:
         return AppFailure(message: backendMessage ?? "طلب غير صحيح");
@@ -79,7 +79,7 @@ class ErrorMapper {
         return AppFailure(message: "الخدمة غير متاحة حالياً");
       default:
         if (backendMessage != null && backendMessage.isNotEmpty) {
-           return AppFailure(message: backendMessage); // Use server error message if present and specific
+           return AppFailure(message: backendMessage); 
         }
         return const AppFailure(message: AppConstants.errorGeneric);
     }

@@ -45,16 +45,16 @@ class AdCubit extends Cubit<AdState> {
   Future<List<AdData>> fetchAds(int category, {bool? full, String? adType}) async {
     emit(AdLoadingState());
 
-    // Get id and session - can be empty for guests
-    // AuthInterceptor will handle adding token to header if session exists
+    
+    
     final id = prefs.getString("id") ?? "";
     final session = prefs.getString("session") ?? "";
 
     try {
-      // This endpoint supports optional authentication (guests can view ads)
-      // If user is guest, id and session will be empty strings
-      // Laravel's OptionalJwtMiddleware will handle this correctly
-      // adType: 'Dynamic' to fetch only Dynamic ads, null to fetch all types
+      
+      
+      
+      
       final response = await repo.fetchCatAds(session, id, category, full, adType: adType);
       if (!isClosed) {
         emit(AdDoneState(response));

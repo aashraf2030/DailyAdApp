@@ -70,22 +70,22 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Header
+                          
                           _buildHeader(),
                           
                           SizedBox(height: 40),
                           
-                          // Code Card
+                          
                           _buildCodeCard(context),
                           
                           SizedBox(height: 25),
                           
-                          // Resend Button
+                          
                           _buildResendButton(context),
                           
                           SizedBox(height: 25),
                           
-                          // Back Button
+                          
                           _buildBackButton(context),
                         ],
                       ),
@@ -351,7 +351,7 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
       return;
     }
 
-    // Show loading
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -400,7 +400,7 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
     final cubit = BlocProvider.of<AuthCubit>(context);
     final res = await cubit.validateResetPass(code.data);
 
-    // Close loading
+    
     Navigator.of(context).pop();
 
     if (res) {
@@ -411,7 +411,7 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
   }
 
   void resendCode(context) async {
-    // Show loading
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -460,7 +460,7 @@ class _PassResetPageState extends State<PassResetPage> with SingleTickerProvider
     final cubit = BlocProvider.of<AuthCubit>(context);
     final res = await cubit.sendCode(passReset: true);
 
-    // Close loading
+    
     Navigator.of(context).pop();
 
     if (res) {

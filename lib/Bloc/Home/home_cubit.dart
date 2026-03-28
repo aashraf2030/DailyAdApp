@@ -21,12 +21,12 @@ class HomeCubit extends Cubit<HomeState>{
 
   List<AdData> ads = [];
   
-  // دالة لجلب الإعلانات الثابتة فقط
+  
   List<AdData> getFixedAds() {
     return ads.where((ad) => ad.isFixed).take(10).toList();
   }
   
-  // دالة لجلب الإعلانات المتغيرة فقط
+  
   List<AdData> getDynamicAds() {
     return ads.where((ad) => !ad.isFixed).toList();
   }
@@ -39,12 +39,12 @@ class HomeCubit extends Cubit<HomeState>{
     {
       case 0:
         emit(HomeLoadingState());
-        // Get id and session - can be empty for guests
-        // AuthInterceptor will handle adding token to header if session exists
+        
+        
         final session = prefs.getString("session") ?? "";
         final id = prefs.getString("id") ?? "";
-        // Fetch all ads (category -1 means all categories, full=true means all ads including Dynamic)
-        // This endpoint supports optional authentication (guests can view ads)
+        
+        
         adRepo.fetchCatAds(session, id, -1, true).then((x) {
           ads = x;
           emit(HomeLandingState(ads));
@@ -67,36 +67,36 @@ class HomeCubit extends Cubit<HomeState>{
         break;
 
       case 4:
-        // للمستخدم العادي: الدردشة
-        // للمسؤول: لوحة الإدارة
+        
+        
         final isAdmin = prefs.getBool("isAdmin") ?? false;
         if (isAdmin) {
           emit(HomeAdminState());
         } else {
-          // المستخدم العادي - المتجر (بدل الدردشة)
+          
           emit(HomeStoreState());
         }
         break;
 
       case 5:
-        // فحص بسيط من SharedPreferences (طبقة حماية إضافية)
+        
         final isAdmin = prefs.getBool("isAdmin") ?? false;
         if (isAdmin) {
           emit(HomeAdRequestState());
         } else {
-          // إذا لم يكن مسؤول، العودة للصفحة الرئيسية
+          
           emit(HomeLandingState(ads));
           currentRoute = 0;
         }
         break;
 
       case 6:
-        // فحص بسيط من SharedPreferences (طبقة حماية إضافية)
+        
         final isAdmin = prefs.getBool("isAdmin") ?? false;
         if (isAdmin) {
           emit(HomeMoneyRequestState());
         } else {
-          // إذا لم يكن مسؤول، العودة للصفحة الرئيسية
+          
           emit(HomeLandingState(ads));
           currentRoute = 0;
         }
@@ -117,18 +117,18 @@ class HomeCubit extends Cubit<HomeState>{
   void refresh()
   {
     emit(HomeLoadingState());
-    // Get id and session - can be empty for guests
-    // AuthInterceptor will handle adding token to header if session exists
+    
+    
     final session = prefs.getString("session") ?? "";
     final id = prefs.getString("id") ?? "";
-    // Fetch all ads (category -1 means all categories, full=true means all ads including Dynamic)
-    // This endpoint supports optional authentication (guests can view ads)
+    
+    
     adRepo.fetchCatAds(session, id, -1, true).then((x) {
       ads = x;
       emit(HomeLandingState(ads));
     }).catchError((error) {
       print("Error refreshing ads in HomeCubit: $error");
-      emit(HomeLandingState(ads)); // Keep existing ads on error
+      emit(HomeLandingState(ads)); 
     });
   }
 }

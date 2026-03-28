@@ -1,6 +1,6 @@
 import '../constants/app_constants.dart';
 
-/// Base exception class for all app exceptions
+
 abstract class AppException implements Exception {
   final String message;
   final String? details;
@@ -21,7 +21,7 @@ abstract class AppException implements Exception {
   }
 }
 
-/// Network related exceptions
+
 class NetworkException extends AppException {
   NetworkException({
     String? message,
@@ -34,7 +34,7 @@ class NetworkException extends AppException {
         );
 }
 
-/// Timeout exceptions
+
 class TimeoutException extends AppException {
   TimeoutException({
     String? message,
@@ -45,7 +45,7 @@ class TimeoutException extends AppException {
         );
 }
 
-/// Server error exceptions
+
 class ServerException extends AppException {
   ServerException({
     String? message,
@@ -58,7 +58,7 @@ class ServerException extends AppException {
         );
 }
 
-/// Authentication exceptions
+
 class AuthException extends AppException {
   AuthException({
     String? message,
@@ -69,7 +69,7 @@ class AuthException extends AppException {
         );
 }
 
-/// Session expired exception
+
 class SessionExpiredException extends AppException {
   SessionExpiredException({
     String? message,
@@ -80,7 +80,7 @@ class SessionExpiredException extends AppException {
         );
 }
 
-/// Data parsing exceptions
+
 class DataParsingException extends AppException {
   DataParsingException({
     String? message,
@@ -91,7 +91,7 @@ class DataParsingException extends AppException {
         );
 }
 
-/// Cache exceptions
+
 class CacheException extends AppException {
   CacheException({
     String? message,
@@ -102,7 +102,7 @@ class CacheException extends AppException {
         );
 }
 
-/// Validation exceptions
+
 class ValidationException extends AppException {
   ValidationException({
     String? message,

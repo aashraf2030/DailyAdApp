@@ -33,9 +33,9 @@ class PaymentMethodSelectionPage extends StatefulWidget {
 }
 
 class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage> {
-  String selectedMethod = 'card'; // Default
+  String selectedMethod = 'card'; 
   
-  // Apple Pay Configuration
+  
   final String _paymentConfigurationAsset = 'payment_configs/apple_pay_config.json';
   late Future<PaymentConfiguration> _googlePayConfigFuture;
   bool _applePayAvailable = false;
@@ -48,7 +48,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
   }
 
   Future<void> _checkApplePayAvailability() async {
-    // ALWAYS SHOW FOR WEB PREVIEW - DO NOT DEPLOY THIS TO PRODUCTION
+    
     if (mounted) {
       setState(() {
         _applePayAvailable = true;
@@ -58,12 +58,12 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
 
   void onApplePayResult(paymentResult) {
     debugPrint('Apple Pay Result: $paymentResult');
-    // Here we get the token, now we need to send it to our backend
-    // Since the original flow was "Confirm Payment" -> "StoreCubit.placeOrder" -> Backend
-    // We should call placeOrder with the token.
     
-    // Convert result to string if needed or extract token
-    // The result is usually a Map.
+    
+    
+    
+    
+    
     String token = jsonEncode(paymentResult);
     
     context.read<StoreCubit>().placeOrder(
@@ -80,7 +80,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
     return BlocListener<StoreCubit, StoreState>(
       listener: (context, state) {
         if (state is StorePaymentRequired) {
-          // Navigate to Webview (For Cards)
+          
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -95,14 +95,14 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
             }
           });
         } else if (state is StoreOrderSuccess) {
-          // Cash/ApplePay order success - navigate directly to Store
+          
           print("[PAYMENT] Order success - navigating to Store");
           
           try {
             final authCubit = context.read<AuthCubit>();
             final nav = Navigator.of(context);
             
-            // Show quick success message
+            
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text("تم تأكيد الطلب بنجاح! رقم الطلب: ${state.data['order_id'] ?? 'N/A'}"),
@@ -139,8 +139,8 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
       },
       child: Scaffold(
         appBar: AppBar(title: const Text("Select Payment Method")),
-        body: SafeArea( // Fix for Guideline 2.1 (Layout Overflow)
-          child: SingleChildScrollView( // Fix for Guideline 2.1 (Scrollable)
+        body: SafeArea( 
+          child: SingleChildScrollView( 
             padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -158,7 +158,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                 ),
                 const SizedBox(height: 15),
                 
-                // Apple Pay Selection
+                
                 if (_applePayAvailable) ...[
                    const SizedBox(height: 24),
                    _buildDividerWithOr(),
@@ -218,7 +218,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                    const SizedBox(height: 30),
                 ],
                 
-                const SizedBox(height: 40), // Spacer replaced with SizedBox for SingleChildScrollView
+                const SizedBox(height: 40), 
                 
                 BlocBuilder<StoreCubit, StoreState>(
                   builder: (context, state) {
@@ -226,12 +226,12 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
                       return const Center(child: CircularProgressIndicator());
                     }
                     
-                    // NEW LOGIC: Swap button based on selection (Guideline 4.9)
+                    
                     if (selectedMethod == 'apple_pay') {
                       return const SizedBox.shrink();
                     }
 
-                    // Default Confirm Button for Cash/Card
+                    
                     return ElevatedButton(
                       onPressed: () {
                         context.read<StoreCubit>().placeOrder(
@@ -348,7 +348,7 @@ class _PaymentMethodSelectionPageState extends State<PaymentMethodSelectionPage>
             onPressed: () {
               final authCubit = context.read<AuthCubit>();
               final nav = Navigator.of(context);
-              nav.pop(); // Close dialog
+              nav.pop(); 
               nav.pushAndRemoveUntil(
                 MaterialPageRoute(
                   builder: (_) => MultiBlocProvider(
