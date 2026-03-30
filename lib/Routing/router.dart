@@ -176,6 +176,13 @@ class RouteGenerator {
         ));
 
       case "/create_ad":
+        if (auth.isGuestMode()) {
+          return animateThis(
+            _buildLoginRequiredPage(
+              message: "لإنشاء إعلان جديد، يرجى تسجيل الدخول أولاً.",
+            ),
+          );
+        }
         return animateThis(MultiBlocProvider(providers: [
           BlocProvider.value(value: operational),
           BlocProvider.value(value: auth)
@@ -214,7 +221,7 @@ class RouteGenerator {
                 child: MyRequestPage(),
               );
             } else {
-              return _buildLoginRequiredPage(context);
+              return _buildLoginRequiredPage();
             }
           },
         ));
@@ -269,7 +276,7 @@ class RouteGenerator {
         });
   }
 
-  static Widget _buildLoginRequiredPage(BuildContext context) {
+  static Widget _buildLoginRequiredPage({String? message}) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -333,9 +340,9 @@ class RouteGenerator {
                         width: 1,
                       ),
                     ),
-                    child: const Text(
-                      'برجاء تسجيل الدخول أولاً\nحتى تتمكن من رؤية طلباتك',
-                      style: TextStyle(
+                    child: Text(
+                      message ?? 'برجاء تسجيل الدخول أولاً\nحتى تتمكن من رؤية طلباتك',
+                      style: const TextStyle(
                         fontSize: 18,
                         color: Colors.white,
                         height: 1.5,
@@ -385,7 +392,7 @@ class RouteGenerator {
                   
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pushReplacementNamed(context, '/home');
                     },
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -395,7 +402,7 @@ class RouteGenerator {
                       ),
                     ),
                     child: const Text(
-                      'العودة للخلف',
+                      'العودة للرئيسية',
                       style: TextStyle(
                         fontSize: 16,
                         decoration: TextDecoration.underline,

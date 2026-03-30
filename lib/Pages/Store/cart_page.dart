@@ -1,7 +1,9 @@
 import 'package:ads_app/API/base.dart';
+import 'package:ads_app/Bloc/Auth/auth_cubit.dart';
 import 'package:ads_app/Bloc/Store/store_cubit.dart';
 import 'package:ads_app/Bloc/Store/store_state.dart';
 import 'package:ads_app/Pages/Store/checkout_page.dart';
+import 'package:ads_app/core/widgets/login_required_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -184,12 +186,23 @@ class CartPage extends StatelessWidget {
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          if (context.read<AuthCubit>().isGuestMode()) {
+                            await showLoginRequiredDialog(
+                              context,
+                              actionName: "إتمام الشراء",
+                            );
+                            return;
+                          }
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => BlocProvider.value(
-                                value: context.read<StoreCubit>(),
+                              builder: (_) => MultiBlocProvider(
+                                providers: [
+                                  BlocProvider.value(value: context.read<StoreCubit>()),
+                                  BlocProvider.value(value: context.read<AuthCubit>()),
+                                ],
                                 child: CheckoutPage(),
                               ),
                             ),

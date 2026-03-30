@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:ads_app/core/widgets/login_required_dialog.dart';
 
 class MyAds extends StatefulWidget
 {
@@ -420,20 +421,10 @@ class MyAdsState extends State<MyAds>
 
     if (cubit.isGuestMode())
       {
-        showDialog(context: context, builder: (x) {
-          return AlertDialog(
-            icon: Icon(Icons.error),
-            backgroundColor: Colors.white70,
-            contentTextStyle: GoogleFonts.cairo(fontWeight: FontWeight.bold, color: Colors.black),
-            content: Text("لا يمكن انشاء اعلان في وضع الزيارة"),
-            actions: [
-
-              OutlinedButton(onPressed: (){Navigator.pop(context);},
-                child: Text("متابعة"),
-              )
-            ],
-          );
-        });
+        showLoginRequiredDialog(
+          context,
+          actionName: "إنشاء إعلان جديد",
+        );
         return;
       }
 

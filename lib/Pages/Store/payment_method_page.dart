@@ -14,6 +14,7 @@ import 'package:ads_app/Bloc/Operational/operational_cubit.dart';
 import '../../Widgets/custom_apple_pay_icon.dart';
 import 'package:ads_app/Pages/Store/store_page.dart';
 import 'package:ads_app/core/di/service_locator.dart';
+import 'package:ads_app/core/widgets/login_required_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pay/pay.dart';
@@ -74,6 +75,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
   }
 
   void onApplePayResult(paymentResult) {
+    if (context.read<AuthCubit>().isGuestMode()) {
+      showLoginRequiredDialog(
+        context,
+        actionName: "إتمام الطلب",
+      );
+      return;
+    }
+
     debugPrint('Apple Pay Result: $paymentResult');
     context.read<StoreCubit>().placeOrder(
       receiverName: widget.receiverName,
@@ -85,6 +94,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
   }
 
   void onGooglePayResult(paymentResult) {
+    if (context.read<AuthCubit>().isGuestMode()) {
+      showLoginRequiredDialog(
+        context,
+        actionName: "إتمام الطلب",
+      );
+      return;
+    }
+
     debugPrint('Google Pay Result: $paymentResult');
     context.read<StoreCubit>().placeOrder(
       receiverName: widget.receiverName,
@@ -594,6 +611,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             height: 55,
             child: ElevatedButton(
               onPressed: () {
+                if (context.read<AuthCubit>().isGuestMode()) {
+                  showLoginRequiredDialog(
+                    context,
+                    actionName: "الدفع ببطاقة الائتمان",
+                  );
+                  return;
+                }
+
                 
                 context.read<StoreCubit>().placeOrder(
                   receiverName: widget.receiverName,
@@ -634,6 +659,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             height: 55,
             child: ElevatedButton(
               onPressed: () {
+                if (context.read<AuthCubit>().isGuestMode()) {
+                  showLoginRequiredDialog(
+                    context,
+                    actionName: "تأكيد الطلب",
+                  );
+                  return;
+                }
+
                 context.read<StoreCubit>().placeOrder(
                   receiverName: widget.receiverName,
                   address: widget.address,

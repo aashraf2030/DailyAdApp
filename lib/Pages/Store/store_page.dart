@@ -186,8 +186,11 @@ class _StorePageState extends State<StorePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => BlocProvider.value(
-                          value: context.read<StoreCubit>(),
+                        builder: (_) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider.value(value: context.read<StoreCubit>()),
+                            BlocProvider.value(value: context.read<AuthCubit>()),
+                          ],
                           child: CartPage(),
                         ),
                       ),
