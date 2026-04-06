@@ -129,7 +129,9 @@ class CheckoutPage extends StatelessWidget {
                     );
                     return;
                   }
-                  
+
+                  // Start preloading Apple Pay in background while navigation animates
+                  PaymentMethodPage.preload();
                   
                   Navigator.push(
                     context,
